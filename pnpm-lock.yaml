@@ -10,7 +10,7 @@ importers:
 
   apps/api:
     dependencies:
-      '@todokanban/shared':
+      '@gikan/shared':
         specifier: workspace:*
         version: link:../../packages/shared
       bcryptjs:
@@ -92,6 +92,9 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@gikan/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(@standard-schema/spec@1.1.0)(react-hook-form@7.87.0(react@19.2.8))(zod@3.25.76)
@@ -119,9 +122,6 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.102.8
         version: 5.102.8(react@19.2.8)
-      '@todokanban/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
       '@untitledui/file-icons':
         specifier: ^0.0.9
         version: 0.0.9(react@19.2.8)

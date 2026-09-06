@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type AddProjectMemberInput, addProjectMemberSchema } from "@todokanban/shared";
+import { type AddProjectMemberInput, addProjectMemberSchema } from "@gikan/shared";
 import { UserMinus01 } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";

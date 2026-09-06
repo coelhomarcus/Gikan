@@ -1,4 +1,4 @@
-import { loginSchema, registerSchema } from "@todokanban/shared";
+import { loginSchema, registerSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import { clearSessionCookie, setSessionCookie } from "../../lib/cookies";
 import { getUserById, loginUser, registerUser } from "./auth.service";

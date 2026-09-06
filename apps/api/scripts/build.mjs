@@ -9,7 +9,7 @@ import { build } from "esbuild";
 //
 // IMPORTANTE: `packages: "external"` do esbuild externaliza QUALQUER import resolvido via
 // node_modules -- incluindo pacotes workspace do pnpm (que são só symlinks lá dentro), o que
-// quebraria @todokanban/shared em runtime (ele não tem dist próprio). Por isso construímos a
+// quebraria @gikan/shared em runtime (ele não tem dist próprio). Por isso construímos a
 // lista de externals manualmente a partir de package.json, excluindo dependências "workspace:*".
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url)));
 

@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from "@todokanban/shared";
+import type { LoginInput, RegisterInput } from "@gikan/shared";
 import { eq, or } from "drizzle-orm";
 import { env } from "../../config/env";
 import { db } from "../../db";

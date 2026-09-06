@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateProfileSchema } from "@todokanban/shared";
+import { updateProfileSchema } from "@gikan/shared";
 import { useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";

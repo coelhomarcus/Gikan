@@ -15,12 +15,12 @@ RUN pnpm install --frozen-lockfile
 # ---------- build: builda o frontend (Vite) e o backend (esbuild) ----------
 FROM deps AS build
 COPY . .
-RUN pnpm --filter @todokanban/web build
-RUN pnpm --filter @todokanban/api build
+RUN pnpm --filter @gikan/web build
+RUN pnpm --filter @gikan/api build
 # `pnpm deploy` produz uma pasta autocontida (node_modules só com deps de produção +
 # dist/ + drizzle/ já buildados) pra apps/api, sem os problemas de symlink de workspace
 # que apareceriam tentando copiar node_modules manualmente entre stages.
-RUN pnpm --filter @todokanban/api deploy --prod --legacy /app/deploy-api
+RUN pnpm --filter @gikan/api deploy --prod --legacy /app/deploy-api
 
 # ---------- runner: imagem final mínima ----------
 FROM node:22-alpine AS runner

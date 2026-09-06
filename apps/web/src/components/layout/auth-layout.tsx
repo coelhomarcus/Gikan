@@ -1,10 +1,10 @@
 import { Outlet } from "react-router";
-import { AppLogo } from "@/components/foundations/logo/app-logo";
+import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 
 export const AuthLayout = () => {
     return (
         <div className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-primary px-4 py-12">
-            <AppLogo />
+            <GikanLogo />
             <div className="w-full max-w-sm">
                 <Outlet />
             </div>

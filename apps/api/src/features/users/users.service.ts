@@ -1,4 +1,4 @@
-import type { UpdateProfileInput } from "@todokanban/shared";
+import type { UpdateProfileInput } from "@gikan/shared";
 import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { users } from "../../db/schema";

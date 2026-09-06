@@ -1,4 +1,4 @@
-import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@todokanban/shared";
+import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface BoardColumn {

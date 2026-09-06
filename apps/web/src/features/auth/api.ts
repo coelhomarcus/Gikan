@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, UpdateProfileInput } from "@todokanban/shared";
+import type { LoginInput, RegisterInput, UpdateProfileInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface AuthUser {

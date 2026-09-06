@@ -7,14 +7,14 @@ import {
     Modal as AriaModal,
     ModalOverlay as AriaModalOverlay,
 } from "react-aria-components";
-import { AppLogo } from "@/components/foundations/logo/app-logo";
+import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 import { cx } from "@/utils/cx";
 
 export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
     return (
         <AriaDialogTrigger>
             <header className="flex h-14 items-center justify-between border-b border-secondary bg-primary p-3 pl-4 lg:hidden">
-                <AppLogo className="h-6" />
+                <GikanLogo className="h-6" />
 
                 <AriaButton
                     aria-label="Expand navigation menu"

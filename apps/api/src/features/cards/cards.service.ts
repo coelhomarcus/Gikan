@@ -1,4 +1,4 @@
-import type { CreateCardInput, UpdateCardInput } from "@todokanban/shared";
+import type { CreateCardInput, UpdateCardInput } from "@gikan/shared";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, cards, categories, projectMembers } from "../../db/schema";

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type CreateCategoryInput, createCategorySchema } from "@todokanban/shared";
+import { type CreateCategoryInput, createCategorySchema } from "@gikan/shared";
 import { Trash01 } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";

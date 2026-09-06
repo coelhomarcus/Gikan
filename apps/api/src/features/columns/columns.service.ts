@@ -1,4 +1,4 @@
-import type { CreateColumnInput, UpdateColumnInput } from "@todokanban/shared";
+import type { CreateColumnInput, UpdateColumnInput } from "@gikan/shared";
 import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, cards } from "../../db/schema";

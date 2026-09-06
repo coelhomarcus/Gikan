@@ -1,5 +1,5 @@
 {
-  "name": "@todokanban/api",
+  "name": "@gikan/api",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "db:migrate:prod": "node dist/migrate.js"
   },
   "dependencies": {
-    "@todokanban/shared": "workspace:*",
+    "@gikan/shared": "workspace:*",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.36.4",

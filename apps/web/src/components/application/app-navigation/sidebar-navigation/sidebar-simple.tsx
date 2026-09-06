@@ -1,7 +1,7 @@
 import type { FocusEvent, ReactNode } from "react";
 import { SearchLg } from "@untitledui/icons";
 import { Input } from "@/components/base/input/input";
-import { AppLogo } from "@/components/foundations/logo/app-logo";
+import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 import { cx } from "@/utils/cx";
 import { MobileNavigationHeader } from "../base-components/mobile-header";
 import { NavAccountCard } from "../base-components/nav-account-card";
@@ -68,7 +68,7 @@ export const SidebarNavigationSimple = ({
             )}
         >
             <div className="flex flex-col gap-5 px-4 lg:px-5">
-                <AppLogo className="h-6" />
+                <GikanLogo className="h-6" />
 
                 {/* Mobile search input */}
                 <Input size="md" aria-label="Search" placeholder="Search" icon={SearchLg} className="md:hidden" {...searchTriggerProps} />

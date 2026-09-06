@@ -1,4 +1,4 @@
-import { createColumnSchema, updateColumnSchema } from "@todokanban/shared";
+import { createColumnSchema, updateColumnSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createColumn, deleteColumn, listColumns, updateColumn } from "./columns.service";
 

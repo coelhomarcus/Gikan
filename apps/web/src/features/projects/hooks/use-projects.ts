@@ -1,4 +1,4 @@
-import type { UpdateProjectInput } from "@todokanban/shared";
+import type { UpdateProjectInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createProject, listProjects, updateProject } from "../api";
 import { projectQueryKey } from "./use-project";

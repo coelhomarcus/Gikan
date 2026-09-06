@@ -1,4 +1,4 @@
-import type { CreateCategoryInput } from "@todokanban/shared";
+import type { CreateCategoryInput } from "@gikan/shared";
 import { and, asc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { categories } from "../../db/schema";

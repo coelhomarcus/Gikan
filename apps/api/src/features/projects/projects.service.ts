@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput } from "@todokanban/shared";
+import type { CreateProjectInput, UpdateProjectInput } from "@gikan/shared";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, projectMembers, projects, users } from "../../db/schema";

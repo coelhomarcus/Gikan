@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput } from "@todokanban/shared";
+import type { CreateProjectInput, UpdateProjectInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Project {

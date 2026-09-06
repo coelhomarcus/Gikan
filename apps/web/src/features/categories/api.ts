@@ -1,4 +1,4 @@
-import type { CreateCategoryInput } from "@todokanban/shared";
+import type { CreateCategoryInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Category {

@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProjectSchema } from "@todokanban/shared";
+import { createProjectSchema } from "@gikan/shared";
 import { Plus } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";

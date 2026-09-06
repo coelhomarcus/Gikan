@@ -1,4 +1,4 @@
-import { createCategorySchema } from "@todokanban/shared";
+import { createCategorySchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createCategory, deleteCategory, listCategories } from "./categories.service";
 

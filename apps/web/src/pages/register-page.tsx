@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type RegisterInput, registerSchema } from "@todokanban/shared";
+import { type RegisterInput, registerSchema } from "@gikan/shared";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";

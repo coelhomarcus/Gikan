@@ -2,7 +2,7 @@ import type { Response } from "express";
 import ms from "ms";
 import { env } from "../config/env";
 
-const SESSION_COOKIE_NAME = "tk_session";
+export const SESSION_COOKIE_NAME = "gikan_session";
 
 export function setSessionCookie(res: Response, token: string): void {
     res.cookie(SESSION_COOKIE_NAME, token, {

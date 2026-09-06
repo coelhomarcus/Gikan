@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateCategoryInput } from "@todokanban/shared";
+import type { CreateCategoryInput } from "@gikan/shared";
 import { createCategory, deleteCategory, listCategories } from "../api";
 
 export function categoriesQueryKey(projectId: string) {

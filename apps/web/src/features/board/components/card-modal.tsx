@@ -1,4 +1,4 @@
-import { createCardSchema, updateCardSchema } from "@todokanban/shared";
+import { createCardSchema, updateCardSchema } from "@gikan/shared";
 import { Trash01 } from "@untitledui/icons";
 import { type Resolver, useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";

@@ -1,4 +1,4 @@
-import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@todokanban/shared";
+import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     type BoardCard,

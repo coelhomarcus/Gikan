@@ -1,4 +1,4 @@
-import { updateProfileSchema } from "@todokanban/shared";
+import { updateProfileSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import { updateProfile } from "./users.service";
 

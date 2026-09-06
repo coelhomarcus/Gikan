@@ -1,4 +1,4 @@
-# Plano — TodoKanban
+# Plano — Gikan
 
 > Legenda: `[ ]` não iniciado · `[~]` em progresso · `[x]` concluído. Marcar conforme o trabalho avança.
 
@@ -42,7 +42,7 @@ A Untitled UI React já vem com um sistema de dark mode embutido (classe `.dark-
 ## Estrutura de diretórios
 
 ```
-TodoKanban/
+Gikan/
 ├── PLAN.md
 ├── README.md
 ├── .gitignore / .dockerignore
@@ -244,3 +244,11 @@ Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padr�
 - `apps/web/src/features/projects/components/project-search-modal.tsx` — paleta de busca Cmd+K.
 - `apps/web/src/features/projects/components/project-details-panel.tsx` — edição de nome/descrição/link do repositório.
 - `Dockerfile` — único artefato de deploy no Dokploy.
+
+### [x] Checkpoint 20 — Rebrand: TodoKanban → Gikan
+
+Nomes de pacote: `todokanban` (raiz) → `gikan`; `@todokanban/{api,web,shared}` → `@gikan/{api,web,shared}` nos 4 `package.json` do monorepo e em todos os ~28 arquivos que importavam de `@todokanban/shared`; `Dockerfile` (3 chamadas `pnpm --filter`) e `apps/api/scripts/build.mjs` (comentário) atualizados junto. `pnpm install` rodado depois pra regenerar o `pnpm-lock.yaml` com os novos nomes — symlinks de workspace (`node_modules/@gikan/shared`) recriados automaticamente.
+`README.md`, `.env.example` e o título/diretório-raiz do próprio `PLAN.md`: texto/exemplos trocados pra "Gikan" — inclusive nome de container/imagem Docker de exemplo. **Corpos dos checkpoints antigos (histórico) não foram reescritos** — continuam mencionando `@todokanban/shared`/`tk_session` como estavam de fato construídos na época; só a documentação "viva" (README, título, exemplos) foi atualizada. Não mexeu no `.env` real nem na `DATABASE_URL` de produção.
+Cookie de sessão: `SESSION_COOKIE_NAME` (`apps/api/src/lib/cookies.ts`) virou `"gikan_session"` e passou a ser exportado; `auth.middleware.ts` tinha um **segundo literal `"tk_session"` duplicado à mão**, independente da constante — corrigido pra importar `SESSION_COOKIE_NAME` em vez de duplicar a string (bug latente eliminado, não só o rename). Efeito colateral esperado: sessões antigas (inclusive em produção, após o deploy) deixam de ser reconhecidas — usuários precisam logar de novo uma vez.
+Logo: novo `components/foundations/logo/gikan-icon.tsx` — o `gikan-logo.svg` que o usuário já tinha na raiz do repo (ícone genérico do SVGRepo, silhueta tipo chama/tocha) inlinado como componente React, com o `fill:#000000` fixo trocado por `fill="currentColor"`. `app-logo.tsx` renomeado pra `gikan-logo.tsx` (`AppLogo` → `GikanLogo`): badge quadrado `bg-brand-solid` agora usa `<GikanIcon className="size-full" />` com `text-white` (herda a cor via `currentColor`) em vez do texto "TK", wordmark "TodoKanban" → "Gikan". As 3 importações existentes (`auth-layout.tsx`, `sidebar-simple.tsx`, `mobile-header.tsx`) atualizadas. Favicon (nunca customizado antes, ainda era o ícone padrão do Vite) agora é `apps/web/public/gikan-icon.svg` (versão standalone com cor fixa `#0070f3`, já que favicon não herda CSS da página); `vite.svg` removido por não ter mais uso.
+**Verificado (typecheck + browser)**: `tsc --noEmit` limpo em `api`/`web`/`shared`; título da aba e favicon mostram "Gikan"; login funciona com o cookie `gikan_session` (confirmado via `context.cookies()`); logo com ícone + texto "Gikan" visível e legível tanto no tema escuro quanto no claro (screenshot dos dois, ícone branco sobre badge azul sólido nos dois casos — não depende de token de cor que muda com o tema); busca por "todokanban" no repo inteiro (fora de `node_modules`/lockfile) só retorna as menções históricas dentro dos corpos dos checkpoints antigos do próprio `PLAN.md`, deixadas de propósito.

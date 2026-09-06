@@ -1,4 +1,4 @@
-import { createCardSchema, updateCardSchema } from "@todokanban/shared";
+import { createCardSchema, updateCardSchema } from "@gikan/shared";
 import { assertProjectMembership } from "../../middleware/project-membership.middleware";
 import { asyncHandler } from "../../middleware/async-handler";
 import { createCard, deleteCard, getCardDetail, getCardOrThrow, listCards, updateCard } from "./cards.service";

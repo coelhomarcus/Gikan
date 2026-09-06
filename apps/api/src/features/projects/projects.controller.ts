@@ -1,4 +1,4 @@
-import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from "@todokanban/shared";
+import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import {
     addProjectMember,
