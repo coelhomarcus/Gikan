@@ -11,6 +11,13 @@ interface ControlledSelectProps<TFieldValues extends FieldValues> {
     placeholder?: string;
     isRequired?: boolean;
     size?: "sm" | "md" | "lg";
+    /**
+     * Pra campos opcionais (relação nullable, ex: assigneeId/categoryId). O Select do React
+     * Aria não tem uma opção nativa de "limpar seleção", então usamos um item sentinela só
+     * na UI — a tradução de/para `null` acontece bem aqui, antes do valor chegar no schema
+     * Zod (que valida `.uuid()` e rejeitaria a string sentinela com "invalid uuid").
+     */
+    nullOption?: { id: string; label: string };
 }
 
 export function ControlledSelect<TFieldValues extends FieldValues>({
@@ -21,16 +28,19 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
     placeholder,
     isRequired,
     size,
+    nullOption,
 }: ControlledSelectProps<TFieldValues>) {
+    const allItems = nullOption ? [nullOption, ...items] : items;
+
     return (
         <Controller
             control={control}
             name={name}
             render={({ field, fieldState }) => (
                 <Select
-                    selectedKey={(field.value as string | null | undefined) ?? null}
-                    onSelectionChange={(key) => field.onChange(key)}
-                    items={items}
+                    selectedKey={(field.value as string | null | undefined) ?? (nullOption ? nullOption.id : null)}
+                    onSelectionChange={(key) => field.onChange(nullOption && key === nullOption.id ? null : key)}
+                    items={allItems}
                     label={label}
                     placeholder={placeholder}
                     isRequired={isRequired}

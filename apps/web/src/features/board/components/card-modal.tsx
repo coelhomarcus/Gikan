@@ -38,8 +38,8 @@ export const CardModal = ({ projectId, cardId, onClose }: CardModalProps) => {
                   title: card.title,
                   description: card.description,
                   columnId: card.columnId,
-                  categoryId: card.categoryId ?? NONE,
-                  assigneeId: card.assigneeId ?? NONE,
+                  categoryId: card.categoryId,
+                  assigneeId: card.assigneeId,
                   difficulty: card.difficulty,
               }
             : undefined,
@@ -47,14 +47,7 @@ export const CardModal = ({ projectId, cardId, onClose }: CardModalProps) => {
 
     function onSubmit(data: UpdateCardInput) {
         updateCard.mutate(
-            {
-                cardId,
-                input: {
-                    ...data,
-                    categoryId: data.categoryId === NONE ? null : data.categoryId,
-                    assigneeId: data.assigneeId === NONE ? null : data.assigneeId,
-                },
-            },
+            { cardId, input: data },
             {
                 onError: (error) => {
                     setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível salvar" });
@@ -98,19 +91,15 @@ export const CardModal = ({ projectId, cardId, onClose }: CardModalProps) => {
                                         control={control}
                                         name="assigneeId"
                                         label="Responsável"
-                                        items={[
-                                            { id: NONE, label: "Ninguém" },
-                                            ...(members ?? []).map((member) => ({ id: member.id, label: member.name, supportingText: `@${member.username}` })),
-                                        ]}
+                                        nullOption={{ id: NONE, label: "Ninguém" }}
+                                        items={(members ?? []).map((member) => ({ id: member.id, label: member.name, supportingText: `@${member.username}` }))}
                                     />
                                     <ControlledSelect
                                         control={control}
                                         name="categoryId"
                                         label="Categoria"
-                                        items={[
-                                            { id: NONE, label: "Nenhuma" },
-                                            ...(categories ?? []).map((category) => ({ id: category.id, label: category.name })),
-                                        ]}
+                                        nullOption={{ id: NONE, label: "Nenhuma" }}
+                                        items={(categories ?? []).map((category) => ({ id: category.id, label: category.name }))}
                                     />
                                 </div>
 
