@@ -4,6 +4,7 @@ import { Trash01 } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
@@ -18,7 +19,7 @@ interface CategoriesPanelProps {
 
 export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelProps) => {
     const { user } = useAuth();
-    const { data: categories, isLoading } = useCategories(projectId);
+    const { data: categories, isLoading, isError } = useCategories(projectId);
     const createMutation = useCreateCategory(projectId);
     const deleteMutation = useDeleteCategory(projectId);
 
@@ -76,6 +77,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
             </form>
 
             {isLoading && <p className="text-tertiary">Carregando...</p>}
+            {isError && <ErrorMessage message="Não foi possível carregar as categorias do projeto." />}
 
             {categories && categories.length === 0 && <p className="text-sm text-tertiary">Nenhuma categoria criada ainda.</p>}
 

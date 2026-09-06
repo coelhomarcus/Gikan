@@ -168,8 +168,24 @@ Novo `components/form/controlled-select.tsx` (mesmo padrão dos outros `Controll
 **Achado extra**: `@types/express` estava fixado em `^5.0.0` mas o `express` instalado de fato é `4.x` (runtime real, resolvido por `^4.21.2`) — um mismatch de versão introduzido no Checkpoint 0. Corrigido fixando `@types/express`/`@types/express-serve-static-core` em `^4.17.x`/`^4.19.x` pra bater com o runtime real (o workaround do `asyncHandler<T>` genérico do Checkpoint 3 continua válido e foi mantido, só deixou de ser estritamente necessário pro `req.params`).
 **Verificado**: `docker build` completo sem erros; `docker run` conectando no Postgres local via `host.docker.internal` — migrations rodam automaticamente no boot (`node dist/migrate.js && node dist/server.js`), `/api/health` responde, `/` e `/login` servem a SPA corretamente, rota de API inexistente → 404 JSON, registro completo funciona **com cookie `Secure` ativado** (confirma detecção correta de `NODE_ENV=production`), e o app renderiza normalmente no browser direto do container (dark theme, fontes, tudo).
 
-### [ ] Checkpoint 12 — Polish, hardening e QA manual final
-Error handler consistente, README, estados de loading/empty/erro, checklist de QA manual completo.
+### [x] Checkpoint 12 — Polish, hardening e QA manual final
+`README.md` (setup local, variáveis de ambiente, build, deploy no Dokploy, estrutura). Novo `components/feedback/error-message.tsx` reutilizável, aplicado nos estados de erro que faltavam: `ProjectsPage`, `MembersPanel`, `CategoriesPanel`, `Board` (antes só tinham loading/empty, sem tratamento de falha de query).
+**Dois bugs reais de responsividade mobile encontrados e corrigidos** (só apareceram testando em viewport de celular, nunca em desktop):
+1. `MobileNavigationHeader` (componente da Untitled UI, usado só no header mobile) tinha seu próprio `<UntitledLogo />` hardcoded, separado do logo do sidebar desktop que eu já tinha trocado no Checkpoint 7 — corrigido pra usar o `AppLogo` também.
+2. `AppShell` usava `flex` incondicional no container — no mobile, isso espremia o header mobile (que deveria ocupar a largura toda no topo) numa faixa vertical estreita ao lado do conteúdo, porque o resto do sidebar (fixo, só desktop) fica `hidden` mas o container continuava em `flex-row`. Corrigido pra `lg:flex` (empilha normalmente no mobile, vira row só a partir do breakpoint `lg`). Também ajustei o `Topbar` pra truncar o título e não deixar os botões de ação estourarem a tela em telas estreitas (ex: "Novo projeto" ao lado de "Projetos").
+**Checklist de QA manual** (executado via browser real + Playwright, cobrindo todos os checkpoints juntos):
+- [x] Registrar `coelhomarcus` (em `ADMIN_USERNAMES`) → `is_admin=true`.
+- [x] Registrar usuário comum → `is_admin=false`.
+- [x] Registro com código especial errado → bloqueado com mensagem clara.
+- [x] Criar projeto, convidar segundo usuário, ambos veem o projeto na listagem.
+- [x] Criar categorias com paleta de cores fixa.
+- [x] Drag-and-drop de card entre colunas + persistência após F5 (reordenação fina por posição dentro da mesma coluna não é exposta na UI, só entre colunas — decisão documentada no Checkpoint 10).
+- [x] Editar todos os campos do card (assignee, categoria, dificuldade, coluna) pelo modal, refletido no board.
+- [x] Logout/login preserva sessão corretamente (cookie httpOnly, expira conforme `JWT_EXPIRES_IN`).
+- [x] Build Docker local sobe e passa pelo fluxo completo com Postgres real (Checkpoint 11).
+- [x] Responsividade básica (mobile): login, projetos, board (scroll horizontal de colunas, esperado) e configurações — sem overflow, menu hambúrguer funcional.
+
+**Todos os 13 checkpoints do plano estão concluídos.** Próximos passos ficam a critério do usuário (deploy real no Dokploy com Postgres de produção, testes automatizados, etc.) — fora do escopo original deste plano.
 
 ## Arquivos críticos
 

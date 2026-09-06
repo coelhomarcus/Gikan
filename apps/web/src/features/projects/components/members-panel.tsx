@@ -6,6 +6,7 @@ import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ApiError } from "@/lib/api-client";
 import { useAddProjectMember, useProjectMembers, useRemoveProjectMember } from "../hooks/use-project-members";
@@ -25,7 +26,7 @@ interface MembersPanelProps {
 }
 
 export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) => {
-    const { data: members, isLoading } = useProjectMembers(projectId);
+    const { data: members, isLoading, isError } = useProjectMembers(projectId);
     const addMutation = useAddProjectMember(projectId);
     const removeMutation = useRemoveProjectMember(projectId);
 
@@ -60,6 +61,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
             )}
 
             {isLoading && <p className="text-tertiary">Carregando...</p>}
+            {isError && <ErrorMessage message="Não foi possível carregar os membros do projeto." />}
 
             {members && (
                 <ul className="flex flex-col gap-2">

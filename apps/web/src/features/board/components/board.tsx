@@ -1,5 +1,6 @@
 import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useMemo, useState } from "react";
+import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
@@ -8,8 +9,8 @@ import { CardModal } from "./card-modal";
 import { Column } from "./column";
 
 export const Board = ({ projectId }: { projectId: string }) => {
-    const { data: columns, isLoading: columnsLoading } = useColumns(projectId);
-    const { data: cards, isLoading: cardsLoading } = useCards(projectId);
+    const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
+    const { data: cards, isLoading: cardsLoading, isError: cardsError } = useCards(projectId);
     const { data: categories } = useCategories(projectId);
     const { data: members } = useProjectMembers(projectId);
     const updateCard = useUpdateCard(projectId);
@@ -41,6 +42,10 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
     if (columnsLoading || cardsLoading) {
         return <p className="text-tertiary">Carregando...</p>;
+    }
+
+    if (columnsError || cardsError) {
+        return <ErrorMessage message="Não foi possível carregar o board. Você pode não ter acesso a este projeto, ou ele pode não existir." />;
     }
 
     return (
