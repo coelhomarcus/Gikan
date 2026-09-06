@@ -1,4 +1,5 @@
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { CategoryBadge } from "@/features/categories/components/category-badge";
 import { cx } from "@/utils/cx";
@@ -22,9 +23,9 @@ interface CardItemProps {
 }
 
 export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) => {
-    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: card.id });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
 
-    const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` } : undefined;
+    const style = { transform: CSS.Transform.toString(transform), transition };
 
     return (
         <div

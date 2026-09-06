@@ -1,4 +1,5 @@
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, Trash01 } from "@untitledui/icons";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/base/buttons/button";
@@ -97,15 +98,17 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
             {error && <p className="px-3 pb-2 text-xs text-error-primary">{error}</p>}
 
             <div ref={setNodeRef} className={cx("flex min-h-20 flex-1 flex-col gap-2 rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
-                {cards.map((card) => (
-                    <CardItem
-                        key={card.id}
-                        card={card}
-                        category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
-                        assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
-                        onClick={() => onOpenCard(card.id)}
-                    />
-                ))}
+                <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
+                    {cards.map((card) => (
+                        <CardItem
+                            key={card.id}
+                            card={card}
+                            category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
+                            assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
+                            onClick={() => onOpenCard(card.id)}
+                        />
+                    ))}
+                </SortableContext>
             </div>
 
             <div className="p-2">
