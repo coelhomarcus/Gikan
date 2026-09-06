@@ -21,6 +21,18 @@ function findMembership(projectId: string, userId: string) {
     });
 }
 
+/** Checagem ad-hoc de membership pra rotas sem `:projectId` na URL (ex: /api/cards/:cardId), onde o projeto é descoberto a partir do próprio recurso. */
+export async function assertProjectMembership(projectId: string, userId: string, isAdmin: boolean): Promise<void> {
+    if (isAdmin) {
+        return;
+    }
+
+    const membership = await findMembership(projectId, userId);
+    if (!membership) {
+        throw new HttpError(403, "Você não é membro deste projeto");
+    }
+}
+
 export const requireProjectMember = asyncHandler<{ projectId: string }>(async (req, res, next) => {
     const { projectId } = req.params;
     await ensureProjectExists(projectId);
