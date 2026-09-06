@@ -125,9 +125,9 @@ Enums: `project_role` (`owner`|`member`), `card_difficulty` (`low`|`medium`|`hig
 **Correção de tipos**: Express 5 tipa `req.params` como `Record<string, string | string[]>` (path-to-regexp v6/v8 permite segmentos repetidos). Tornei `middleware/async-handler.ts` genérico sobre o shape dos params (`asyncHandler<{projectId: string}>(...)`) em vez de espalhar `as string` pelos controllers — resolve na raiz e já serve pros próximos checkpoints (cards, columns, categories).
 **Verificado via curl**: `ana` (não-admin) cria projeto → owner + 3 colunas seedadas confirmadas no banco; `bob` não-membro não vê o projeto na lista nem consegue acessar direto (403); `coelhomarcus` (admin) acessa via bypass; `ana` convida `bob` → aparece pra ele; convite duplicado → 409; username inexistente → 404; não-owner tentando convidar/editar/deletar → 403; tentar remover o próprio owner → 400; remover membro comum → 204 e ele some da lista; `DELETE /api/projects/:id` deleta com cascade confirmado (colunas e membros somem junto).
 
-### [ ] Checkpoint 4 — Categorias por projeto
-`features/categories/*`, sub-rota de projeto. Nome único por projeto; exclusão restrita.
-**Pronto quando**: criar, listar, duplicar (409), deletar via curl.
+### [x] Checkpoint 4 — Categorias por projeto
+`packages/shared/src/schemas/categories.ts` (`createCategorySchema`, cor hex opcional validada por regex), `apps/api/src/features/categories/{categories.routes,categories.controller,categories.service}.ts`, montado como sub-rota via `projectsRouter.use("/:projectId/categories", categoriesRouter)` (`Router({ mergeParams: true })` pra herdar `:projectId` do router pai). Qualquer membro do projeto lista/cria; exclusão restrita a quem criou a categoria, ao owner do projeto, ou admin.
+**Verificado via curl**: `ana` (owner) e `bob` (membro) criam categorias; nome duplicado no mesmo projeto → 409; cor inválida → 400; `bob` tentando deletar categoria criada por `ana` → 403; `bob` deletando a própria categoria → 204; `ana` (owner) deletando categoria de qualquer um → 204; categoria já deletada → 404; usuária não-membro (`carol`) → 403 tanto pra listar quanto pra criar; admin com bypass consegue listar mesmo sem ser membro.
 
 ### [ ] Checkpoint 5 — Kanban: colunas + cards
 `features/columns/*`, `features/cards/*`. CRUD completo, mover entre colunas, validação cruzada de projeto.

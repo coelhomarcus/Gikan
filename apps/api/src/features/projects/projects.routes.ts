@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { categoriesRouter } from "../categories/categories.routes";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { requireProjectMember, requireProjectOwner } from "../../middleware/project-membership.middleware";
 import { addMember, create, getOne, list, listMembers, remove, removeMember, update } from "./projects.controller";
@@ -17,3 +18,5 @@ projectsRouter.delete("/:projectId", requireProjectOwner, remove);
 projectsRouter.get("/:projectId/members", requireProjectMember, listMembers);
 projectsRouter.post("/:projectId/members", requireProjectOwner, addMember);
 projectsRouter.delete("/:projectId/members/:userId", requireProjectOwner, removeMember);
+
+projectsRouter.use("/:projectId/categories", categoriesRouter);
