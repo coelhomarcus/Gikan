@@ -37,6 +37,7 @@ A Untitled UI React já vem com um sistema de dark mode embutido (classe `.dark-
 - **Auth**: JWT (HS256) em cookie `httpOnly`, `bcryptjs` para senha.
 - **UUID**: `gen_random_uuid()` nativo do Postgres.
 - **Migrations** rodam automaticamente no boot do container.
+- **`apps/api` é CommonJS, não ESM** (`"type": "module"` removido do `package.json`, `tsconfig.json` usa `module: "CommonJS"` / `moduleResolution: "Node10"`). Motivo: o `drizzle-kit generate` carrega `drizzle.config.ts` e o schema via `require()` (CJS) internamente; com `moduleResolution: "NodeNext"` (ESM) somos obrigados a escrever extensão `.js` nos imports relativos (ex: `from "./users.js"`), mas o loader CJS do drizzle-kit procura um arquivo `.js` literal e falha (`Cannot find module`). CommonJS com imports sem extensão resolve nos dois lados (nosso `tsc`/`node` e o `drizzle-kit`).
 
 ## Estrutura de diretórios
 
@@ -110,9 +111,9 @@ Enums: `project_role` (`owner`|`member`), `card_difficulty` (`low`|`medium`|`hig
 `git init`, `.gitignore`, `pnpm-workspace.yaml`, `package.json` raiz, `tsconfig.base.json`, `packages/shared` (placeholder), `apps/api` (Express "Hello World" em `/api/health`), `apps/web` gerado via `npx untitledui@latest init web --vite -y` (React Aria + Tailwind v4 + `@untitledui/icons`), depois adaptado: nome do pacote `@todokanban/web`, dependência workspace de `@todokanban/shared`, proxy `/api` no `vite.config.ts`, tema dark por padrão, paleta de marca trocada para azul Vercel (`#0070f3`), fontes Geist Variable/Geist Mono Variable via `@fontsource-variable`, `date-picker/` removido (não usado, tinha bug de tipos upstream). `.env.example` na raiz.
 **Verificado**: `pnpm install` limpo (com `pnpm.onlyBuiltDependencies: ["esbuild"]` no root `package.json` pra permitir o build script do esbuild sem prompt interativo); `pnpm -r typecheck` passa nos 3 pacotes; API responde `{"status":"ok"}` em `/api/health`; Vite sobe em `:5173` com tema dark, fontes Geist e componentes Untitled UI renderizando sem erro de console (confirmado via screenshot Playwright).
 
-### [ ] Checkpoint 1 — Schema do banco + migrations
-6 tabelas + 2 enums em `apps/api/src/db/schema/*.ts`, `relations()`, `drizzle.config.ts`, `db/index.ts`.
-**Pronto quando**: `pnpm db:generate` + `pnpm db:migrate` contra Postgres local criam as 6 tabelas.
+### [x] Checkpoint 1 — Schema do banco + migrations
+6 tabelas (`users`, `projects`, `project_members`, `categories`, `board_columns`, `cards`) + 2 enums (`project_role`, `card_difficulty`) em `apps/api/src/db/schema/*.ts`, `relations()` completas em `schema/index.ts`, `drizzle.config.ts`, `db/index.ts` (pool `pg` + `drizzle`), `db/migrate.ts` (roda migrations via `drizzle-orm/node-postgres/migrator`). Nesse checkpoint `apps/api` foi convertido de ESM para CommonJS (ver decisão acima).
+**Verificado**: Postgres 16 local via Docker (`docker run ... postgres:16`, container `tk-db`); `pnpm db:generate` gerou `drizzle/0000_soft_mastermind.sql` com as 6 tabelas + 2 enums + FKs/índices corretos; `pnpm db:migrate` aplicou com sucesso; `\dt`/`\dT+` no psql confirmam as 6 tabelas e os 2 enums no banco. `pnpm -r typecheck` limpo e API sobe normalmente após a conversão para CJS.
 
 ### [ ] Checkpoint 2 — Auth completo
 `registerSchema`/`loginSchema` em `packages/shared`, `features/auth/*`, `lib/jwt.ts`, `lib/password.ts`, middlewares de auth/admin, `config/env.ts`. Endpoints: register/login/logout/me. Cookie `tk_session`.
