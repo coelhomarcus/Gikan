@@ -213,6 +213,13 @@ Novo `lib/dom-clipboard.ts`: helpers puros de seleção/recorte/colagem em `inpu
 `column.tsx` e `add-column-form.tsx`: `w-72` (288px) → `w-80` (320px) nos dois lugares (precisavam ficar iguais pra não ter salto visual entre a última coluna e o botão "Nova coluna").
 **Verificado via browser**: largura real da coluna confirmada em 320px via `getBoundingClientRect()`; scroll horizontal do board continua funcionando normalmente com 3 colunas.
 
+### [x] Checkpoint 17 — Busca funcional (Cmd+K / Ctrl+K, só projetos)
+
+Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padrão `ModalOverlay`/`Modal`/`Dialog` do `CardModal`) com um `Input` de filtro + lista de `useProjects()` (já em cache do React Query) filtrados client-side por nome; clicar ou apertar Enter no primeiro resultado navega pro board e fecha o modal.
+`sidebar.tsx`: `useHotkeys("mod+k", ..., {enableOnFormTags: true})` (react-hotkeys-hook, já instalado — `mod` mapeia sozinho pra Cmd no Mac / Ctrl no Windows-Linux) abre o modal de qualquer tela. `sidebar-simple.tsx` ganhou props opcionais `onSearchClick`/`searchShortcut`: quando `onSearchClick` é passado, o input de busca (antes 100% decorativo) vira `isReadOnly` e um `onFocus` (com `blur()` imediato) o transforma num gatilho em vez de campo de texto real. Label do atalho calculado uma vez via `navigator.userAgent` (`⌘K` no Mac, `Ctrl+K` fora dele) — só decorativo, não afeta o binding real do `mod+k`.
+**Observação (não é regressão deste checkpoint)**: nem o `ProjectSearchModal` novo nem o `CardModal` já existente fecham com Escape — comportamento pré-existente do wrapper `components/application/modals/modal.tsx` (`AriaModalOverlay`/`AriaModal` sem `isKeyboardDismissDisabled` explícito), confirmado testando os dois modais lado a lado. Fora do escopo deste checkpoint (não fazia parte do "Pronto quando"); fica registrado aqui caso vire pedido futuro.
+**Verificado via browser (Playwright)**: Cmd+K de qualquer tela abre a paleta; digitar filtra os projetos por nome; Enter navega pro board certo e fecha o modal; clicar no input do sidebar também abre o modal; user-agent do Windows → label mostra "Ctrl+K" e `Control+k` abre o modal normalmente.
+
 ## Arquivos críticos
 
 - `apps/api/src/db/schema/index.ts` — schema Drizzle completo.
@@ -221,4 +228,5 @@ Novo `lib/dom-clipboard.ts`: helpers puros de seleção/recorte/colagem em `inpu
 - `packages/shared/src/schemas/*.ts` — contratos Zod compartilhados.
 - `apps/web/src/features/board/components/card-modal.tsx` — modal dual-mode (criar/editar card).
 - `apps/web/src/components/overlay/context-menu-provider.tsx` — menu de contexto site-wide.
+- `apps/web/src/features/projects/components/project-search-modal.tsx` — paleta de busca Cmd+K.
 - `Dockerfile` — único artefato de deploy no Dokploy.

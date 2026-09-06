@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { FocusEvent, ReactNode } from "react";
 import { SearchLg } from "@untitledui/icons";
 import { Input } from "@/components/base/input/input";
 import { AppLogo } from "@/components/foundations/logo/app-logo";
@@ -26,6 +26,10 @@ interface SidebarNavigationProps {
     className?: string;
     /** Whether to round the account card avatar. */
     avatarRounded?: boolean;
+    /** Called when the search input is activated; when provided, the input becomes a button-like trigger instead of accepting text directly. */
+    onSearchClick?: () => void;
+    /** Shortcut label shown at the end of the desktop search input (e.g. "⌘K" or "Ctrl+K"). */
+    searchShortcut?: string | boolean;
 }
 
 export const SidebarNavigationSimple = ({
@@ -36,7 +40,18 @@ export const SidebarNavigationSimple = ({
     showAccountCard = true,
     hideBorder = false,
     className,
+    onSearchClick,
+    searchShortcut = true,
 }: SidebarNavigationProps) => {
+    const searchTriggerProps = onSearchClick
+        ? {
+              isReadOnly: true,
+              onFocus: (event: FocusEvent<HTMLInputElement>) => {
+                  event.target.blur();
+                  onSearchClick();
+              },
+          }
+        : {};
     const MAIN_SIDEBAR_WIDTH = 280;
 
     const content = (
@@ -56,10 +71,10 @@ export const SidebarNavigationSimple = ({
                 <AppLogo className="h-6" />
 
                 {/* Mobile search input */}
-                <Input size="md" aria-label="Search" placeholder="Search" icon={SearchLg} className="md:hidden" />
+                <Input size="md" aria-label="Search" placeholder="Search" icon={SearchLg} className="md:hidden" {...searchTriggerProps} />
 
                 {/* Desktop search input */}
-                <Input shortcut size="sm" aria-label="Search" placeholder="Search" icon={SearchLg} className="max-md:hidden" />
+                <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={SearchLg} className="max-md:hidden" {...searchTriggerProps} />
             </div>
 
             <NavList activeUrl={activeUrl} items={items} />
