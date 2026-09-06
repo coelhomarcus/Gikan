@@ -1,7 +1,7 @@
 import type { CreateCardInput, UpdateCardInput } from "@todokanban/shared";
 import { and, asc, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
-import { boardColumns, cards, categories } from "../../db/schema";
+import { boardColumns, cards, categories, projectMembers } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
 async function ensureColumnInProject(columnId: string, projectId: string): Promise<void> {
@@ -23,6 +23,17 @@ async function ensureCategoryInProject(categoryId: string, projectId: string): P
 
     if (!category) {
         throw new HttpError(400, "Categoria não pertence a este projeto");
+    }
+}
+
+async function ensureAssigneeIsMember(assigneeId: string, projectId: string): Promise<void> {
+    const membership = await db.query.projectMembers.findFirst({
+        where: and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, assigneeId)),
+        columns: { id: true },
+    });
+
+    if (!membership) {
+        throw new HttpError(400, "Usuário não é membro do projeto");
     }
 }
 
@@ -77,12 +88,33 @@ export async function getCardOrThrow(cardId: string) {
     return card;
 }
 
+export async function getCardDetail(cardId: string) {
+    const card = await db.query.cards.findFirst({
+        where: eq(cards.id, cardId),
+        with: {
+            assignee: { columns: { id: true, name: true, username: true } },
+            createdBy: { columns: { id: true, name: true, username: true } },
+            category: { columns: { id: true, name: true, color: true } },
+            column: { columns: { id: true, name: true } },
+        },
+    });
+
+    if (!card) {
+        throw new HttpError(404, "Card não encontrado");
+    }
+
+    return card;
+}
+
 export async function updateCard(cardId: string, projectId: string, input: UpdateCardInput) {
     if (input.columnId) {
         await ensureColumnInProject(input.columnId, projectId);
     }
     if (input.categoryId) {
         await ensureCategoryInProject(input.categoryId, projectId);
+    }
+    if (input.assigneeId) {
+        await ensureAssigneeIsMember(input.assigneeId, projectId);
     }
 
     const position = input.columnId && input.position === undefined ? await nextPositionInColumn(input.columnId) : input.position;
