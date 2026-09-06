@@ -1,6 +1,7 @@
 import path from "path";
 import cookieParser from "cookie-parser";
 import express from "express";
+import { adminRouter } from "./features/admin/admin.routes";
 import { authRouter } from "./features/auth/auth.routes";
 import { cardsRouter } from "./features/cards/cards.routes";
 import { projectsRouter } from "./features/projects/projects.routes";
@@ -20,6 +21,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/cards", cardsRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/admin", adminRouter);
 
 // Qualquer rota /api/* não mapeada acima -> 404 JSON, antes do fallback estático abaixo
 // (senão o catch-all da SPA engoliria chamadas de API com typo/rota inexistente).

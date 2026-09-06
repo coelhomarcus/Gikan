@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateProfileSchema } from "@gikan/shared";
+import { Download01 } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -88,6 +89,21 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                                 </Button>
                             </div>
                         </form>
+
+                        {user.isAdmin && (
+                            <div className="mt-6 flex flex-col gap-3 border-t border-secondary pt-5">
+                                <div>
+                                    <p className="text-sm font-medium text-secondary">Administração</p>
+                                    <p className="mt-1 text-sm text-tertiary">
+                                        Baixa um arquivo com todos os dados do banco (projetos, cards, colunas, categorias, membros e usuários),
+                                        útil pra restaurar a plataforma caso o banco precise ser recriado do zero.
+                                    </p>
+                                </div>
+                                <Button href="/api/admin/backup" download color="secondary" size="sm" iconLeading={Download01} className="w-fit">
+                                    Baixar backup do banco
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </Dialog>
             </Modal>
