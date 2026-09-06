@@ -71,7 +71,7 @@ export async function deleteProject(projectId: string) {
 export async function listProjectMembers(projectId: string) {
     const members = await db.query.projectMembers.findMany({
         where: eq(projectMembers.projectId, projectId),
-        with: { user: { columns: { id: true, name: true, username: true, email: true } } },
+        with: { user: { columns: { id: true, name: true, username: true, email: true, avatarUrl: true } } },
     });
 
     return members.map((member) => ({ ...member.user, role: member.role, joinedAt: member.joinedAt }));
@@ -80,7 +80,7 @@ export async function listProjectMembers(projectId: string) {
 export async function addProjectMember(projectId: string, username: string) {
     const user = await db.query.users.findFirst({
         where: eq(users.username, username),
-        columns: { id: true, name: true, username: true, email: true },
+        columns: { id: true, name: true, username: true, email: true, avatarUrl: true },
     });
 
     if (!user) {

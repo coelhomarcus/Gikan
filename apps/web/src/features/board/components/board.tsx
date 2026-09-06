@@ -5,7 +5,7 @@ import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
 import { AddColumnForm } from "./add-column-form";
-import { CardModal } from "./card-modal";
+import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
 
 export const Board = ({ projectId }: { projectId: string }) => {
@@ -15,7 +15,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const { data: members } = useProjectMembers(projectId);
     const updateCard = useUpdateCard(projectId);
 
-    const [openCardId, setOpenCardId] = useState<string | null>(null);
+    const [modalTarget, setModalTarget] = useState<CardModalTarget | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -60,14 +60,15 @@ export const Board = ({ projectId }: { projectId: string }) => {
                             projectId={projectId}
                             categoriesById={categoriesById}
                             membersById={membersById}
-                            onOpenCard={setOpenCardId}
+                            onOpenCard={(cardId) => setModalTarget({ type: "edit", cardId })}
+                            onCreateCard={(columnId) => setModalTarget({ type: "create", columnId })}
                         />
                     ))}
                     <AddColumnForm projectId={projectId} />
                 </div>
             </DndContext>
 
-            {openCardId && <CardModal projectId={projectId} cardId={openCardId} onClose={() => setOpenCardId(null)} />}
+            {modalTarget && <CardModal projectId={projectId} target={modalTarget} onClose={() => setModalTarget(null)} />}
         </>
     );
 };

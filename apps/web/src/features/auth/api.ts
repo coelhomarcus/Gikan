@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from "@todokanban/shared";
+import type { LoginInput, RegisterInput, UpdateProfileInput } from "@todokanban/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface AuthUser {
@@ -6,6 +6,7 @@ export interface AuthUser {
     name: string;
     username: string;
     email: string;
+    avatarUrl: string | null;
     isAdmin: boolean;
     createdAt: string;
     updatedAt: string;
@@ -30,4 +31,9 @@ export async function register(input: RegisterInput): Promise<AuthUser> {
 
 export function logout(): Promise<void> {
     return apiClient.post<void>("/auth/logout");
+}
+
+export async function updateProfile(input: UpdateProfileInput): Promise<AuthUser> {
+    const { user } = await apiClient.patch<{ user: AuthUser }>("/users/me", input);
+    return user;
 }

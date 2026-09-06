@@ -8,6 +8,7 @@ import { ProjectBoardPage } from "@/pages/project-board-page";
 import { ProjectSettingsPage } from "@/pages/project-settings-page";
 import { ProjectsPage } from "@/pages/projects-page";
 import { RegisterPage } from "@/pages/register-page";
+import { SettingsPage } from "@/pages/settings-page";
 
 export const AppRoutes = () => (
     <Routes>
@@ -26,6 +27,7 @@ export const AppRoutes = () => (
             <Route path="/" element={<ProjectsPage />} />
             <Route path="/projects/:projectId" element={<ProjectBoardPage />} />
             <Route path="/projects/:projectId/settings" element={<ProjectSettingsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

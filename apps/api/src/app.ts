@@ -4,6 +4,7 @@ import express from "express";
 import { authRouter } from "./features/auth/auth.routes";
 import { cardsRouter } from "./features/cards/cards.routes";
 import { projectsRouter } from "./features/projects/projects.routes";
+import { usersRouter } from "./features/users/users.routes";
 import { errorHandler } from "./middleware/error-handler.middleware";
 
 export const app = express();
@@ -18,6 +19,7 @@ app.get("/api/health", (_req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/cards", cardsRouter);
+app.use("/api/users", usersRouter);
 
 // Qualquer rota /api/* não mapeada acima -> 404 JSON, antes do fallback estático abaixo
 // (senão o catch-all da SPA engoliria chamadas de API com typo/rota inexistente).

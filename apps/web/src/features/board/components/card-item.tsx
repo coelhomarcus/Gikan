@@ -33,6 +33,9 @@ export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) =
             {...listeners}
             {...attributes}
             onClick={onClick}
+            data-card-id={card.id}
+            data-card-title={card.title}
+            data-card-description={card.description ?? ""}
             className={cx(
                 "flex cursor-pointer touch-none flex-col gap-2 rounded-lg bg-primary p-3 shadow-xs ring-1 ring-secondary transition duration-100 ease-linear hover:ring-brand",
                 isDragging && "z-10 opacity-50",
@@ -49,7 +52,7 @@ export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) =
 
             {assignee && (
                 <div className="flex items-center gap-1.5">
-                    <Avatar initials={initialsOf(assignee.name)} size="xs" />
+                    <Avatar src={assignee.avatarUrl ?? undefined} initials={initialsOf(assignee.name)} size="xs" />
                     <span className="text-xs text-tertiary">{assignee.name}</span>
                 </div>
             )}

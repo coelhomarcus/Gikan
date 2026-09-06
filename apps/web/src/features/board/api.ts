@@ -28,6 +28,7 @@ export interface CardPerson {
     id: string;
     name: string;
     username: string;
+    avatarUrl: string | null;
 }
 
 export interface CardDetail extends Omit<BoardCard, "createdBy"> {

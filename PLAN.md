@@ -185,7 +185,28 @@ Novo `components/form/controlled-select.tsx` (mesmo padrão dos outros `Controll
 - [x] Build Docker local sobe e passa pelo fluxo completo com Postgres real (Checkpoint 11).
 - [x] Responsividade básica (mobile): login, projetos, board (scroll horizontal de colunas, esperado) e configurações — sem overflow, menu hambúrguer funcional.
 
-**Todos os 13 checkpoints do plano estão concluídos.** Próximos passos ficam a critério do usuário (deploy real no Dokploy com Postgres de produção, testes automatizados, etc.) — fora do escopo original deste plano.
+**Todos os 12 checkpoints originais do plano estão concluídos.** A partir daqui, os checkpoints seguem pedidos novos do usuário, registrados em `TODO.md` e planejados via Plan Mode.
+
+### [x] Checkpoint 13 — Criação de card via modal completo
+
+Substituído o fluxo antigo (`quick-add-card.tsx`, só título + editar depois) por um único passo: "Adicionar card" abre direto o mesmo `card-modal.tsx` completo usado pra editar, agora dual-mode (`target: {type: "create", columnId} | {type: "edit", cardId}`). `createCardSchema` (`packages/shared/src/schemas/cards.ts`) ganhou `categoryId`/`assigneeId` opcionais e anuláveis (mesmo tratamento que o `updateCardSchema` já tinha); `cards.service.ts#createCard` passou a validar `assigneeId` via `ensureAssigneeIsMember` (reaproveitando a função já existente do `updateCard`). Único campo obrigatório: título.
+**Decisão técnica**: em vez de um `useForm<T>` só com `zodResolver`, o modal usa um `Resolver<CardFormValues>` manual (`buildResolver(mode)`) que escolhe entre `createCardSchema`/`updateCardSchema` via `schema.safeParse()` e traduz `ZodError.issues` pro formato `FieldErrors` do react-hook-form — permite um único componente/tipo de formulário servir os dois modos sem conflito de tipos entre os dois schemas.
+`column.tsx` perdeu o form inline e ganhou um botão simples "Adicionar card" (`onCreateCard(columnId)` subindo até `board.tsx`, que guarda o alvo do modal como união discriminada). `quick-add-card.tsx` deletado.
+**Verificado via browser**: clicar "Adicionar card" abre o modal completo direto (sem passo intermediário); criar só com título → sem erro; criar já definindo categoria/dificuldade/responsável → card aparece no board com os badges corretos.
+
+### [x] Checkpoint 14 — Avatar de perfil via URL
+
+Nova coluna `avatar_url` (nullable) em `users`. Novo schema compartilhado `updateProfileSchema` (`packages/shared/src/schemas/users.ts`): `avatarUrl` aceita URL válida, `null`, ou string vazia (tratada como equivalente a "remover a foto" via `.transform()` — sem isso, `.url()` sozinho rejeitaria `""`, o valor natural de "campo limpo", bloqueando salvar só o nome sem foto). Nova feature `apps/api/src/features/users/*` (`PATCH /api/users/me`). Hidratação de `assignee`/`createdBy`/membros (`cards.service.ts`, `projects.service.ts`) passou a incluir `avatarUrl` nas colunas selecionadas.
+Nova página `/settings` (`pages/settings-page.tsx`) com formulário Nome + URL da foto; ícone de engrenagem em `sidebar-account.tsx` linka pra lá. `Avatar` (componente já suportava `src` com fallback pra iniciais) recebe `src={pessoa.avatarUrl ?? undefined}` nos 3 usos reais: sidebar, `members-panel.tsx`, `card-item.tsx`.
+**Nota de tipo**: `settings-page.tsx` usa `useForm({...})` sem generic explícito no `zodResolver`, mesmo padrão já usado em `card-modal.tsx` — schemas com `.transform()`/`.default()` têm tipo de entrada e saída diferentes, e passar um generic explícito causa conflito; deixar o TS inferir do `resolver` resolve.
+**Verificado via browser**: definir URL de imagem válida em `/settings` → avatar aparece no sidebar, na lista de membros (outra conta vendo) e no card em que a pessoa é responsável; salvar só o nome sem tocar na foto continua funcionando.
+
+### [x] Checkpoint 15 — Context menu customizado (genérico + específico de card)
+
+Novo `components/overlay/context-menu-provider.tsx`, montado uma vez em `main.tsx` envolvendo toda a árvore: um listener `contextmenu` único no `document`. `event.shiftKey` → não faz nada (menu nativo do navegador abre normalmente); senão `preventDefault()` e monta um menu customizado (`position: fixed` nas coordenadas do clique, sem usar `Menu`/`Popover` do React Aria porque eles exigem um `triggerRef` de elemento DOM real, não coordenadas de mouse cruas). Sobre um elemento com `data-card-id]` (escrito por `card-item.tsx` com `data-card-title`/`data-card-description`), adiciona "Copiar card" no topo — copia título+descrição direto pra área de transferência sem abrir o modal.
+Novo `lib/dom-clipboard.ts`: helpers puros de seleção/recorte/colagem em `input`/`textarea`, incluindo o truque do setter nativo do protótipo (`Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set` + `dispatchEvent(new Event('input', {bubbles:true}))`) pra inserir texto de um jeito que o React (input controlado) realmente percebe.
+**Bug real encontrado e corrigido**: a primeira versão dos helpers de colar/recortar relia em reler `document.activeElement` no momento do clique no item do menu — mas o clique no próprio botão "Colar" já rouba o foco do campo original antes da função rodar, então ela sempre operava no elemento errado (silenciosamente não fazia nada). Corrigido capturando o elemento editável focado **no momento em que o menu abre** (dentro do handler de `contextmenu`, antes de qualquer clique no menu poder mudar o foco) e passando essa referência explícita pras funções de colar/recortar, em vez delas relerem `document.activeElement` sozinhas.
+**Verificado via browser (Playwright)**: botão direito solto → menu customizado com Copiar/Recortar/Colar desabilitados sem seleção/foco; selecionar texto num input, botão direito, Copiar → confirmado no clipboard real (`navigator.clipboard.readText()`); Colar um texto previamente copiado num campo vazio → valor aparece de fato no campo; Recortar seleção de um campo e Colar em outro → round-trip completo funciona; botão direito num card → "Copiar card" aparece, copia título sozinho (sem descrição) ou título+descrição (com `\n`) conforme o card tem descrição ou não; Shift+botão direito → menu nativo do Chrome abre normalmente (confirmado via evento sintético, já que o Playwright não propaga `shiftKey` em cliques de mouse simulados).
 
 ## Arquivos críticos
 
@@ -193,4 +214,6 @@ Novo `components/form/controlled-select.tsx` (mesmo padrão dos outros `Controll
 - `apps/api/src/app.ts` — ordenação de middlewares/rotas/fallback SPA.
 - `apps/api/src/middleware/auth.middleware.ts` — leitura/verificação do cookie JWT.
 - `packages/shared/src/schemas/*.ts` — contratos Zod compartilhados.
+- `apps/web/src/features/board/components/card-modal.tsx` — modal dual-mode (criar/editar card).
+- `apps/web/src/components/overlay/context-menu-provider.tsx` — menu de contexto site-wide.
 - `Dockerfile` — único artefato de deploy no Dokploy.

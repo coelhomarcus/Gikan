@@ -7,7 +7,7 @@ import { HttpError } from "../../lib/http-error";
 import { signToken } from "../../lib/jwt";
 import { hashPassword, verifyPassword } from "../../lib/password";
 
-function toPublicUser(user: typeof users.$inferSelect) {
+export function toPublicUser(user: typeof users.$inferSelect) {
     const { passwordHash: _passwordHash, ...publicUser } = user;
     return publicUser;
 }

@@ -60,6 +60,9 @@ export async function createCard(projectId: string, input: CreateCardInput, crea
     if (input.categoryId) {
         await ensureCategoryInProject(input.categoryId, projectId);
     }
+    if (input.assigneeId) {
+        await ensureAssigneeIsMember(input.assigneeId, projectId);
+    }
 
     const position = await nextPositionInColumn(input.columnId);
 
@@ -71,6 +74,7 @@ export async function createCard(projectId: string, input: CreateCardInput, crea
             title: input.title,
             description: input.description,
             categoryId: input.categoryId,
+            assigneeId: input.assigneeId,
             difficulty: input.difficulty,
             createdBy: creatorId,
             position,
@@ -92,8 +96,8 @@ export async function getCardDetail(cardId: string) {
     const card = await db.query.cards.findFirst({
         where: eq(cards.id, cardId),
         with: {
-            assignee: { columns: { id: true, name: true, username: true } },
-            createdBy: { columns: { id: true, name: true, username: true } },
+            assignee: { columns: { id: true, name: true, username: true, avatarUrl: true } },
+            createdBy: { columns: { id: true, name: true, username: true, avatarUrl: true } },
             category: { columns: { id: true, name: true, color: true } },
             column: { columns: { id: true, name: true } },
         },

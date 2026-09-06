@@ -67,7 +67,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                 <ul className="flex flex-col gap-2">
                     {members.map((member) => (
                         <li key={member.id} className="flex items-center gap-3 rounded-lg border border-secondary px-3 py-2.5">
-                            <Avatar initials={initialsOf(member.name)} size="md" />
+                            <Avatar src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} size="md" />
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-semibold text-primary">{member.name}</p>
                                 <p className="truncate text-xs text-tertiary">@{member.username}</p>

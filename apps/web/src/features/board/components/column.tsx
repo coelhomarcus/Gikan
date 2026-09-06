@@ -1,6 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
-import { Trash01 } from "@untitledui/icons";
+import { Plus, Trash01 } from "@untitledui/icons";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { ApiError } from "@/lib/api-client";
@@ -8,7 +9,6 @@ import { cx } from "@/utils/cx";
 import type { BoardCard, BoardColumn, CardPerson } from "../api";
 import { useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { CardItem } from "./card-item";
-import { QuickAddCard } from "./quick-add-card";
 
 interface ColumnProps {
     column: BoardColumn;
@@ -17,9 +17,10 @@ interface ColumnProps {
     categoriesById: Map<string, { name: string; color: string | null }>;
     membersById: Map<string, CardPerson>;
     onOpenCard: (cardId: string) => void;
+    onCreateCard: (columnId: string) => void;
 }
 
-export const Column = ({ column, cards, projectId, categoriesById, membersById, onOpenCard }: ColumnProps) => {
+export const Column = ({ column, cards, projectId, categoriesById, membersById, onOpenCard, onCreateCard }: ColumnProps) => {
     const { setNodeRef, isOver } = useDroppable({ id: column.id });
     const updateColumn = useUpdateColumn(projectId);
     const deleteColumn = useDeleteColumn(projectId);
@@ -108,7 +109,9 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
             </div>
 
             <div className="p-2">
-                <QuickAddCard projectId={projectId} columnId={column.id} />
+                <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateCard(column.id)} className="w-full justify-start">
+                    Adicionar card
+                </Button>
             </div>
         </div>
     );

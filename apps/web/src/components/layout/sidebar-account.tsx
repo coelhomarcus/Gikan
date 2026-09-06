@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { LogOut01 } from "@untitledui/icons";
+import { LogOut01, Settings01 } from "@untitledui/icons";
 import { useNavigate } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -34,11 +34,12 @@ export const SidebarAccount = () => {
 
     return (
         <div className="flex items-center gap-3 rounded-xl p-3 ring-1 ring-secondary ring-inset">
-            <Avatar initials={initialsOf(user.name)} size="md" />
+            <Avatar src={user.avatarUrl ?? undefined} initials={initialsOf(user.name)} size="md" />
             <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-primary">{user.name}</p>
                 <p className="truncate text-xs text-tertiary">@{user.username}</p>
             </div>
+            <ButtonUtility icon={Settings01} size="sm" color="tertiary" tooltip="Configurações" onClick={() => navigate("/settings")} />
             <ButtonUtility icon={LogOut01} size="sm" color="tertiary" tooltip="Sair" onClick={() => mutation.mutate()} />
         </div>
     );

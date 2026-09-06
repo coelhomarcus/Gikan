@@ -5,8 +5,9 @@ export const cardDifficultyValues = ["low", "medium", "high"] as const;
 export const createCardSchema = z.object({
     columnId: z.string().uuid(),
     title: z.string().trim().min(1).max(200),
-    description: z.string().trim().max(5000).optional(),
-    categoryId: z.string().uuid().optional(),
+    description: z.string().trim().max(5000).nullable().optional(),
+    categoryId: z.string().uuid().nullable().optional(),
+    assigneeId: z.string().uuid().nullable().optional(),
     difficulty: z.enum(cardDifficultyValues).default("medium"),
 });
 export type CreateCardInput = z.infer<typeof createCardSchema>;
