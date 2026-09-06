@@ -19,6 +19,7 @@
         "@react-types/shared": "^3.36.1",
         "@tailwindcss/typography": "^0.5.19",
         "@tailwindcss/vite": "^4.2.2",
+        "@tanstack/react-query": "^5.102.8",
         "@todokanban/shared": "workspace:*",
         "@untitledui/file-icons": "^0.0.9",
         "@untitledui/icons": "^0.0.22",
