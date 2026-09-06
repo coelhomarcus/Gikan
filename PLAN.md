@@ -208,6 +208,11 @@ Novo `lib/dom-clipboard.ts`: helpers puros de seleção/recorte/colagem em `inpu
 **Bug real encontrado e corrigido**: a primeira versão dos helpers de colar/recortar relia em reler `document.activeElement` no momento do clique no item do menu — mas o clique no próprio botão "Colar" já rouba o foco do campo original antes da função rodar, então ela sempre operava no elemento errado (silenciosamente não fazia nada). Corrigido capturando o elemento editável focado **no momento em que o menu abre** (dentro do handler de `contextmenu`, antes de qualquer clique no menu poder mudar o foco) e passando essa referência explícita pras funções de colar/recortar, em vez delas relerem `document.activeElement` sozinhas.
 **Verificado via browser (Playwright)**: botão direito solto → menu customizado com Copiar/Recortar/Colar desabilitados sem seleção/foco; selecionar texto num input, botão direito, Copiar → confirmado no clipboard real (`navigator.clipboard.readText()`); Colar um texto previamente copiado num campo vazio → valor aparece de fato no campo; Recortar seleção de um campo e Colar em outro → round-trip completo funciona; botão direito num card → "Copiar card" aparece, copia título sozinho (sem descrição) ou título+descrição (com `\n`) conforme o card tem descrição ou não; Shift+botão direito → menu nativo do Chrome abre normalmente (confirmado via evento sintético, já que o Playwright não propaga `shiftKey` em cliques de mouse simulados).
 
+### [x] Checkpoint 16 — Colunas mais largas
+
+`column.tsx` e `add-column-form.tsx`: `w-72` (288px) → `w-80` (320px) nos dois lugares (precisavam ficar iguais pra não ter salto visual entre a última coluna e o botão "Nova coluna").
+**Verificado via browser**: largura real da coluna confirmada em 320px via `getBoundingClientRect()`; scroll horizontal do board continua funcionando normalmente com 3 colunas.
+
 ## Arquivos críticos
 
 - `apps/api/src/db/schema/index.ts` — schema Drizzle completo.

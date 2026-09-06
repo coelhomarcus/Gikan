@@ -59,7 +59,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
     }
 
     return (
-        <div className="flex w-72 shrink-0 flex-col rounded-xl bg-secondary">
+        <div className="flex w-80 shrink-0 flex-col rounded-xl bg-secondary">
             <div className="flex items-center justify-between gap-2 px-3 py-2.5">
                 {isEditingName ? (
                     <Input

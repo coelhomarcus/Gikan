@@ -11,7 +11,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
 
     if (!isAdding) {
         return (
-            <div className="w-72 shrink-0">
+            <div className="w-80 shrink-0">
                 <Button color="secondary" size="sm" iconLeading={Plus} onClick={() => setIsAdding(true)} className="w-full justify-start">
                     Nova coluna
                 </Button>
@@ -21,7 +21,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
 
     return (
         <form
-            className="flex w-72 shrink-0 flex-col gap-2 rounded-xl bg-secondary p-3"
+            className="flex w-80 shrink-0 flex-col gap-2 rounded-xl bg-secondary p-3"
             onSubmit={(event) => {
                 event.preventDefault();
                 const trimmed = name.trim();
