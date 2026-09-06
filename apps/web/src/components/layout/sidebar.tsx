@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Home02 } from "@untitledui/icons";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useLocation } from "react-router";
-import type { NavItemType } from "@/components/application/app-navigation/config";
+import { NavItemBase } from "@/components/application/app-navigation/base-components/nav-item";
 import { SidebarNavigationSimple } from "@/components/application/app-navigation/sidebar-navigation/sidebar-simple";
 import { ProjectSearchModal } from "@/features/projects/components/project-search-modal";
 import { useProjects } from "@/features/projects/hooks/use-projects";
@@ -16,16 +16,27 @@ export const Sidebar = () => {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const { data: projects } = useProjects();
 
-    const navItems = useMemo<NavItemType[]>(
-        () => [
-            {
-                label: "Projetos",
-                href: "/",
-                icon: Home02,
-                items: (projects ?? []).map((project) => ({ label: project.name, href: `/projects/${project.id}` })),
-            },
-        ],
-        [projects],
+    const navSlot = (
+        <ul className="flex flex-col px-4 pt-5">
+            <li className="py-px">
+                <NavItemBase type="link" href="/" icon={Home02} current={location.pathname === "/"}>
+                    Projetos
+                </NavItemBase>
+            </li>
+            {(projects ?? []).length > 0 && (
+                <li className="py-0.25">
+                    <ul className="pb-1">
+                        {(projects ?? []).map((project) => (
+                            <li key={project.id} className="py-0.25">
+                                <NavItemBase type="collapsible-child" href={`/projects/${project.id}`} current={location.pathname === `/projects/${project.id}`}>
+                                    {project.name}
+                                </NavItemBase>
+                            </li>
+                        ))}
+                    </ul>
+                </li>
+            )}
+        </ul>
     );
 
     useHotkeys(
@@ -41,7 +52,8 @@ export const Sidebar = () => {
         <>
             <SidebarNavigationSimple
                 activeUrl={location.pathname}
-                items={navItems}
+                items={[]}
+                navSlot={navSlot}
                 showAccountCard={false}
                 featureCard={<SidebarAccount />}
                 onSearchClick={() => setIsSearchOpen(true)}

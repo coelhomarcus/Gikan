@@ -1,5 +1,6 @@
 import type { FocusEvent, ReactNode } from "react";
 import { SearchLg } from "@untitledui/icons";
+import { Link as AriaLink } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
 import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 import { cx } from "@/utils/cx";
@@ -14,6 +15,8 @@ interface SidebarNavigationProps {
     activeUrl?: string;
     /** List of items to display. */
     items: NavItemType[];
+    /** Replaces the default NavList rendering of `items`, for custom navigation structures. */
+    navSlot?: ReactNode;
     /** List of footer items to display. */
     footerItems?: NavItemType[];
     /** Feature card to display. */
@@ -35,6 +38,7 @@ interface SidebarNavigationProps {
 export const SidebarNavigationSimple = ({
     activeUrl,
     items,
+    navSlot,
     footerItems = [],
     featureCard,
     showAccountCard = true,
@@ -68,7 +72,9 @@ export const SidebarNavigationSimple = ({
             )}
         >
             <div className="flex flex-col gap-5 px-4 lg:px-5">
-                <GikanLogo className="h-6" />
+                <AriaLink href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+                    <GikanLogo className="h-6" />
+                </AriaLink>
 
                 {/* Mobile search input */}
                 <Input size="md" aria-label="Search" placeholder="Search" icon={SearchLg} className="md:hidden" {...searchTriggerProps} />
@@ -77,7 +83,7 @@ export const SidebarNavigationSimple = ({
                 <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={SearchLg} className="max-md:hidden" {...searchTriggerProps} />
             </div>
 
-            <NavList activeUrl={activeUrl} items={items} />
+            {navSlot ?? <NavList activeUrl={activeUrl} items={items} />}
 
             <div className="mt-auto flex flex-col gap-3 px-4 py-4 lg:py-5">
                 {footerItems.length > 0 && (
