@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="description" content="TodoKanban" />
+        <meta name="theme-color" content="#0a0a0a" />
+
+        <title>TodoKanban</title>
+    </head>
+
+    <body class="size-full bg-primary antialiased">
+        <div id="root"></div>
+        <script type="module" src="/src/main.tsx"></script>
+        <script>
+            // On page load, best to add inline in `head` to avoid FOUC. Default theme is dark.
+            var stored = localStorage.getItem("ui-theme");
+            if (stored === "light") {
+                document.documentElement.classList.remove("dark-mode");
+            } else {
+                document.documentElement.classList.add("dark-mode");
+            }
+        </script>
+    </body>
+</html>

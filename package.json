@@ -1,0 +1,19 @@
+{
+  "name": "todokanban",
+  "private": true,
+  "packageManager": "pnpm@10.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
+  "scripts": {
+    "dev:api": "pnpm --filter @todokanban/api dev",
+    "dev:web": "pnpm --filter @todokanban/web dev",
+    "build": "pnpm --filter @todokanban/web build && pnpm --filter @todokanban/api build",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @todokanban/api db:generate",
+    "db:migrate": "pnpm --filter @todokanban/api db:migrate"
+  }
+}
