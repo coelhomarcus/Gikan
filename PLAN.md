@@ -220,6 +220,12 @@ Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padr�
 **Observação (não é regressão deste checkpoint)**: nem o `ProjectSearchModal` novo nem o `CardModal` já existente fecham com Escape — comportamento pré-existente do wrapper `components/application/modals/modal.tsx` (`AriaModalOverlay`/`AriaModal` sem `isKeyboardDismissDisabled` explícito), confirmado testando os dois modais lado a lado. Fora do escopo deste checkpoint (não fazia parte do "Pronto quando"); fica registrado aqui caso vire pedido futuro.
 **Verificado via browser (Playwright)**: Cmd+K de qualquer tela abre a paleta; digitar filtra os projetos por nome; Enter navega pro board certo e fecha o modal; clicar no input do sidebar também abre o modal; user-agent do Windows → label mostra "Ctrl+K" e `Control+k` abre o modal normalmente.
 
+### [x] Checkpoint 18 — Sidebar lista os projetos com o ativo destacado
+
+`sidebar.tsx`: `useProjects()` alimenta o item "Projetos" com `items: projects.map(p => ({label: p.name, href: `/projects/${p.id}`}))`. Sem projetos, cai de volta pro link simples de sempre (a lógica já existente em `nav-list.tsx` só renderiza o `<details>` colapsável quando `item.items?.length` é verdadeiro).
+**Achado da exploração original não se confirmou**: a checagem de auto-abrir do `<details>` em `nav-list.tsx` (`const activeItem = items.find((item) => item.href === activeUrl || item.items?.some((subItem) => subItem.href === activeUrl))`) **já** considerava os filhos, não só o pai — nenhum ajuste foi necessário nesse arquivo, só popular `items` de verdade a partir dos projetos reais.
+**Verificado via browser**: com 2 projetos criados, navegar pro board de um deles → sidebar mostra "Projetos" expandido automaticamente, com o projeto atual destacado (`aria-current="page"` + fundo diferenciado) e o outro projeto listado sem destaque.
+
 ## Arquivos críticos
 
 - `apps/api/src/db/schema/index.ts` — schema Drizzle completo.
@@ -230,3 +236,5 @@ Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padr�
 - `apps/web/src/components/overlay/context-menu-provider.tsx` — menu de contexto site-wide.
 - `apps/web/src/features/projects/components/project-search-modal.tsx` — paleta de busca Cmd+K.
 - `Dockerfile` — único artefato de deploy no Dokploy.
+
+**Todos os checkpoints planejados a partir do `TODO.md` (13-18) estão concluídos.**
