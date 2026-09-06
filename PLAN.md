@@ -149,9 +149,11 @@ Enums: `project_role` (`owner`|`member`), `card_difficulty` (`low`|`medium`|`hig
 `components/layout/sidebar-account.tsx` novo: mostra avatar com iniciais, nome/username e botão de logout no rodapé do sidebar (substituindo o placeholder `showAccountCard={false}` do Checkpoint 7, via slot `featureCard`).
 **Verificado via browser (Playwright)**: rota protegida sem sessão → redireciona pra `/login`; registro com código especial errado → mensagem de erro inline no campo; registro correto → redireciona pra `/` com sidebar mostrando nome/usuário; F5 mantém sessão (cookie httpOnly); logout → volta pra `/login`; login de novo → funciona. Sem erros de console reais (só os 401/403 esperados do próprio fluxo, logados pelo browser).
 
-### [ ] Checkpoint 9 — Frontend: projetos
-Listagem/criação de projetos, membros, categorias.
-**Pronto quando** (browser): criar projeto, convidar membro, criar categoria.
+### [x] Checkpoint 9 — Frontend: projetos
+`features/projects/{api.ts, hooks/{use-projects,use-project,use-project-members}.ts, components/{project-card,create-project-modal,members-panel}.tsx}`, `features/categories/{api.ts, hooks/use-categories.ts, components/{category-badge,categories-panel}.tsx}`. `pages/projects-page.tsx` real (grid de cards + empty state + modal de criação). `pages/project-settings-page.tsx` real com `Tabs` (Membros/Categorias) da Untitled UI. `pages/project-board-page.tsx` ganhou nome real do projeto + botão de Configurações (o board em si é Checkpoint 10).
+Novos componentes genéricos reaproveitáveis: `components/form/controlled-textarea.tsx` (mesmo padrão do `controlled-input.tsx`) e `components/overlay/modal-dialog.tsx` (wrapper de modal com `DialogTrigger`/`ModalOverlay`/`Modal`/`Dialog` da Untitled UI + `CloseButton`, `render props` com `close()`).
+**Decisões**: paleta fixa de 8 cores pra categorias (`CATEGORY_COLORS`), badge de categoria feito à mão (borda/ponto na cor hex, já que o `Badge` da lib só aceita um enum fixo de cores semânticas, não hex arbitrário). Permissão de excluir categoria/remover membro decidida no client comparando `category.createdBy`/`member.role` com o usuário logado — só de UI, a autorização real continua sendo garantida pelo backend.
+**Verificado via browser (Playwright)**: criar projeto → aparece no grid; abrir o projeto → nome real no Topbar; ir em Configurações → convidar `ana` por username → ela aparece na lista com badge "Membro" (dono vê badge "Owner"); criar categoria "Bug" com cor vermelha → aparece como badge colorido com botão de excluir (dono); logado como `ana` (membro comum) na mesma página → formulário de convite some, botão de excluir na categoria da Diana some, mas a lista de membros/categorias continua visível — confirma que a UI respeita o mesmo modelo de permissão do backend.
 
 ### [ ] Checkpoint 10 — Frontend: board Kanban completo
 Drag-and-drop (`@dnd-kit`), `CardModal` completo com seletor de coluna.
