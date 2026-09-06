@@ -3,7 +3,7 @@ import { Avatar } from "@/components/base/avatar/avatar";
 import { CategoryBadge } from "@/features/categories/components/category-badge";
 import { cx } from "@/utils/cx";
 import type { BoardCard, CardPerson } from "../api";
-import { DifficultyBadge } from "./difficulty-badge";
+import { ImportanceBadge } from "./importance-badge";
 
 function initialsOf(name: string): string {
     return name
@@ -43,10 +43,10 @@ export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) =
         >
             <p className="text-sm font-medium text-primary">{card.title}</p>
 
-            {(category || card.difficulty) && (
+            {(category || card.importance) && (
                 <div className="flex flex-wrap items-center gap-1.5">
                     {category && <CategoryBadge category={category} />}
-                    <DifficultyBadge difficulty={card.difficulty} />
+                    <ImportanceBadge importance={card.importance} />
                 </div>
             )}
 

@@ -12,11 +12,11 @@ import { useProjectMembers } from "@/features/projects/hooks/use-project-members
 import { ApiError } from "@/lib/api-client";
 import { useColumns, useCreateCard, useDeleteCard, useUpdateCard } from "../hooks/use-board";
 import { useCardDetail } from "../hooks/use-card-detail";
-import { DIFFICULTY_ITEMS } from "./difficulty-badge";
+import { IMPORTANCE_ITEMS } from "./importance-badge";
 
 const NONE = "__none__";
 
-type CardDifficulty = "low" | "medium" | "high";
+type CardImportance = "low" | "medium" | "high";
 
 interface CardFormValues {
     title: string;
@@ -24,7 +24,7 @@ interface CardFormValues {
     columnId: string;
     categoryId?: string | null;
     assigneeId?: string | null;
-    difficulty: CardDifficulty;
+    importance: CardImportance;
 }
 
 export type CardModalTarget = { type: "edit"; cardId: string } | { type: "create"; columnId: string };
@@ -75,7 +75,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
     const { control, handleSubmit, setError, formState } = useForm<CardFormValues>({
         resolver: buildResolver(target.type),
         defaultValues: isCreate
-            ? { columnId: target.columnId, title: "", description: null, categoryId: null, assigneeId: null, difficulty: "medium" }
+            ? { columnId: target.columnId, title: "", description: null, categoryId: null, assigneeId: null, importance: "medium" }
             : undefined,
         values:
             !isCreate && card
@@ -85,7 +85,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                       columnId: card.columnId,
                       categoryId: card.categoryId,
                       assigneeId: card.assigneeId,
-                      difficulty: card.difficulty,
+                      importance: card.importance,
                   }
                 : undefined,
     });
@@ -139,7 +139,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                         label="Coluna"
                                         items={(columns ?? []).map((column) => ({ id: column.id, label: column.name }))}
                                     />
-                                    <ControlledSelect control={control} name="difficulty" label="Dificuldade" items={DIFFICULTY_ITEMS} />
+                                    <ControlledSelect control={control} name="importance" label="Importância" items={IMPORTANCE_ITEMS} />
                                     <ControlledSelect
                                         control={control}
                                         name="assigneeId"

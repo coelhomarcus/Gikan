@@ -17,7 +17,7 @@ export interface BoardCard {
     description: string | null;
     assigneeId: string | null;
     categoryId: string | null;
-    difficulty: "low" | "medium" | "high";
+    importance: "low" | "medium" | "high";
     createdBy: string;
     position: number;
     createdAt: string;

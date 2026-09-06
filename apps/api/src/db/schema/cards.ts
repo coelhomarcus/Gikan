@@ -4,7 +4,7 @@ import { categories } from "./categories";
 import { projects } from "./projects";
 import { users } from "./users";
 
-export const cardDifficultyEnum = pgEnum("card_difficulty", ["low", "medium", "high"]);
+export const cardImportanceEnum = pgEnum("card_importance", ["low", "medium", "high"]);
 
 export const cards = pgTable(
     "cards",
@@ -20,7 +20,7 @@ export const cards = pgTable(
         description: text("description"),
         assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
         categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
-        difficulty: cardDifficultyEnum("difficulty").notNull().default("medium"),
+        importance: cardImportanceEnum("importance").notNull().default("medium"),
         createdBy: uuid("created_by")
             .notNull()
             .references(() => users.id),

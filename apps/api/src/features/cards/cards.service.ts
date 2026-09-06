@@ -75,7 +75,7 @@ export async function createCard(projectId: string, input: CreateCardInput, crea
             description: input.description,
             categoryId: input.categoryId,
             assigneeId: input.assigneeId,
-            difficulty: input.difficulty,
+            importance: input.importance,
             createdBy: creatorId,
             position,
         })

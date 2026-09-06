@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const cardDifficultyValues = ["low", "medium", "high"] as const;
+export const cardImportanceValues = ["low", "medium", "high"] as const;
 
 export const createCardSchema = z.object({
     columnId: z.string().uuid(),
@@ -8,7 +8,7 @@ export const createCardSchema = z.object({
     description: z.string().trim().max(5000).nullable().optional(),
     categoryId: z.string().uuid().nullable().optional(),
     assigneeId: z.string().uuid().nullable().optional(),
-    difficulty: z.enum(cardDifficultyValues).default("medium"),
+    importance: z.enum(cardImportanceValues).default("medium"),
 });
 export type CreateCardInput = z.infer<typeof createCardSchema>;
 
@@ -20,7 +20,7 @@ export const updateCardSchema = z
         position: z.number().finite().optional(),
         categoryId: z.string().uuid().nullable().optional(),
         assigneeId: z.string().uuid().nullable().optional(),
-        difficulty: z.enum(cardDifficultyValues).optional(),
+        importance: z.enum(cardImportanceValues).optional(),
     })
     .strict();
 export type UpdateCardInput = z.infer<typeof updateCardSchema>;
