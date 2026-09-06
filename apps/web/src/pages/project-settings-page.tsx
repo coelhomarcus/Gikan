@@ -6,6 +6,7 @@ import { CategoriesPanel } from "@/features/categories/components/categories-pan
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { MembersPanel } from "@/features/projects/components/members-panel";
+import { ProjectDetailsPanel } from "@/features/projects/components/project-details-panel";
 
 export const ProjectSettingsPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
@@ -24,10 +25,14 @@ export const ProjectSettingsPage = () => {
                     <Tabs.List
                         type="button-border"
                         items={[
+                            { id: "general", label: "Geral" },
                             { id: "members", label: "Membros" },
                             { id: "categories", label: "Categorias" },
                         ]}
                     />
+                    <Tabs.Panel id="general" className="pt-5">
+                        <ProjectDetailsPanel projectId={projectId!} isProjectOwner={!!isProjectOwner} />
+                    </Tabs.Panel>
                     <Tabs.Panel id="members" className="pt-5">
                         <MembersPanel projectId={projectId!} isProjectOwner={!!isProjectOwner} />
                     </Tabs.Panel>

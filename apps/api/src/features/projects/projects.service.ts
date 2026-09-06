@@ -10,7 +10,7 @@ export async function createProject(input: CreateProjectInput, creatorId: string
     return db.transaction(async (tx) => {
         const [project] = await tx
             .insert(projects)
-            .values({ name: input.name, description: input.description, createdBy: creatorId })
+            .values({ name: input.name, description: input.description, repositoryUrl: input.repositoryUrl, createdBy: creatorId })
             .returning();
 
         await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });

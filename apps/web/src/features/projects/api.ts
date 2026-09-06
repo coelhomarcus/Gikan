@@ -5,6 +5,7 @@ export interface Project {
     id: string;
     name: string;
     description: string | null;
+    repositoryUrl: string | null;
     createdBy: string;
     createdAt: string;
     updatedAt: string;

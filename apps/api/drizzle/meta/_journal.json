@@ -15,6 +15,13 @@
       "when": 1788717891632,
       "tag": "0001_fair_typhoid_mary",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1788722915436,
+      "tag": "0002_rare_mandarin",
+      "breakpoints": true
     }
   ]
 }

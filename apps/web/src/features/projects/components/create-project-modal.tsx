@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { type CreateProjectInput, createProjectSchema } from "@todokanban/shared";
+import { createProjectSchema } from "@todokanban/shared";
 import { Plus } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
@@ -11,9 +11,9 @@ import { useCreateProject } from "../hooks/use-projects";
 
 export const CreateProjectModal = () => {
     const mutation = useCreateProject();
-    const { control, handleSubmit, reset, setError, formState } = useForm<CreateProjectInput>({
+    const { control, handleSubmit, reset, setError, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", description: "" },
+        defaultValues: { name: "", description: "", repositoryUrl: "" },
     });
 
     return (
@@ -36,6 +36,7 @@ export const CreateProjectModal = () => {
                 >
                     <ControlledInput control={control} name="name" label="Nome" isRequired autoFocus />
                     <ControlledTextarea control={control} name="description" label="Descrição" rows={3} />
+                    <ControlledInput control={control} name="repositoryUrl" label="Link do repositório" placeholder="https://github.com/..." />
 
                     {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
 

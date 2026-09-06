@@ -1,5 +1,7 @@
+import type { UpdateProjectInput } from "@todokanban/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createProject, listProjects } from "../api";
+import { createProject, listProjects, updateProject } from "../api";
+import { projectQueryKey } from "./use-project";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 
@@ -14,6 +16,18 @@ export function useCreateProject() {
         mutationFn: createProject,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+        },
+    });
+}
+
+export function useUpdateProject(projectId: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (input: UpdateProjectInput) => updateProject(projectId, input),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
+            queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
         },
     });
 }

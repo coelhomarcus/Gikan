@@ -226,6 +226,13 @@ Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padr�
 **Achado da exploração original não se confirmou**: a checagem de auto-abrir do `<details>` em `nav-list.tsx` (`const activeItem = items.find((item) => item.href === activeUrl || item.items?.some((subItem) => subItem.href === activeUrl))`) **já** considerava os filhos, não só o pai — nenhum ajuste foi necessário nesse arquivo, só popular `items` de verdade a partir dos projetos reais.
 **Verificado via browser**: com 2 projetos criados, navegar pro board de um deles → sidebar mostra "Projetos" expandido automaticamente, com o projeto atual destacado (`aria-current="page"` + fundo diferenciado) e o outro projeto listado sem destaque.
 
+### [x] Checkpoint 19 — Link de repositório no projeto (criar + editar)
+
+`packages/shared/src/schemas/projects.ts`: `createProjectSchema`/`updateProjectSchema` ganham `repositoryUrl`, mesmo padrão de `updateProfileSchema.avatarUrl` (Checkpoint 14) — aceita URL válida, `null`, ou string vazia (tratada como "sem link" via `.transform()`). Nova coluna `repository_url` (nullable) em `projects` (migration `0002_rare_mandarin.sql`). `createProject` (backend) monta o insert manualmente, então precisou adicionar `repositoryUrl: input.repositoryUrl` explicitamente ali; `updateProject` já espalhava `...input`, pegou o campo de graça.
+**Não existia nenhuma UI de "editar projeto" antes disso** — `updateProjectSchema`/`updateProject` já existiam desde o Checkpoint 3 mas nenhum componente do frontend os usava. Criada do zero: nova aba "Geral" (primeira, antes de Membros/Categorias) em `project-settings-page.tsx`, com novo `features/projects/components/project-details-panel.tsx` — dono do projeto edita nome/descrição/link do repositório (`react-hook-form` sem generic explícito no `useForm`, mesmo motivo do `.transform()` já documentado em outros formulários); membro comum vê os três campos como texto somente-leitura (link como `<a target="_blank">` de verdade). Novo hook `useUpdateProject(projectId)` em `use-projects.ts`, invalidando a lista de projetos e a query do projeto individual.
+`create-project-modal.tsx` ganhou o campo `repositoryUrl` (opcional). Extra de UX: `project-board-page.tsx` mostra um ícone de link externo no `Topbar` (via `ButtonUtility` com `href`) quando o projeto tem link de repositório cadastrado, abrindo numa nova aba — só aparece quando o campo está preenchido.
+**Verificado via browser (Playwright)**: criar projeto com link → salvo e ícone aparece no Topbar do board; criar sem link → funciona normalmente, ícone não aparece; aba "Geral" mostra o valor certo, editar e salvar persiste após reload; URL inválida → erro de validação "URL inválida" exibido no formulário.
+
 ## Arquivos críticos
 
 - `apps/api/src/db/schema/index.ts` — schema Drizzle completo.
@@ -235,6 +242,5 @@ Novo `features/projects/components/project-search-modal.tsx`: modal (mesmo padr�
 - `apps/web/src/features/board/components/card-modal.tsx` — modal dual-mode (criar/editar card).
 - `apps/web/src/components/overlay/context-menu-provider.tsx` — menu de contexto site-wide.
 - `apps/web/src/features/projects/components/project-search-modal.tsx` — paleta de busca Cmd+K.
+- `apps/web/src/features/projects/components/project-details-panel.tsx` — edição de nome/descrição/link do repositório.
 - `Dockerfile` — único artefato de deploy no Dokploy.
-
-**Todos os checkpoints planejados a partir do `TODO.md` (13-18) estão concluídos.**
