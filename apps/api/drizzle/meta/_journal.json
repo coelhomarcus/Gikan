@@ -29,6 +29,13 @@
       "when": 1788723420000,
       "tag": "0003_rename_difficulty_to_importance",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1788766006059,
+      "tag": "0004_add_project_icon",
+      "breakpoints": true
     }
   ]
 }

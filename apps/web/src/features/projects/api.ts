@@ -6,6 +6,7 @@ export interface Project {
     name: string;
     description: string | null;
     repositoryUrl: string | null;
+    icon: string | null;
     createdBy: string;
     createdAt: string;
     updatedAt: string;

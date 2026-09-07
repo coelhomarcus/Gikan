@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Input } from "@/components/base/input/input";
 import { useProjects } from "../hooks/use-projects";
+import { ProjectIcon } from "./project-icon";
 
 interface ProjectSearchModalProps {
     onClose: () => void;
@@ -58,10 +59,13 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                                         key={project.id}
                                         type="button"
                                         onClick={() => openProject(project.id)}
-                                        className="flex flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover"
+                                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover"
                                     >
-                                        <span className="text-sm font-medium text-primary">{project.name}</span>
-                                        {project.description && <span className="line-clamp-1 text-xs text-tertiary">{project.description}</span>}
+                                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
+                                        <span className="flex min-w-0 flex-col gap-0.5">
+                                            <span className="truncate text-sm font-medium text-primary">{project.name}</span>
+                                            {project.description && <span className="line-clamp-1 text-xs text-tertiary">{project.description}</span>}
+                                        </span>
                                     </button>
                                 ))
                             )}

@@ -1,19 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createProjectSchema } from "@gikan/shared";
 import { Plus } from "@untitledui/icons";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
 import { ModalDialog } from "@/components/overlay/modal-dialog";
 import { ApiError } from "@/lib/api-client";
 import { useCreateProject } from "../hooks/use-projects";
+import { DEFAULT_PROJECT_ICON } from "./project-icon";
+import { ProjectIconPicker } from "./project-icon-picker";
 
 export const CreateProjectModal = () => {
     const mutation = useCreateProject();
     const { control, handleSubmit, reset, setError, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", description: "", repositoryUrl: "" },
+        defaultValues: { name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
     });
 
     return (
@@ -25,7 +27,7 @@ export const CreateProjectModal = () => {
                     onSubmit={handleSubmit((data) => {
                         mutation.mutate(data, {
                             onSuccess: () => {
-                                reset();
+                                reset({ name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
                                 close();
                             },
                             onError: (error) => {
@@ -37,6 +39,12 @@ export const CreateProjectModal = () => {
                     <ControlledInput control={control} name="name" label="Nome" isRequired autoFocus />
                     <ControlledTextarea control={control} name="description" label="Descrição" rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label="Link do repositório" placeholder="https://github.com/..." />
+
+                    <Controller
+                        control={control}
+                        name="icon"
+                        render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />}
+                    />
 
                     {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
 

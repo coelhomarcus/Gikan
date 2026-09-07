@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProjectSchema } from "@gikan/shared";
 import { LinkExternal01 } from "@untitledui/icons";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ControlledInput } from "@/components/form/controlled-input";
@@ -9,6 +9,8 @@ import { ControlledTextarea } from "@/components/form/controlled-textarea";
 import { ApiError } from "@/lib/api-client";
 import { useProject } from "../hooks/use-project";
 import { useUpdateProject } from "../hooks/use-projects";
+import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
+import { ProjectIconPicker } from "./project-icon-picker";
 
 interface ProjectDetailsPanelProps {
     projectId: string;
@@ -25,7 +27,12 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
     const { control, handleSubmit, setError, formState } = useForm({
         resolver: zodResolver(updateProjectSchema),
         values: project
-            ? { name: project.name, description: project.description ?? "", repositoryUrl: project.repositoryUrl ?? "" }
+            ? {
+                  name: project.name,
+                  description: project.description ?? "",
+                  repositoryUrl: project.repositoryUrl ?? "",
+                  icon: (project.icon as typeof DEFAULT_PROJECT_ICON | null) ?? DEFAULT_PROJECT_ICON,
+              }
             : undefined,
     });
 
@@ -37,7 +44,10 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             <div className="flex max-w-lg flex-col gap-5">
                 <div>
                     <p className="text-sm font-medium text-secondary">Nome</p>
-                    <p className="mt-1.5 text-sm text-tertiary">{project.name}</p>
+                    <p className="mt-1.5 flex items-center gap-2 text-sm text-tertiary">
+                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
+                        {project.name}
+                    </p>
                 </div>
                 <div>
                     <p className="text-sm font-medium text-secondary">Descrição</p>
@@ -78,6 +88,8 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             <ControlledInput control={control} name="name" label="Nome" isRequired />
             <ControlledTextarea control={control} name="description" label="Descrição" rows={3} />
             <ControlledInput control={control} name="repositoryUrl" label="Link do repositório" placeholder="https://github.com/..." />
+
+            <Controller control={control} name="icon" render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />} />
 
             {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
             {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Salvo!</p>}
