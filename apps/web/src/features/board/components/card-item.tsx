@@ -15,10 +15,34 @@ function initialsOf(name: string): string {
         .join("");
 }
 
-interface CardItemProps {
+interface CardContentProps {
     card: BoardCard;
     category?: { name: string; color: string | null };
     assignee?: CardPerson;
+}
+
+/** Conteúdo visual puro do card, sem hooks de drag — reaproveitado pelo `CardItem` (na coluna) e pelo `DragOverlay` (clone flutuante durante o arrasto, ver `board.tsx`). */
+export const CardItemContent = ({ card, category, assignee }: CardContentProps) => (
+    <>
+        <p className="text-sm font-medium text-primary">{card.title}</p>
+
+        {(category || card.importance) && (
+            <div className="flex flex-wrap items-center gap-1.5">
+                {category && <CategoryBadge category={category} />}
+                <ImportanceBadge importance={card.importance} />
+            </div>
+        )}
+
+        {assignee && (
+            <div className="flex items-center gap-1.5">
+                <Avatar src={assignee.avatarUrl ?? undefined} initials={initialsOf(assignee.name)} size="xs" />
+                <span className="text-xs text-tertiary">{assignee.name}</span>
+            </div>
+        )}
+    </>
+);
+
+interface CardItemProps extends CardContentProps {
     onClick: () => void;
 }
 
@@ -42,21 +66,7 @@ export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) =
                 isDragging && "z-10 opacity-50",
             )}
         >
-            <p className="text-sm font-medium text-primary">{card.title}</p>
-
-            {(category || card.importance) && (
-                <div className="flex flex-wrap items-center gap-1.5">
-                    {category && <CategoryBadge category={category} />}
-                    <ImportanceBadge importance={card.importance} />
-                </div>
-            )}
-
-            {assignee && (
-                <div className="flex items-center gap-1.5">
-                    <Avatar src={assignee.avatarUrl ?? undefined} initials={initialsOf(assignee.name)} size="xs" />
-                    <span className="text-xs text-tertiary">{assignee.name}</span>
-                </div>
-            )}
+            <CardItemContent card={card} category={category} assignee={assignee} />
         </div>
     );
 };
