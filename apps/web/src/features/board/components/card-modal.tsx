@@ -1,7 +1,8 @@
 import { createCardSchema, updateCardSchema } from "@gikan/shared";
-import { Trash01 } from "@untitledui/icons";
+import { AlertCircle, AlignLeft, Calendar, Columns03, Trash01, Type01, User01 } from "@untitledui/icons";
 import { type Resolver, useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
+import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { ControlledInput } from "@/components/form/controlled-input";
@@ -15,6 +16,15 @@ import { useCardDetail } from "../hooks/use-card-detail";
 import { IMPORTANCE_ITEMS } from "./importance-badge";
 
 const NONE = "__none__";
+
+function initialsOf(name: string): string {
+    return name
+        .split(" ")
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]!.toUpperCase())
+        .join("");
+}
 
 type CardImportance = "low" | "medium" | "high";
 
@@ -125,18 +135,29 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                             <form className="flex flex-col gap-5 p-6" noValidate onSubmit={handleSubmit(onSubmit)}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
-                                        <ControlledInput control={control} name="title" label="Título" isRequired autoFocus />
+                                        <ControlledInput control={control} name="title" label="Título" icon={Type01} isRequired autoFocus />
                                     </div>
                                     <CloseButton size="sm" onPress={onClose} className="mt-6" />
                                 </div>
 
-                                <ControlledTextarea control={control} name="description" label="Descrição" rows={4} />
+                                <ControlledTextarea
+                                    control={control}
+                                    name="description"
+                                    label={
+                                        <span className="inline-flex items-center gap-1.5">
+                                            <AlignLeft className="size-4" />
+                                            Descrição
+                                        </span>
+                                    }
+                                    rows={4}
+                                />
 
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     <ControlledSelect
                                         control={control}
                                         name="columnId"
                                         label="Coluna"
+                                        icon={Columns03}
                                         items={(columns ?? []).map((column) => ({ id: column.id, label: column.name }))}
                                     />
                                     <ControlledSelect control={control} name="importance" label="Importância" items={IMPORTANCE_ITEMS} />
@@ -144,28 +165,46 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                         control={control}
                                         name="assigneeId"
                                         label="Responsável"
-                                        nullOption={{ id: NONE, label: "Ninguém" }}
-                                        items={(members ?? []).map((member) => ({ id: member.id, label: member.name, supportingText: `@${member.username}` }))}
+                                        nullOption={{ id: NONE, label: "Ninguém", icon: User01 }}
+                                        items={(members ?? []).map((member) => ({
+                                            id: member.id,
+                                            label: member.name,
+                                            supportingText: `@${member.username}`,
+                                            avatarUrl: member.avatarUrl ?? undefined,
+                                        }))}
                                     />
                                     <ControlledSelect
                                         control={control}
                                         name="categoryId"
                                         label="Categoria"
-                                        nullOption={{ id: NONE, label: "Nenhuma" }}
-                                        items={(categories ?? []).map((category) => ({ id: category.id, label: category.name }))}
+                                        nullOption={{ id: NONE, label: "Nenhuma", icon: <span className="size-2 rounded-full bg-fg-quaternary" /> }}
+                                        items={(categories ?? []).map((category) => ({
+                                            id: category.id,
+                                            label: category.name,
+                                            icon: <span className="size-2 rounded-full" style={{ backgroundColor: category.color ?? "#87888c" }} />,
+                                        }))}
                                     />
                                 </div>
 
                                 {!isCreate && card && (
-                                    <div className="flex flex-col gap-1 border-t border-secondary pt-4 text-xs text-tertiary">
+                                    <div className="flex items-center gap-2 border-t border-secondary pt-4 text-xs text-tertiary">
+                                        <Avatar size="xs" src={card.createdBy.avatarUrl ?? undefined} initials={initialsOf(card.createdBy.name)} />
                                         <p>
                                             Criado por <span className="font-medium text-tertiary">{card.createdBy.name}</span> em{" "}
-                                            {new Date(card.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                                            <span className="inline-flex items-center gap-1">
+                                                <Calendar className="size-3.5" />
+                                                {new Date(card.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                                            </span>
                                         </p>
                                     </div>
                                 )}
 
-                                {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
+                                {formState.errors.root && (
+                                    <p className="flex items-center gap-1.5 text-sm text-error-primary">
+                                        <AlertCircle className="size-4 shrink-0" />
+                                        {formState.errors.root.message}
+                                    </p>
+                                )}
 
                                 <div className="flex items-center justify-between gap-3">
                                     {isCreate ? (

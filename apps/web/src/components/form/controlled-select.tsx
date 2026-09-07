@@ -1,3 +1,4 @@
+import type { FC, ReactNode } from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Select } from "@/components/base/select/select";
@@ -11,13 +12,15 @@ interface ControlledSelectProps<TFieldValues extends FieldValues> {
     placeholder?: string;
     isRequired?: boolean;
     size?: "sm" | "md" | "lg";
+    /** Ícone fixo do campo, mostrado quando o item selecionado não tem um `icon` próprio. */
+    icon?: FC | ReactNode;
     /**
      * Pra campos opcionais (relação nullable, ex: assigneeId/categoryId). O Select do React
      * Aria não tem uma opção nativa de "limpar seleção", então usamos um item sentinela só
      * na UI — a tradução de/para `null` acontece bem aqui, antes do valor chegar no schema
      * Zod (que valida `.uuid()` e rejeitaria a string sentinela com "invalid uuid").
      */
-    nullOption?: { id: string; label: string };
+    nullOption?: { id: string; label: string; icon?: FC | ReactNode };
 }
 
 export function ControlledSelect<TFieldValues extends FieldValues>({
@@ -28,6 +31,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
     placeholder,
     isRequired,
     size,
+    icon,
     nullOption,
 }: ControlledSelectProps<TFieldValues>) {
     const allItems = nullOption ? [nullOption, ...items] : items;
@@ -45,11 +49,12 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
                     placeholder={placeholder}
                     isRequired={isRequired}
                     size={size}
+                    icon={icon}
                     isInvalid={!!fieldState.error}
                     hint={fieldState.error?.message}
                 >
                     {(item) => (
-                        <Select.Item id={item.id} supportingText={item.supportingText}>
+                        <Select.Item id={item.id} supportingText={item.supportingText} avatarUrl={item.avatarUrl} icon={item.icon}>
                             {item.label}
                         </Select.Item>
                     )}

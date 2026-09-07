@@ -51,8 +51,8 @@ export const TextAreaBase = ({ className, size = "md", ...props }: TextAreaBaseP
 TextAreaBase.displayName = "TextAreaBase";
 
 interface TextFieldProps extends AriaTextFieldProps {
-    /** Label text for the textarea */
-    label?: string;
+    /** Label for the textarea. Accepts a string or a composed node (e.g. icon + text). */
+    label?: ReactNode;
     /** Helper text displayed below the textarea */
     hint?: ReactNode;
     /** Tooltip message displayed after the label. */
