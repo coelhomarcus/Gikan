@@ -19,21 +19,12 @@ import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import type { BoardCard } from "../api";
 import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
+import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
 import { CardItemContent } from "./card-item";
 import { columnTint } from "./column-color";
 import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
-
-/** Calcula a `position` (gaps de 1000, mesmo esquema das colunas) pro card entrar no índice `index` de `siblings` (em ordem visual, sem o próprio card). */
-function positionAtIndex(siblings: BoardCard[], index: number): number {
-    const before = siblings[index - 1];
-    const after = siblings[index];
-    if (!before && !after) return 1000;
-    if (!before) return after.position / 2;
-    if (!after) return before.position + 1000;
-    return (before.position + after.position) / 2;
-}
 
 /**
  * Num board, o que importa é o que está literalmente sob o cursor (`pointerWithin`) — bem mais
@@ -72,7 +63,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
      */
     const board = useMemo(() => dragCards ?? [...(cards ?? [])].sort((a, b) => a.position - b.position), [dragCards, cards]);
 
-    /** Resolve a coluna alvo: o `over` é a própria coluna (área vazia) ou um card dentro dela. */
+    /** Resolve a coluna alvo: o `over` é a própria coluna (área de cards) ou um card dentro dela. */
     function resolveColumnId(overId: string, list: BoardCard[]): string | undefined {
         if (columns?.some((column) => column.id === overId)) return overId;
         return list.find((card) => card.id === overId)?.columnId;
@@ -140,7 +131,10 @@ export const Board = ({ projectId }: { projectId: string }) => {
         // então o resultado do drop bate exatamente com o buraco que o usuário estava vendo.
         const columnCards = list.filter((card) => card.columnId === targetColumnId);
         const fromIndex = columnCards.findIndex((card) => card.id === activeId);
-        const toIndex = overId === targetColumnId ? columnCards.length - 1 : columnCards.findIndex((card) => card.id === overId);
+
+        // Só quando o alvo é outro card existe um índice específico; soltar sobre a coluna significa "no fim".
+        const overCardIndex = columnCards.findIndex((card) => card.id === overId);
+        const toIndex = overCardIndex === -1 ? columnCards.length - 1 : overCardIndex;
         if (fromIndex === -1 || toIndex === -1) return;
 
         const ordered = arrayMove(columnCards, fromIndex, toIndex);

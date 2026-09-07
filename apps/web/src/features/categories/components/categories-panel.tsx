@@ -6,6 +6,7 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ControlledInput } from "@/components/form/controlled-input";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
@@ -90,12 +91,13 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                             <li key={category.id} className="flex items-center justify-between gap-3 rounded-lg border border-secondary px-3 py-2">
                                 <CategoryBadge category={category} />
                                 {canDelete && (
-                                    <ButtonUtility
-                                        icon={Trash01}
-                                        size="sm"
-                                        color="tertiary"
-                                        tooltip="Excluir"
-                                        onClick={() => deleteMutation.mutate(category.id)}
+                                    <ConfirmDialog
+                                        trigger={<ButtonUtility icon={Trash01} size="sm" color="tertiary" tooltip="Excluir" />}
+                                        title="Excluir categoria"
+                                        description={`A categoria "${category.name}" será excluída e removida dos cards que a usam. Essa ação não pode ser desfeita.`}
+                                        confirmLabel="Excluir categoria"
+                                        isPending={deleteMutation.isPending}
+                                        onConfirm={() => deleteMutation.mutate(category.id)}
                                     />
                                 )}
                             </li>

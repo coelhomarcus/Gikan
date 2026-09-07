@@ -8,6 +8,7 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ControlledInput } from "@/components/form/controlled-input";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ApiError } from "@/lib/api-client";
 import { useAddProjectMember, useProjectMembers, useRemoveProjectMember } from "../hooks/use-project-members";
 
@@ -76,12 +77,13 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                                 {member.role === "owner" ? "Owner" : "Membro"}
                             </Badge>
                             {isProjectOwner && member.role !== "owner" && (
-                                <ButtonUtility
-                                    icon={UserMinus01}
-                                    size="sm"
-                                    color="tertiary"
-                                    tooltip="Remover"
-                                    onClick={() => removeMutation.mutate(member.id)}
+                                <ConfirmDialog
+                                    trigger={<ButtonUtility icon={UserMinus01} size="sm" color="tertiary" tooltip="Remover" />}
+                                    title="Remover membro"
+                                    description={`${member.name} (@${member.username}) perderá o acesso a este projeto. Você pode convidar de novo depois.`}
+                                    confirmLabel="Remover membro"
+                                    isPending={removeMutation.isPending}
+                                    onConfirm={() => removeMutation.mutate(member.id)}
                                 />
                             )}
                         </li>

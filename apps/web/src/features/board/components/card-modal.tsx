@@ -8,6 +8,7 @@ import { CloseButton } from "@/components/base/buttons/close-button";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledSelect } from "@/components/form/controlled-select";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { ApiError } from "@/lib/api-client";
@@ -114,6 +115,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
         updateCard.mutate(
             { cardId: target.cardId, input: data },
             {
+                onSuccess: onClose,
                 onError: (error) => {
                     setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível salvar" });
                 },
@@ -210,17 +212,18 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                     {isCreate ? (
                                         <div />
                                     ) : (
-                                        <Button
-                                            type="button"
-                                            color="secondary-destructive"
-                                            size="sm"
-                                            iconLeading={Trash01}
-                                            onClick={() => {
-                                                deleteCard.mutate(target.cardId, { onSuccess: onClose });
-                                            }}
-                                        >
-                                            Excluir
-                                        </Button>
+                                        <ConfirmDialog
+                                            trigger={
+                                                <Button type="button" color="secondary-destructive" size="sm" iconLeading={Trash01}>
+                                                    Excluir
+                                                </Button>
+                                            }
+                                            title="Excluir card"
+                                            description={`O card "${card?.title ?? ""}" será excluído. Essa ação não pode ser desfeita.`}
+                                            confirmLabel="Excluir card"
+                                            isPending={deleteCard.isPending}
+                                            onConfirm={() => deleteCard.mutate(target.cardId, { onSuccess: onClose })}
+                                        />
                                     )}
 
                                     <div className="flex gap-3">

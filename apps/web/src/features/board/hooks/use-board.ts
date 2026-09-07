@@ -2,6 +2,7 @@ import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnI
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     type BoardCard,
+    type BoardColumn,
     createCard,
     createColumn,
     deleteCard,
@@ -38,9 +39,30 @@ export function useCreateColumn(projectId: string) {
 
 export function useUpdateColumn(projectId: string) {
     const queryClient = useQueryClient();
+
     return useMutation({
         mutationFn: ({ columnId, input }: { columnId: string; input: UpdateColumnInput }) => updateColumn(projectId, columnId, input),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: columnsKey(projectId) }),
+        // Atualização otimista (mesmo padrão de `useUpdateCard`): sem isso, ao reordenar a coluna
+        // ela volta pro lugar antigo até o refetch chegar. O `sort` é necessário porque o board
+        // renderiza as colunas na ordem do array — mudar só a `position` não reordenaria nada.
+        onMutate: async ({ columnId, input }) => {
+            await queryClient.cancelQueries({ queryKey: columnsKey(projectId) });
+            const previous = queryClient.getQueryData<BoardColumn[]>(columnsKey(projectId));
+
+            queryClient.setQueryData<BoardColumn[]>(columnsKey(projectId), (old) =>
+                old
+                    ?.map((column) => (column.id === columnId ? { ...column, ...input } : column))
+                    .sort((a, b) => a.position - b.position),
+            );
+
+            return { previous };
+        },
+        onError: (_error, _variables, context) => {
+            if (context?.previous) {
+                queryClient.setQueryData(columnsKey(projectId), context.previous);
+            }
+        },
+        onSettled: () => queryClient.invalidateQueries({ queryKey: columnsKey(projectId) }),
     });
 }
 

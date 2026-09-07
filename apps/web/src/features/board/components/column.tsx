@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
 import type { BoardCard, BoardColumn, CardPerson } from "../api";
@@ -23,7 +24,8 @@ interface ColumnProps {
 }
 
 export const Column = ({ column, cards, projectId, categoriesById, membersById, onOpenCard, onCreateCard }: ColumnProps) => {
-    const { setNodeRef, isOver } = useDroppable({ id: column.id });
+    const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column.id });
+
     const updateColumn = useUpdateColumn(projectId);
     const deleteColumn = useDeleteColumn(projectId);
 
@@ -86,24 +88,27 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                         onClick={startEditing}
                         className="flex min-w-0 items-center gap-2 rounded px-1 text-left text-sm font-semibold text-secondary hover:bg-primary_hover"
                     >
-                        <span
-                            aria-hidden="true"
-                            className="size-2 shrink-0 rounded-full"
-                            style={{ backgroundColor: column.color ?? COLUMN_FALLBACK_COLOR }}
-                        />
+                        <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column.color ?? COLUMN_FALLBACK_COLOR }} />
                         <span className="truncate">{column.name}</span>
                     </button>
                 )}
 
                 <div className="flex shrink-0 items-center gap-1">
                     <span className="text-xs text-tertiary">{cards.length}</span>
-                    <ButtonUtility icon={Trash01} size="xs" color="tertiary" tooltip="Excluir coluna" onClick={handleDelete} />
+                    <ConfirmDialog
+                        trigger={<ButtonUtility icon={Trash01} size="xs" color="tertiary" tooltip="Excluir coluna" />}
+                        title="Excluir coluna"
+                        description={`A coluna "${column.name}" será excluída. Essa ação não pode ser desfeita.`}
+                        confirmLabel="Excluir coluna"
+                        isPending={deleteColumn.isPending}
+                        onConfirm={handleDelete}
+                    />
                 </div>
             </div>
 
             {error && <p className="px-3 pb-2 text-xs text-error-primary">{error}</p>}
 
-            <div ref={setNodeRef} className={cx("flex min-h-20 flex-1 flex-col gap-2 rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
+            <div ref={setDropRef} className={cx("flex min-h-20 flex-1 flex-col gap-2 rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
                 <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                     {cards.map((card) => (
                         <CardItem
