@@ -28,8 +28,10 @@ export const ProjectIconPicker = ({ value, onChange, label = "Ícone" }: Project
                             aria-pressed={isSelected}
                             onClick={() => onChange(key)}
                             className={cx(
-                                "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg ring-1 ring-secondary transition duration-100 ease-linear ring-inset hover:bg-primary_hover",
-                                isSelected && "bg-brand-primary_alt text-fg-brand-primary ring-2 ring-brand",
+                                // Os ícones da lib usam `currentColor`, então sem uma cor explícita aqui
+                                // eles herdam o texto do ancestral e somem no fundo escuro.
+                                "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-fg-secondary ring-1 ring-secondary transition duration-100 ease-linear ring-inset hover:bg-primary_hover hover:text-fg-primary",
+                                isSelected && "bg-brand-primary_alt text-fg-brand-primary ring-2 ring-brand hover:text-fg-brand-primary",
                             )}
                         >
                             <Icon className="size-4.5" />
