@@ -1,4 +1,18 @@
-import { closestCenter, DndContext, DragOverlay, type DragEndEvent, type DragStartEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+    type CollisionDetection,
+    DndContext,
+    type DragEndEvent,
+    type DragOverEvent,
+    DragOverlay,
+    type DragStartEvent,
+    MeasuringStrategy,
+    PointerSensor,
+    pointerWithin,
+    rectIntersection,
+    useSensor,
+    useSensors,
+} from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCategories } from "@/features/categories/hooks/use-categories";
@@ -10,7 +24,7 @@ import { CardItemContent } from "./card-item";
 import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
 
-/** Calcula a `position` (gaps de 1000, mesmo esquema usado pelas colunas) pro card entrar no índice `index` de `siblings` (já ordenados, sem o próprio card). */
+/** Calcula a `position` (gaps de 1000, mesmo esquema das colunas) pro card entrar no índice `index` de `siblings` (em ordem visual, sem o próprio card). */
 function positionAtIndex(siblings: BoardCard[], index: number): number {
     const before = siblings[index - 1];
     const after = siblings[index];
@@ -19,6 +33,19 @@ function positionAtIndex(siblings: BoardCard[], index: number): number {
     if (!after) return before.position + 1000;
     return (before.position + after.position) / 2;
 }
+
+/**
+ * Num board, o que importa é o que está literalmente sob o cursor (`pointerWithin`) — bem mais
+ * previsível que distância entre centros, que num card pequeno dentro de uma coluna alta escolhe
+ * o alvo errado. `rectIntersection` cobre o caso do cursor cair num vão entre colunas.
+ */
+const collisionDetection: CollisionDetection = (args) => {
+    const pointerCollisions = pointerWithin(args);
+    return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
+};
+
+/** As colunas mudam de tamanho enquanto os cards entram e saem durante o arrasto, então os retângulos precisam ser remedidos continuamente. */
+const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
 export const Board = ({ projectId }: { projectId: string }) => {
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
@@ -30,6 +57,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const [modalTarget, setModalTarget] = useState<CardModalTarget | null>(null);
     const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
     const [activeCardWidth, setActiveCardWidth] = useState<number>();
+    const [dragCards, setDragCards] = useState<BoardCard[] | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -37,58 +65,99 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const membersById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
 
     /**
-     * Cada coluna tem seu próprio SortableContext, então o `transform` do `useSortable` do card
-     * só sabe seguir o cursor DENTRO da coluna de origem — assim que o mouse passa pra outra
-     * coluna, o card fica sem transform nenhum (parece "sumir", parado e semitransparente) até
-     * soltar. O DragOverlay do dnd-kit resolve isso: é um clone renderizado fora do fluxo normal
-     * (via portal), posicionado pelo próprio DndContext a partir do ponteiro, independente de
-     * qual coluna/SortableContext está por baixo no momento.
+     * Lista achatada de todos os cards, já em ordem visual (as colunas só filtram, não ordenam).
+     * Durante o arrasto `dragCards` assume: ele é reordenado em `onDragOver` para que as colunas
+     * reflitam ao vivo onde o card vai cair, em vez do usuário arrastar às cegas.
      */
-    function handleDragStart(event: DragStartEvent) {
-        const card = cards?.find((c) => c.id === event.active.id);
-        setActiveCard(card ?? null);
+    const board = useMemo(() => dragCards ?? [...(cards ?? [])].sort((a, b) => a.position - b.position), [dragCards, cards]);
 
-        // `active.rect.current.initial` às vezes ainda não foi medido neste exato frame;
-        // ler a largura direto do elemento (já existe no DOM nesse momento) é mais confiável.
-        const node = document.querySelector<HTMLElement>(`[data-card-id="${event.active.id}"]`);
+    /** Resolve a coluna alvo: o `over` é a própria coluna (área vazia) ou um card dentro dela. */
+    function resolveColumnId(overId: string, list: BoardCard[]): string | undefined {
+        if (columns?.some((column) => column.id === overId)) return overId;
+        return list.find((card) => card.id === overId)?.columnId;
+    }
+
+    function handleDragStart(event: DragStartEvent) {
+        const activeId = String(event.active.id);
+        setActiveCard(board.find((card) => card.id === activeId) ?? null);
+        setDragCards(board);
+
+        // `active.rect.current.initial` às vezes ainda não foi medido neste frame; ler a largura
+        // direto do elemento (que ainda está no DOM aqui) é mais confiável pro clone do overlay.
+        const node = document.querySelector<HTMLElement>(`[data-card-id="${activeId}"]`);
         setActiveCardWidth(node?.getBoundingClientRect().width ?? event.active.rect.current.initial?.width);
     }
 
-    function handleDragEnd(event: DragEndEvent) {
-        setActiveCard(null);
-
+    /**
+     * Só trata TROCA DE COLUNA: move o card pra lista da coluna sobrevoada enquanto o arrasto
+     * acontece, o que faz a coluna de origem fechar o buraco e a de destino abrir espaço ao vivo.
+     * Reordenação dentro da mesma coluna fica por conta do `SortableContext` (transform visual),
+     * e é resolvida de fato no drop — mexer no estado aqui também causaria movimento em dobro.
+     */
+    function handleDragOver(event: DragOverEvent) {
         const { active, over } = event;
-        if (!over || !cards) return;
+        if (!over) return;
 
-        const cardId = String(active.id);
+        const activeId = String(active.id);
         const overId = String(over.id);
-        if (cardId === overId) return;
 
-        const card = cards.find((c) => c.id === cardId);
-        if (!card) return;
+        setDragCards((current) => {
+            const list = current ?? board;
+            const dragged = list.find((card) => card.id === activeId);
+            const targetColumnId = resolveColumnId(overId, list);
 
-        const isOverColumn = columns?.some((c) => c.id === overId);
-        const overCard = isOverColumn ? undefined : cards.find((c) => c.id === overId);
-        if (!isOverColumn && !overCard) return;
+            if (!dragged || !targetColumnId || dragged.columnId === targetColumnId) return current;
 
-        const targetColumnId = isOverColumn ? overId : overCard!.columnId;
-        const siblings = cards.filter((c) => c.columnId === targetColumnId && c.id !== cardId).sort((a, b) => a.position - b.position);
+            const withoutDragged = list.filter((card) => card.id !== activeId);
+            const overIndex = withoutDragged.findIndex((card) => card.id === overId);
+            const insertAt = overIndex === -1 ? withoutDragged.length : overIndex;
 
-        let targetIndex: number;
-        if (isOverColumn) {
-            targetIndex = siblings.length;
-        } else {
-            const overIndex = siblings.findIndex((c) => c.id === overId);
-            const activeRect = active.rect.current.translated ?? active.rect.current.initial;
-            const isBelow = activeRect ? activeRect.top + activeRect.height / 2 > over.rect.top + over.rect.height / 2 : false;
-            targetIndex = isBelow ? overIndex + 1 : overIndex;
-        }
+            return [
+                ...withoutDragged.slice(0, insertAt),
+                { ...dragged, columnId: targetColumnId },
+                ...withoutDragged.slice(insertAt),
+            ];
+        });
+    }
 
-        const newPosition = positionAtIndex(siblings, targetIndex);
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        const list = dragCards ?? board;
 
-        if (card.columnId === targetColumnId && card.position === newPosition) return;
+        setActiveCard(null);
+        setDragCards(null);
 
-        updateCard.mutate({ cardId, input: { columnId: targetColumnId, position: newPosition } });
+        if (!over) return;
+
+        const activeId = String(active.id);
+        const overId = String(over.id);
+
+        const targetColumnId = resolveColumnId(overId, list);
+        if (!targetColumnId) return;
+
+        // `arrayMove` é a mesma operação que o SortableContext usa pra calcular a prévia visual,
+        // então o resultado do drop bate exatamente com o buraco que o usuário estava vendo.
+        const columnCards = list.filter((card) => card.columnId === targetColumnId);
+        const fromIndex = columnCards.findIndex((card) => card.id === activeId);
+        const toIndex = overId === targetColumnId ? columnCards.length - 1 : columnCards.findIndex((card) => card.id === overId);
+        if (fromIndex === -1 || toIndex === -1) return;
+
+        const ordered = arrayMove(columnCards, fromIndex, toIndex);
+        const finalIndex = ordered.findIndex((card) => card.id === activeId);
+        const position = positionAtIndex(
+            ordered.filter((card) => card.id !== activeId),
+            finalIndex,
+        );
+
+        const original = cards?.find((card) => card.id === activeId);
+        if (original && original.columnId === targetColumnId && original.position === position) return;
+
+        updateCard.mutate({ cardId: activeId, input: { columnId: targetColumnId, position } });
+    }
+
+    function handleDragCancel() {
+        setActiveCard(null);
+        setDragCards(null);
     }
 
     if (columnsLoading || cardsLoading) {
@@ -106,17 +175,19 @@ export const Board = ({ projectId }: { projectId: string }) => {
         <>
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={collisionDetection}
+                measuring={measuring}
                 onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
-                onDragCancel={() => setActiveCard(null)}
+                onDragCancel={handleDragCancel}
             >
                 <div className="flex h-full items-start gap-4 overflow-x-auto">
                     {columns?.map((column) => (
                         <Column
                             key={column.id}
                             column={column}
-                            cards={(cards ?? []).filter((c) => c.columnId === column.id).sort((a, b) => a.position - b.position)}
+                            cards={board.filter((card) => card.columnId === column.id)}
                             projectId={projectId}
                             categoriesById={categoriesById}
                             membersById={membersById}
