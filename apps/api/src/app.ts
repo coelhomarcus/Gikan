@@ -1,6 +1,7 @@
 import path from "path";
 import cookieParser from "cookie-parser";
 import express from "express";
+import helmet from "helmet";
 import { adminRouter } from "./features/admin/admin.routes";
 import { authRouter } from "./features/auth/auth.routes";
 import { cardsRouter } from "./features/cards/cards.routes";
@@ -9,6 +10,15 @@ import { usersRouter } from "./features/users/users.routes";
 import { errorHandler } from "./middleware/error-handler.middleware";
 
 export const app = express();
+
+// Roda atrás do reverse proxy do Dokploy — sem isso, o rate limiter (baseado em IP)
+// enxergaria o IP interno do proxy em vez do IP real do cliente pra todo mundo.
+app.set("trust proxy", 1);
+
+// CSP desligada de propósito: a default do helmet pode bloquear o bundle da SPA (Vite)
+// sem termos testado cada diretiva a fundo. As outras proteções (X-Content-Type-Options,
+// X-Frame-Options, Referrer-Policy, HSTS, etc.) já valem a pena sem esse risco.
+app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(express.json());
 app.use(cookieParser());
