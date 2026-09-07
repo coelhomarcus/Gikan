@@ -4,7 +4,12 @@ import { db } from "../../db";
 import { boardColumns, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
-const DEFAULT_COLUMN_NAMES = ["A Fazer", "Em Progresso", "Concluído"];
+/** Cores iniciais das colunas padrão. Os mesmos hexes estão no backfill da migration 0005, que pintou os projetos criados antes desse campo existir. */
+const DEFAULT_COLUMNS = [
+    { name: "A Fazer", color: "#eaaa08" },
+    { name: "Em Progresso", color: "#7a5af8" },
+    { name: "Concluído", color: "#17b26a" },
+];
 
 export async function createProject(input: CreateProjectInput, creatorId: string) {
     return db.transaction(async (tx) => {
@@ -16,9 +21,10 @@ export async function createProject(input: CreateProjectInput, creatorId: string
         await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });
 
         await tx.insert(boardColumns).values(
-            DEFAULT_COLUMN_NAMES.map((name, index) => ({
+            DEFAULT_COLUMNS.map((column, index) => ({
                 projectId: project.id,
-                name,
+                name: column.name,
+                color: column.color,
                 position: (index + 1) * 1000,
             })),
         );

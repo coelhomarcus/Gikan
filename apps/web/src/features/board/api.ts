@@ -5,6 +5,7 @@ export interface BoardColumn {
     id: string;
     projectId: string;
     name: string;
+    color: string | null;
     position: number;
     createdAt: string;
 }

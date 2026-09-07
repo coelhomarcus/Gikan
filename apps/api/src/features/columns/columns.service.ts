@@ -25,7 +25,7 @@ export async function listColumns(projectId: string) {
 export async function createColumn(projectId: string, input: CreateColumnInput) {
     const position = await nextColumnPosition(projectId);
 
-    const [column] = await db.insert(boardColumns).values({ projectId, name: input.name, position }).returning();
+    const [column] = await db.insert(boardColumns).values({ projectId, name: input.name, color: input.color, position }).returning();
 
     return column;
 }

@@ -21,6 +21,7 @@ import type { BoardCard } from "../api";
 import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
 import { AddColumnForm } from "./add-column-form";
 import { CardItemContent } from "./card-item";
+import { columnTint } from "./column-color";
 import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
 
@@ -171,6 +172,11 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const activeCategory = activeCard?.categoryId ? categoriesById.get(activeCard.categoryId) : undefined;
     const activeAssignee = activeCard?.assigneeId ? membersById.get(activeCard.assigneeId) : undefined;
 
+    // A coluna vem da lista viva (não do `activeCard`, congelado no início do arrasto), então o
+    // clone troca de cor ao cruzar pra outra coluna, prevendo como o card vai ficar no destino.
+    const activeColumnId = activeCard ? board.find((card) => card.id === activeCard.id)?.columnId : undefined;
+    const activeColumnColor = columns?.find((column) => column.id === activeColumnId)?.color;
+
     return (
         <>
             <DndContext
@@ -201,8 +207,8 @@ export const Board = ({ projectId }: { projectId: string }) => {
                 <DragOverlay>
                     {activeCard && (
                         <div
-                            style={{ width: activeCardWidth }}
-                            className="flex cursor-grabbing flex-col gap-2 rounded-lg bg-primary p-3 shadow-lg ring-2 ring-brand"
+                            style={{ width: activeCardWidth, ...columnTint(activeColumnColor) }}
+                            className="flex cursor-grabbing flex-col gap-2 rounded-lg border border-secondary bg-primary p-3 shadow-lg ring-2 ring-brand"
                         >
                             <CardItemContent card={activeCard} category={activeCategory} assignee={activeAssignee} />
                         </div>

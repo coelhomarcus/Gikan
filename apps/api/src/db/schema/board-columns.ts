@@ -9,6 +9,7 @@ export const boardColumns = pgTable(
             .notNull()
             .references(() => projects.id, { onDelete: "cascade" }),
         name: text("name").notNull(),
+        color: text("color"),
         position: real("position").notNull(),
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     },

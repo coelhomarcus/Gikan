@@ -4,6 +4,7 @@ import { Avatar } from "@/components/base/avatar/avatar";
 import { CategoryBadge } from "@/features/categories/components/category-badge";
 import { cx } from "@/utils/cx";
 import type { BoardCard, CardPerson } from "../api";
+import { columnTint } from "./column-color";
 import { ImportanceBadge } from "./importance-badge";
 
 function initialsOf(name: string): string {
@@ -43,13 +44,15 @@ export const CardItemContent = ({ card, category, assignee }: CardContentProps) 
 );
 
 interface CardItemProps extends CardContentProps {
+    /** Cor da coluna em que o card está; tinge o card pra dar leitura rápida do estágio. */
+    columnColor?: string | null;
     onClick: () => void;
 }
 
-export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) => {
+export const CardItem = ({ card, category, assignee, columnColor, onClick }: CardItemProps) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
 
-    const style = { transform: CSS.Transform.toString(transform), transition };
+    const style = { transform: CSS.Transform.toString(transform), transition, ...columnTint(columnColor) };
 
     return (
         <div
@@ -62,7 +65,9 @@ export const CardItem = ({ card, category, assignee, onClick }: CardItemProps) =
             data-card-title={card.title}
             data-card-description={card.description ?? ""}
             className={cx(
-                "flex cursor-pointer touch-none flex-col gap-2 rounded-lg bg-primary p-3 shadow-xs ring-1 ring-secondary transition duration-100 ease-linear hover:ring-brand",
+                // `border` em vez de `ring` porque ring é box-shadow e não aceita cor por style inline,
+                // que é como o tingimento da coluna chega aqui.
+                "flex cursor-pointer touch-none flex-col gap-2 rounded-lg border border-secondary bg-primary p-3 shadow-xs transition duration-100 ease-linear hover:border-brand",
                 isDragging && "z-10 opacity-50",
             )}
         >

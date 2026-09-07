@@ -2,6 +2,7 @@ import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/mod
 import { Tabs } from "@/components/application/tabs/tabs";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { ColumnsPanel } from "@/features/board/components/columns-panel";
 import { CategoriesPanel } from "@/features/categories/components/categories-panel";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
@@ -36,12 +37,16 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                                     type="button-border"
                                     items={[
                                         { id: "general", label: "Geral" },
+                                        { id: "columns", label: "Colunas" },
                                         { id: "members", label: "Membros" },
                                         { id: "categories", label: "Categorias" },
                                     ]}
                                 />
                                 <Tabs.Panel id="general" className="pt-5">
                                     <ProjectDetailsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                </Tabs.Panel>
+                                <Tabs.Panel id="columns" className="pt-5">
+                                    <ColumnsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                 </Tabs.Panel>
                                 <Tabs.Panel id="members" className="pt-5">
                                     <MembersPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />

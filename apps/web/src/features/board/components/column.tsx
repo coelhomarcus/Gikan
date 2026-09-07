@@ -10,6 +10,7 @@ import { cx } from "@/utils/cx";
 import type { BoardCard, BoardColumn, CardPerson } from "../api";
 import { useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { CardItem } from "./card-item";
+import { COLUMN_FALLBACK_COLOR } from "./column-color";
 
 interface ColumnProps {
     column: BoardColumn;
@@ -83,9 +84,14 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                     <button
                         type="button"
                         onClick={startEditing}
-                        className="truncate rounded px-1 text-left text-sm font-semibold text-secondary hover:bg-primary_hover"
+                        className="flex min-w-0 items-center gap-2 rounded px-1 text-left text-sm font-semibold text-secondary hover:bg-primary_hover"
                     >
-                        {column.name}
+                        <span
+                            aria-hidden="true"
+                            className="size-2 shrink-0 rounded-full"
+                            style={{ backgroundColor: column.color ?? COLUMN_FALLBACK_COLOR }}
+                        />
+                        <span className="truncate">{column.name}</span>
                     </button>
                 )}
 
@@ -105,6 +111,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                             card={card}
                             category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
                             assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
+                            columnColor={column.color}
                             onClick={() => onOpenCard(card.id)}
                         />
                     ))}
