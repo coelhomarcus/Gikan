@@ -28,7 +28,7 @@ export const ConfirmDialog = ({ trigger, title, description, confirmLabel, isPen
                         {({ close }) => (
                             <div className="w-full rounded-xl bg-primary p-6 shadow-xl ring-1 ring-secondary">
                                 <div className="flex gap-4">
-                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-error-secondary text-fg-error-primary">
+                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-error-solid text-fg-white">
                                         <AlertTriangle className="size-5" />
                                     </span>
                                     <div className="min-w-0 flex-1">

@@ -117,15 +117,20 @@ export const Board = ({ projectId }: { projectId: string }) => {
         const list = dragCards ?? board;
 
         setActiveCard(null);
-        setDragCards(null);
 
-        if (!over) return;
+        if (!over) {
+            setDragCards(null);
+            return;
+        }
 
         const activeId = String(active.id);
         const overId = String(over.id);
 
         const targetColumnId = resolveColumnId(overId, list);
-        if (!targetColumnId) return;
+        if (!targetColumnId) {
+            setDragCards(null);
+            return;
+        }
 
         // `arrayMove` é a mesma operação que o SortableContext usa pra calcular a prévia visual,
         // então o resultado do drop bate exatamente com o buraco que o usuário estava vendo.
@@ -135,7 +140,10 @@ export const Board = ({ projectId }: { projectId: string }) => {
         // Só quando o alvo é outro card existe um índice específico; soltar sobre a coluna significa "no fim".
         const overCardIndex = columnCards.findIndex((card) => card.id === overId);
         const toIndex = overCardIndex === -1 ? columnCards.length - 1 : overCardIndex;
-        if (fromIndex === -1 || toIndex === -1) return;
+        if (fromIndex === -1 || toIndex === -1) {
+            setDragCards(null);
+            return;
+        }
 
         const ordered = arrayMove(columnCards, fromIndex, toIndex);
         const finalIndex = ordered.findIndex((card) => card.id === activeId);
@@ -145,9 +153,19 @@ export const Board = ({ projectId }: { projectId: string }) => {
         );
 
         const original = cards?.find((card) => card.id === activeId);
-        if (original && original.columnId === targetColumnId && original.position === position) return;
+        if (original && original.columnId === targetColumnId && original.position === position) {
+            setDragCards(null);
+            return;
+        }
 
-        updateCard.mutate({ cardId: activeId, input: { columnId: targetColumnId, position } });
+        // Mantém a prévia do arrasto (`dragCards`) até a mutação assentar, em vez de zerar aqui:
+        // o `onMutate` do `useUpdateCard` escreve no cache de forma assíncrona, então limpar antes
+        // deixaria o board cair pro `cards` antigo por um frame — o card "volta" e só depois "vai"
+        // pro lugar certo. Congelando a prévia, o board já nasce otimista e só reverte em erro.
+        updateCard.mutate(
+            { cardId: activeId, input: { columnId: targetColumnId, position } },
+            { onSettled: () => setDragCards(null) },
+        );
     }
 
     function handleDragCancel() {
