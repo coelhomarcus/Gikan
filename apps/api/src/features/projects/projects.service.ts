@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput } from "@gikan/shared";
+import type { CreateProjectInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, projectMembers, projects, users } from "../../db/schema";
@@ -10,6 +10,17 @@ const DEFAULT_COLUMNS = [
     { name: "Em Progresso", color: "#7a5af8" },
     { name: "Concluído", color: "#17b26a" },
 ];
+
+const PROJECT_LIST_COLUMNS = {
+    id: true,
+    name: true,
+    description: true,
+    repositoryUrl: true,
+    icon: true,
+    createdBy: true,
+    createdAt: true,
+    updatedAt: true,
+} as const;
 
 export async function createProject(input: CreateProjectInput, creatorId: string) {
     return db.transaction(async (tx) => {
@@ -35,12 +46,12 @@ export async function createProject(input: CreateProjectInput, creatorId: string
 
 export async function listProjectsForUser(userId: string, isAdmin: boolean) {
     if (isAdmin) {
-        return db.query.projects.findMany({ orderBy: [desc(projects.createdAt)] });
+        return db.query.projects.findMany({ columns: PROJECT_LIST_COLUMNS, orderBy: [desc(projects.createdAt)] });
     }
 
     const memberships = await db.query.projectMembers.findMany({
         where: eq(projectMembers.userId, userId),
-        with: { project: true },
+        with: { project: { columns: PROJECT_LIST_COLUMNS } },
     });
 
     return memberships.map((membership) => membership.project);
@@ -58,6 +69,19 @@ export async function updateProject(projectId: string, input: UpdateProjectInput
     const [project] = await db
         .update(projects)
         .set({ ...input, updatedAt: new Date() })
+        .where(eq(projects.id, projectId))
+        .returning();
+
+    if (!project) {
+        throw new HttpError(404, "Projeto não encontrado");
+    }
+    return project;
+}
+
+export async function updateProjectPage(projectId: string, input: UpdateProjectPageInput) {
+    const [project] = await db
+        .update(projects)
+        .set({ pageContent: input.pageContent, updatedAt: new Date() })
         .where(eq(projects.id, projectId))
         .returning();
 

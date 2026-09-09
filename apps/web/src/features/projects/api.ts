@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput } from "@gikan/shared";
+import type { CreateProjectInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Project {
@@ -7,10 +7,13 @@ export interface Project {
     description: string | null;
     repositoryUrl: string | null;
     icon: string | null;
+    pageContent: string;
     createdBy: string;
     createdAt: string;
     updatedAt: string;
 }
+
+export type ProjectSummary = Omit<Project, "pageContent">;
 
 export interface ProjectMember {
     id: string;
@@ -22,8 +25,8 @@ export interface ProjectMember {
     joinedAt: string;
 }
 
-export function listProjects(): Promise<Project[]> {
-    return apiClient.get<{ projects: Project[] }>("/projects").then((res) => res.projects);
+export function listProjects(): Promise<ProjectSummary[]> {
+    return apiClient.get<{ projects: ProjectSummary[] }>("/projects").then((res) => res.projects);
 }
 
 export function getProject(projectId: string): Promise<Project> {
@@ -36,6 +39,10 @@ export function createProject(input: CreateProjectInput): Promise<Project> {
 
 export function updateProject(projectId: string, input: UpdateProjectInput): Promise<Project> {
     return apiClient.patch<{ project: Project }>(`/projects/${projectId}`, input).then((res) => res.project);
+}
+
+export function updateProjectPage(projectId: string, input: UpdateProjectPageInput): Promise<Project> {
+    return apiClient.patch<{ project: Project }>(`/projects/${projectId}/page`, input).then((res) => res.project);
 }
 
 export function deleteProject(projectId: string): Promise<void> {

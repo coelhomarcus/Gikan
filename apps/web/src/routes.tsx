@@ -5,6 +5,7 @@ import { RequireAuth } from "@/features/auth/components/require-auth";
 import { LoginPage } from "@/pages/login-page";
 import { NotFound } from "@/pages/not-found";
 import { ProjectBoardPage } from "@/pages/project-board-page";
+import { ProjectNotesPage } from "@/pages/project-notes-page";
 import { ProjectsPage } from "@/pages/projects-page";
 import { RegisterPage } from "@/pages/register-page";
 
@@ -24,6 +25,7 @@ export const AppRoutes = () => (
         >
             <Route path="/" element={<ProjectsPage />} />
             <Route path="/projects/:projectId" element={<ProjectBoardPage />} />
+            <Route path="/projects/:projectId/page" element={<ProjectNotesPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

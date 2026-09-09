@@ -1,4 +1,4 @@
-import { addProjectMemberSchema, createProjectSchema, updateProjectSchema } from "@gikan/shared";
+import { addProjectMemberSchema, createProjectSchema, updateProjectPageSchema, updateProjectSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import {
     addProjectMember,
@@ -9,6 +9,7 @@ import {
     listProjectsForUser,
     removeProjectMember,
     updateProject,
+    updateProjectPage,
 } from "./projects.service";
 
 export const create = asyncHandler(async (req, res) => {
@@ -30,6 +31,12 @@ export const getOne = asyncHandler<{ projectId: string }>(async (req, res) => {
 export const update = asyncHandler<{ projectId: string }>(async (req, res) => {
     const input = updateProjectSchema.parse(req.body);
     const project = await updateProject(req.params.projectId, input);
+    res.json({ project });
+});
+
+export const updatePage = asyncHandler<{ projectId: string }>(async (req, res) => {
+    const input = updateProjectPageSchema.parse(req.body);
+    const project = await updateProjectPage(req.params.projectId, input);
     res.json({ project });
 });
 

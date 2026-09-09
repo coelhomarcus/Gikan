@@ -41,6 +41,7 @@ export const projectIconKeys = [
 export type ProjectIconKey = (typeof projectIconKeys)[number];
 
 const iconSchema = z.enum(projectIconKeys).nullable().optional();
+const projectPageContentSchema = z.string().max(100_000, "A página pode ter no máximo 100.000 caracteres");
 
 export const createProjectSchema = z.object({
     name: z.string().trim().min(2).max(120),
@@ -57,6 +58,11 @@ export const updateProjectSchema = z.object({
     icon: iconSchema,
 });
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
+
+export const updateProjectPageSchema = z.object({
+    pageContent: projectPageContentSchema,
+});
+export type UpdateProjectPageInput = z.infer<typeof updateProjectPageSchema>;
 
 export const addProjectMemberSchema = z.object({
     username: z.string().trim().toLowerCase().min(1),

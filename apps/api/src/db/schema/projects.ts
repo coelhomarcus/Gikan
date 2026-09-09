@@ -7,6 +7,7 @@ export const projects = pgTable("projects", {
     description: text("description"),
     repositoryUrl: text("repository_url"),
     icon: text("icon"),
+    pageContent: text("page_content").notNull().default(""),
     createdBy: uuid("created_by")
         .notNull()
         .references(() => users.id),

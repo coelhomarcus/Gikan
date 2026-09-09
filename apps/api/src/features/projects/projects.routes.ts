@@ -4,7 +4,7 @@ import { categoriesRouter } from "../categories/categories.routes";
 import { columnsRouter } from "../columns/columns.routes";
 import { requireAuth } from "../../middleware/auth.middleware";
 import { requireProjectMember, requireProjectOwner } from "../../middleware/project-membership.middleware";
-import { addMember, create, getOne, list, listMembers, remove, removeMember, update } from "./projects.controller";
+import { addMember, create, getOne, list, listMembers, remove, removeMember, update, updatePage } from "./projects.controller";
 
 export const projectsRouter = Router();
 
@@ -16,6 +16,7 @@ projectsRouter.post("/", create);
 projectsRouter.get("/:projectId", requireProjectMember, getOne);
 projectsRouter.patch("/:projectId", requireProjectOwner, update);
 projectsRouter.delete("/:projectId", requireProjectOwner, remove);
+projectsRouter.patch("/:projectId/page", requireProjectMember, updatePage);
 
 projectsRouter.get("/:projectId/members", requireProjectMember, listMembers);
 projectsRouter.post("/:projectId/members", requireProjectOwner, addMember);

@@ -43,6 +43,13 @@
       "when": 1788768062198,
       "tag": "0005_add_column_color",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1788930486057,
+      "tag": "0006_military_blazing_skull",
+      "breakpoints": true
     }
   ]
 }

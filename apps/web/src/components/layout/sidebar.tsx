@@ -34,7 +34,7 @@ export const Sidebar = () => {
                                 <NavItemBase
                                     type="collapsible-child"
                                     href={`/projects/${project.id}`}
-                                    current={location.pathname === `/projects/${project.id}`}
+                                    current={location.pathname === `/projects/${project.id}` || location.pathname.startsWith(`/projects/${project.id}/`)}
                                     truncate={false}
                                 >
                                     <span className="flex items-center gap-2">

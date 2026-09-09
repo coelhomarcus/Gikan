@@ -1,0 +1,1 @@
+ALTER TABLE "projects" ADD COLUMN "page_content" text DEFAULT '' NOT NULL;

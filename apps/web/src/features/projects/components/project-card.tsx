@@ -1,9 +1,9 @@
 import { ArrowRight } from "@untitledui/icons";
 import { Link } from "react-router";
-import type { Project } from "../api";
+import type { ProjectSummary } from "../api";
 import { ProjectIcon } from "./project-icon";
 
-export const ProjectCard = ({ project }: { project: Project }) => {
+export const ProjectCard = ({ project }: { project: ProjectSummary }) => {
     return (
         <Link
             to={`/projects/${project.id}`}
