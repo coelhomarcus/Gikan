@@ -283,6 +283,19 @@ export const ProjectNotesPage = () => {
         return () => window.clearTimeout(timeout);
     }, [content, hasUnsavedChanges, mutation.isPending, project, saveState]);
 
+    useEffect(() => {
+        function handleKeyDown(event: KeyboardEvent) {
+            const isSaveShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s";
+            if (!isSaveShortcut) return;
+
+            event.preventDefault();
+            commitContent(contentRef.current);
+        }
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [project, mutation.isPending]);
+
     function insertBlock(command: BlockCommand) {
         const textarea = textAreaRef.current;
         const selectionStart = textarea?.selectionStart ?? content.length;
