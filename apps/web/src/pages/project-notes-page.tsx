@@ -1,5 +1,5 @@
-import type { FC, ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { FC } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Annotation, CheckCircle, CheckSquare, Code01, Heading01, List as ListIcon, Save01, Type01 } from "@untitledui/icons";
 import { useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
@@ -12,6 +12,7 @@ import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
 
 type SaveState = "saved" | "dirty" | "saving" | "error";
+type ViewMode = "raw" | "rendered";
 
 interface BlockCommand {
     label: string;
@@ -151,72 +152,192 @@ function parsePageBlocks(content: string): PreviewBlock[] {
     return blocks;
 }
 
-function renderPreviewBlock(block: PreviewBlock, index: number): ReactNode {
+const HEADING_CLASS_BY_LEVEL: Record<1 | 2 | 3, string> = {
+    1: "text-display-xs",
+    2: "text-xl",
+    3: "text-lg",
+};
+
+function buildBlockElement(block: PreviewBlock): HTMLElement {
     if (block.type === "heading") {
-        const HeadingTag = `h${block.level}` as "h1" | "h2" | "h3";
-        return (
-            <HeadingTag
-                key={index}
-                className={cx(
-                    "font-semibold text-primary",
-                    block.level === 1 && "text-display-xs",
-                    block.level === 2 && "text-xl",
-                    block.level === 3 && "text-lg",
-                )}
-            >
-                {block.text}
-            </HeadingTag>
-        );
+        const el = document.createElement(`h${block.level}`);
+        el.dataset.block = "heading";
+        el.dataset.level = String(block.level);
+        el.textContent = block.text;
+        el.className = cx("font-semibold text-primary outline-none", HEADING_CLASS_BY_LEVEL[block.level]);
+        return el;
     }
 
     if (block.type === "checklist") {
-        return (
-            <ul key={index} className="flex flex-col gap-2">
-                {block.items.map((item, itemIndex) => (
-                    <li key={`${item.text}-${itemIndex}`} className="flex items-start gap-2 text-sm text-secondary">
-                        <input type="checkbox" checked={item.checked} readOnly className="mt-0.5 size-4 rounded border-secondary accent-current" />
-                        <span className={cx(item.checked && "text-tertiary line-through")}>{item.text}</span>
-                    </li>
-                ))}
-            </ul>
-        );
+        const ul = document.createElement("ul");
+        ul.dataset.block = "checklist";
+        ul.className = "flex flex-col gap-2";
+
+        for (const item of block.items) {
+            const li = document.createElement("li");
+            li.className = "flex items-start gap-2 text-sm text-secondary";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = item.checked;
+            checkbox.className = "mt-0.5 size-4 shrink-0 rounded border-secondary accent-current";
+
+            const span = document.createElement("span");
+            span.textContent = item.text || " ";
+
+            li.append(checkbox, span);
+            ul.appendChild(li);
+        }
+
+        return ul;
     }
 
     if (block.type === "list") {
-        return (
-            <ul key={index} className="list-disc space-y-1 pl-5 text-sm text-secondary">
-                {block.items.map((item, itemIndex) => (
-                    <li key={`${item}-${itemIndex}`}>{item}</li>
-                ))}
-            </ul>
-        );
+        const ul = document.createElement("ul");
+        ul.dataset.block = "list";
+        ul.className = "list-disc space-y-1 pl-5 text-sm text-secondary";
+
+        for (const item of block.items) {
+            const li = document.createElement("li");
+            li.textContent = item;
+            ul.appendChild(li);
+        }
+
+        return ul;
     }
 
     if (block.type === "quote") {
-        return (
-            <blockquote key={index} className="border-l-2 border-brand pl-4 text-sm text-tertiary">
-                {block.lines.map((line, lineIndex) => (
-                    <p key={`${line}-${lineIndex}`}>{line}</p>
-                ))}
-            </blockquote>
-        );
+        const blockquote = document.createElement("blockquote");
+        blockquote.dataset.block = "quote";
+        blockquote.className = "border-l-2 border-brand pl-4 text-sm text-tertiary";
+
+        for (const line of block.lines.length > 0 ? block.lines : [""]) {
+            const p = document.createElement("p");
+            p.textContent = line;
+            blockquote.appendChild(p);
+        }
+
+        return blockquote;
     }
 
     if (block.type === "code") {
-        return (
-            <pre key={index} className="overflow-x-auto rounded-lg bg-secondary p-4 text-sm text-primary ring-1 ring-secondary">
-                {block.language && <div className="mb-2 text-xs font-medium text-tertiary">{block.language}</div>}
-                <code className="font-mono whitespace-pre">{block.code}</code>
-            </pre>
-        );
+        const pre = document.createElement("pre");
+        pre.dataset.block = "code";
+        pre.dataset.language = block.language ?? "";
+        pre.className = "overflow-x-auto rounded-lg bg-secondary p-4 text-sm text-primary ring-1 ring-secondary";
+
+        const code = document.createElement("code");
+        code.className = "font-mono whitespace-pre-wrap";
+        code.textContent = block.code;
+
+        pre.appendChild(code);
+        return pre;
+    }
+
+    const p = document.createElement("p");
+    p.dataset.block = "paragraph";
+    p.className = "text-sm leading-6 whitespace-pre-wrap text-secondary";
+    p.textContent = block.text;
+    return p;
+}
+
+function renderMarkdownIntoElement(container: HTMLElement, content: string) {
+    const blocks = parsePageBlocks(content);
+    const elements = blocks.length > 0 ? blocks.map(buildBlockElement) : [buildBlockElement({ type: "paragraph", text: "" })];
+    container.replaceChildren(...elements);
+}
+
+function domBlockToMarkdown(el: Element): string {
+    const type = (el as HTMLElement).dataset.block;
+
+    if (type === "heading") {
+        const level = Number((el as HTMLElement).dataset.level ?? "1");
+        return `${"#".repeat(level)} ${el.textContent?.trim() ?? ""}`;
+    }
+
+    if (type === "checklist") {
+        const items = Array.from(el.querySelectorAll("li")).map((li) => {
+            const checkbox = li.querySelector("input[type='checkbox']") as HTMLInputElement | null;
+            const text = (li.querySelector("span")?.textContent ?? li.textContent ?? "").trim();
+            return `- [${checkbox?.checked ? "x" : " "}] ${text}`;
+        });
+        return items.join("\n");
+    }
+
+    if (type === "list") {
+        const items = Array.from(el.querySelectorAll("li")).map((li) => `- ${li.textContent?.trim() ?? ""}`);
+        return items.join("\n");
+    }
+
+    if (type === "quote") {
+        const paragraphs = Array.from(el.querySelectorAll("p"));
+        const lines = paragraphs.length > 0 ? paragraphs.map((p) => `> ${p.textContent ?? ""}`) : [`> ${el.textContent ?? ""}`];
+        return lines.join("\n");
+    }
+
+    if (type === "code") {
+        const code = el.querySelector("code");
+        const language = (el as HTMLElement).dataset.language ?? "";
+        return "```" + language + "\n" + (code?.textContent ?? "") + "\n```";
+    }
+
+    return el.textContent ?? "";
+}
+
+function serializeElementToMarkdown(container: HTMLElement): string {
+    return Array.from(container.children)
+        .map((child) => domBlockToMarkdown(child))
+        .join("\n\n");
+}
+
+interface RenderedPageEditorProps {
+    content: string;
+    onChange: (value: string) => void;
+}
+
+const RenderedPageEditor: FC<RenderedPageEditorProps> = ({ content, onChange }) => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const lastSyncedContentRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        if (document.activeElement && container.contains(document.activeElement)) return;
+        if (lastSyncedContentRef.current === content) return;
+
+        renderMarkdownIntoElement(container, content);
+        lastSyncedContentRef.current = content;
+    }, [content]);
+
+    function syncFromDom() {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const markdown = serializeElementToMarkdown(container);
+        lastSyncedContentRef.current = markdown;
+        onChange(markdown);
     }
 
     return (
-        <p key={index} className="text-sm leading-6 whitespace-pre-wrap text-secondary">
-            {block.text}
-        </p>
+        <div
+            ref={containerRef}
+            role="textbox"
+            aria-multiline="true"
+            aria-label="Conteúdo da página (renderizado)"
+            contentEditable
+            suppressContentEditableWarning
+            onInput={syncFromDom}
+            onBlur={syncFromDom}
+            onClick={(event) => {
+                const target = event.target as HTMLElement;
+                if (target.matches("input[type='checkbox']")) {
+                    window.requestAnimationFrame(syncFromDom);
+                }
+            }}
+            className="h-full min-h-[500px] flex-1 overflow-y-auto px-5 py-5 text-sm leading-6 outline-none [&>*+*]:mt-4"
+        />
     );
-}
+};
 
 export const ProjectNotesPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
@@ -227,10 +348,10 @@ export const ProjectNotesPage = () => {
     const lastSavedContentRef = useRef("");
     const contentRef = useRef("");
     const [content, setContent] = useState("");
+    const [viewMode, setViewMode] = useState<ViewMode>("raw");
     const [saveState, setSaveState] = useState<SaveState>("saved");
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const previewBlocks = useMemo(() => parsePageBlocks(content), [content]);
     const hasUnsavedChanges = content !== lastSavedContentRef.current;
 
     useEffect(() => {
@@ -362,22 +483,48 @@ export const ProjectNotesPage = () => {
 
                         {errorMessage && <p className="text-sm text-error-primary">{errorMessage}</p>}
 
-                        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.75fr)]">
-                            <section className="flex min-h-[560px] flex-col overflow-hidden rounded-lg border border-secondary bg-primary">
-                                <div className="flex flex-wrap items-center gap-2 border-b border-secondary p-3">
-                                    {BLOCK_COMMANDS.map((command) => (
-                                        <Button
-                                            key={command.label}
-                                            size="xs"
-                                            color="secondary"
-                                            iconLeading={command.icon}
-                                            onClick={() => insertBlock(command)}
-                                        >
-                                            {command.label}
-                                        </Button>
-                                    ))}
+                        <section className="flex min-h-[560px] flex-1 flex-col overflow-hidden rounded-lg border border-secondary bg-primary">
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-secondary p-3">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {viewMode === "raw" &&
+                                        BLOCK_COMMANDS.map((command) => (
+                                            <Button
+                                                key={command.label}
+                                                size="xs"
+                                                color="secondary"
+                                                iconLeading={command.icon}
+                                                onClick={() => insertBlock(command)}
+                                            >
+                                                {command.label}
+                                            </Button>
+                                        ))}
                                 </div>
 
+                                <div className="inline-flex items-center rounded-lg bg-secondary p-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewMode("raw")}
+                                        className={cx(
+                                            "rounded-md px-3 py-1 text-sm font-medium transition duration-100 ease-linear",
+                                            viewMode === "raw" ? "bg-primary text-primary shadow-xs" : "text-tertiary hover:text-secondary",
+                                        )}
+                                    >
+                                        Cru
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setViewMode("rendered")}
+                                        className={cx(
+                                            "rounded-md px-3 py-1 text-sm font-medium transition duration-100 ease-linear",
+                                            viewMode === "rendered" ? "bg-primary text-primary shadow-xs" : "text-tertiary hover:text-secondary",
+                                        )}
+                                    >
+                                        Renderizado
+                                    </button>
+                                </div>
+                            </div>
+
+                            {viewMode === "raw" ? (
                                 <TextArea
                                     aria-label="Conteúdo da página"
                                     value={content}
@@ -387,23 +534,10 @@ export const ProjectNotesPage = () => {
                                     className="min-h-0 flex-1 gap-0"
                                     textAreaClassName="h-full min-h-[500px] resize-none rounded-none border-0 px-5 py-5 font-mono text-sm leading-6 shadow-none ring-0 focus:ring-0"
                                 />
-                            </section>
-
-                            <aside className="flex min-h-[560px] flex-col overflow-hidden rounded-lg border border-secondary bg-primary">
-                                <div className="border-b border-secondary px-5 py-3">
-                                    <p className="text-sm font-semibold text-secondary">Preview</p>
-                                </div>
-                                <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-                                    {previewBlocks.length > 0 ? (
-                                        <div className="flex flex-col gap-4">{previewBlocks.map(renderPreviewBlock)}</div>
-                                    ) : (
-                                        <div className="flex min-h-64 items-center justify-center rounded-lg border border-dashed border-secondary text-sm text-tertiary">
-                                            Página em branco
-                                        </div>
-                                    )}
-                                </div>
-                            </aside>
-                        </div>
+                            ) : (
+                                <RenderedPageEditor content={content} onChange={handleContentChange} />
+                            )}
+                        </section>
                     </div>
                 )}
             </div>
