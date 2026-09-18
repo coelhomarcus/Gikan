@@ -47,10 +47,11 @@ export const IssueCardContent = ({ issue, category, assignee }: IssueCardContent
 );
 
 interface IssueCardProps extends IssueCardContentProps {
+    projectId: string;
     onClick: () => void;
 }
 
-export const IssueCard = ({ issue, category, assignee, onClick }: IssueCardProps) => {
+export const IssueCard = ({ issue, category, assignee, projectId, onClick }: IssueCardProps) => {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id });
 
     const style = { transform: CSS.Transform.toString(transform), transition };
@@ -63,6 +64,10 @@ export const IssueCard = ({ issue, category, assignee, onClick }: IssueCardProps
             {...attributes}
             onClick={onClick}
             data-issue-id={issue.id}
+            data-issue-context="true"
+            data-project-id={projectId}
+            data-issue-identifier={issue.identifier}
+            data-issue-title={issue.title}
             className={cx(
                 "flex cursor-pointer touch-none flex-col gap-2 rounded-md border border-secondary bg-primary p-3 transition duration-100 ease-linear hover:border-brand hover:bg-primary_hover",
                 isDragging && "z-10 opacity-50",

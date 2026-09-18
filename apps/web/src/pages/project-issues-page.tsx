@@ -426,6 +426,10 @@ function IssueRow({
             role="button"
             tabIndex={0}
             data-issue-id={issue.id}
+            data-issue-context="true"
+            data-project-id={projectId}
+            data-issue-identifier={issue.identifier}
+            data-issue-title={issue.title}
             onClick={onOpen}
             onFocus={onSelect}
             onKeyDown={(event) => {

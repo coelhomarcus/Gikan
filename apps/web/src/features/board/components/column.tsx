@@ -115,6 +115,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                         <IssueCard
                             key={issue.id}
                             issue={issue}
+                            projectId={projectId}
                             category={issue.categoryId ? categoriesById.get(issue.categoryId) : undefined}
                             assignee={issue.assigneeId ? membersById.get(issue.assigneeId) : undefined}
                             onClick={() => onOpenIssue(issue.identifier)}
