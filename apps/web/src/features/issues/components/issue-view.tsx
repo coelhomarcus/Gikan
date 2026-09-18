@@ -233,7 +233,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             {descriptionSaveError && <p role="alert" className="mt-2 text-right text-xs text-error-primary">{descriptionSaveError}</p>}
                         </section>
 
-                        <IssueSubIssues issue={issue} />
+                        <IssueSubIssues issue={issue} columns={columns ?? []} />
                         <IssueRelations
                             projectId={issue.projectId}
                             issueId={issue.id}
@@ -415,14 +415,23 @@ function IssueProperties({
     );
 }
 
-function IssueSubIssues({ issue }: { issue: NonNullable<ReturnType<typeof useIssue>["data"]> }) {
+function IssueSubIssues({ issue, columns }: { issue: NonNullable<ReturnType<typeof useIssue>["data"]>; columns: Array<{ id: string; name: string }> }) {
     if (!issue.children?.length) return null;
+    const statusCounts = issue.children.reduce((counts, child) => {
+        const status = columns.find((column) => column.id === child.columnId)?.name ?? "Unknown status";
+        counts.set(status, (counts.get(status) ?? 0) + 1);
+        return counts;
+    }, new Map<string, number>());
     return (
         <section className="border-t border-secondary pt-5">
-            <SectionTitle
-                title={`Sub-issues ${issue.children.filter((child) => child.columnId === issue.columnId).length}/${issue.children.length}`}
-                icon={CheckCircle}
-            />
+            <SectionTitle title={`Sub-issues · ${issue.children.length}`} icon={CheckCircle} />
+            <div className="mb-3 flex flex-wrap gap-1.5">
+                {[...statusCounts.entries()].map(([status, count]) => (
+                    <span key={status} className="rounded-full border border-secondary bg-secondary_alt px-2 py-1 text-[11px] text-tertiary">
+                        {status} · {count}
+                    </span>
+                ))}
+            </div>
             <div className="divide-y divide-secondary rounded-lg border border-secondary">
                 {issue.children.map((child) => (
                     <Link
