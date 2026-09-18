@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { Cycle } from "@/features/issues/api";
 import { useCreateCycle, useCycles, useDeleteCycle, useUpdateCycle } from "@/features/issues/hooks/use-issues";
 import { Button } from "@/components/base/buttons/button";
@@ -95,6 +95,12 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                             cycle={cycle}
                             isProjectOwner={isProjectOwner}
                             isPending={updateCycle.isPending || deleteCycle.isPending}
+                            onUpdate={(input) =>
+                                updateCycle.mutate(
+                                    { cycleId: cycle.id, input },
+                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not update the cycle.") },
+                                )
+                            }
                             onStatusChange={(nextStatus) =>
                                 updateCycle.mutate(
                                     { cycleId: cycle.id, input: { status: nextStatus } },
@@ -114,27 +120,71 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
     );
 };
 
-function CycleRow({ cycle, isProjectOwner, isPending, onStatusChange, onDelete }: { cycle: Cycle; isProjectOwner: boolean; isPending: boolean; onStatusChange: (status: Cycle["status"]) => void; onDelete: () => void }) {
+function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, onDelete }: { cycle: Cycle; isProjectOwner: boolean; isPending: boolean; onUpdate: (input: { name?: string; status?: Cycle["status"]; startsAt?: string | null; endsAt?: string | null }) => void; onStatusChange: (status: Cycle["status"]) => void; onDelete: () => void }) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [name, setName] = useState(cycle.name);
+    const [startsAt, setStartsAt] = useState(toLocalInput(cycle.startsAt));
+    const [endsAt, setEndsAt] = useState(toLocalInput(cycle.endsAt));
+
+    function cancelEdit() {
+        setName(cycle.name);
+        setStartsAt(toLocalInput(cycle.startsAt));
+        setEndsAt(toLocalInput(cycle.endsAt));
+        setIsEditing(false);
+    }
+
+    function saveEdit() {
+        const nextName = name.trim();
+        if (!nextName) return;
+        onUpdate({ name: nextName, startsAt: toIso(startsAt), endsAt: toIso(endsAt) });
+        setIsEditing(false);
+    }
+
     return (
         <div className="flex flex-wrap items-center gap-3 px-3 py-3">
             <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-primary">{cycle.name}</p>
-                <p className="mt-1 text-xs text-tertiary">
-                    Cycle {cycle.number}{cycle.startsAt || cycle.endsAt ? ` · ${formatPeriod(cycle.startsAt, cycle.endsAt)}` : " · No period set"}
-                </p>
+                {isEditing ? (
+                    <div className="grid gap-2 sm:grid-cols-3">
+                        <input value={name} onChange={(event) => setName(event.target.value)} aria-label={`${cycle.name} name`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-sm text-primary outline-none focus:border-brand sm:col-span-3" />
+                        <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} aria-label={`${cycle.name} starts`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand" />
+                        <input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} aria-label={`${cycle.name} ends`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand" />
+                    </div>
+                ) : (
+                    <>
+                        <p className="truncate text-sm font-medium text-primary">{cycle.name}</p>
+                        <p className="mt-1 text-xs text-tertiary">Cycle {cycle.number}{cycle.startsAt || cycle.endsAt ? ` · ${formatPeriod(cycle.startsAt, cycle.endsAt)}` : " · No period set"}</p>
+                    </>
+                )}
             </div>
             {isProjectOwner ? (
                 <select value={cycle.status} disabled={isPending} onChange={(event) => onStatusChange(event.target.value as Cycle["status"])} aria-label={`${cycle.name} status`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
                     {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
                 </select>
             ) : <span className="text-xs text-tertiary">{statusLabels[cycle.status]}</span>}
-            {isProjectOwner && <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete cycle" />} title="Delete cycle" description={`The cycle "${cycle.name}" will be deleted. Issues in it will remain available.`} confirmLabel="Delete cycle" isPending={isPending} onConfirm={onDelete} />}
+            {isProjectOwner && (
+                <div className="flex items-center gap-1">
+                    {isEditing ? (
+                        <>
+                            <Button size="xs" isDisabled={isPending || !name.trim()} isLoading={isPending} onClick={saveEdit}>Save</Button>
+                            <Button size="xs" color="tertiary" isDisabled={isPending} onClick={cancelEdit}>Cancel</Button>
+                        </>
+                    ) : <ButtonUtility icon={Pencil} size="sm" color="tertiary" tooltip="Edit cycle" isDisabled={isPending} onClick={() => setIsEditing(true)} />}
+                    <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete cycle" isDisabled={isPending} />} title="Delete cycle" description={`The cycle "${cycle.name}" will be deleted. Issues in it will remain available.`} confirmLabel="Delete cycle" isPending={isPending} onConfirm={onDelete} />
+                </div>
+            )}
         </div>
     );
 }
 
 function toIso(value: string) {
     return value ? new Date(value).toISOString() : null;
+}
+
+function toLocalInput(value: string | null) {
+    if (!value) return "";
+    const date = new Date(value);
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
 }
 
 function formatPeriod(startsAt: string | null, endsAt: string | null) {
