@@ -22,6 +22,7 @@ import type { Issue } from "@/features/issues/api";
 import { useIssues, useUpdateIssue } from "@/features/issues/hooks/use-issues";
 import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
+import { ApiError } from "@/lib/api-client";
 import { useColumns } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
@@ -54,6 +55,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
     const [activeIssueWidth, setActiveIssueWidth] = useState<number>();
     const [dragIssues, setDragIssues] = useState<Issue[] | null>(null);
+    const [moveError, setMoveError] = useState<string | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -74,6 +76,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     }
 
     function handleDragStart(event: DragStartEvent) {
+        setMoveError(null);
         const activeId = String(event.active.id);
         setActiveIssue(board.find((issue) => issue.id === activeId) ?? null);
         setDragIssues(board);
@@ -169,7 +172,13 @@ export const Board = ({ projectId }: { projectId: string }) => {
             return;
         }
 
-        updateIssue.mutate({ identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragIssues(null) });
+        updateIssue.mutate(
+            { identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } },
+            {
+                onError: (reason) => setMoveError(reason instanceof ApiError ? reason.message : "Could not move the issue."),
+                onSettled: () => setDragIssues(null),
+            },
+        );
     }
 
     function handleDragCancel() {
@@ -190,6 +199,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
     return (
         <>
+            {moveError && <p role="alert" className="mb-3 rounded-md border border-error-subtle bg-error-primary px-3 py-2 text-sm text-error-primary">{moveError}</p>}
             <DndContext
                 sensors={sensors}
                 collisionDetection={collisionDetection}

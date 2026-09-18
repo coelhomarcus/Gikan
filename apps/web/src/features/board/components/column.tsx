@@ -53,7 +53,9 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
             setName(column.name);
             return;
         }
-        updateColumn.mutate({ columnId: column.id, input: { name: trimmed } });
+        updateColumn.mutate({ columnId: column.id, input: { name: trimmed } }, {
+            onError: (err) => setError(err instanceof ApiError ? err.message : "Could not rename the column"),
+        });
     }
 
     function handleDelete() {
