@@ -62,7 +62,7 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                 aria-label="Search project icons"
                 placeholder="Search icons"
                 value={query}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={setQuery}
                 icon={Search}
                 size="sm"
             />

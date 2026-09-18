@@ -8,9 +8,9 @@ export const ProjectsPage = () => {
     const { data: projects, isLoading, isError } = useProjects();
 
     return (
-        <>
+        <div className="flex h-full min-h-0 flex-col">
             <Topbar title="Projects" actions={<CreateProjectModal />} />
-            <div className="p-4 lg:p-6">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
                 {isLoading && <p className="text-tertiary">Loading...</p>}
 
                 {isError && <ErrorMessage message="Could not load your projects. Try refreshing the page." />}
@@ -30,6 +30,6 @@ export const ProjectsPage = () => {
                     </div>
                 )}
             </div>
-        </>
+        </div>
     );
 };

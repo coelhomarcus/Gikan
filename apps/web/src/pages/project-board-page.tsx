@@ -6,7 +6,7 @@ export const ProjectBoardPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
 
     return (
-        <div className="flex h-dvh flex-col">
+        <div className="flex h-full min-h-0 flex-col">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="board" />
             <div className="min-h-0 flex-1 overflow-x-auto p-4 lg:p-6">
                 <Board projectId={projectId!} />

@@ -22,9 +22,9 @@ export const ProjectDocumentsPage = () => {
     if (isError || !document) return <ErrorMessage message="Could not load the project document." />;
 
     return (
-        <div className="flex min-h-dvh flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-primary">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="documents" />
-            <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col px-4 py-6 lg:px-8">
+            <main className="mx-auto min-h-0 w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6 lg:px-8">
                 <div className="mb-4 flex items-center justify-between">
                     <div>
                         <p className="text-sm text-tertiary">Project document</p>

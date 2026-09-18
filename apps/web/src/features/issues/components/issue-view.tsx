@@ -9,7 +9,6 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
-import { cx } from "@/utils/cx";
 import {
     useCreateIssueComment,
     useCycles,
@@ -90,7 +89,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
 
     const save = (input: Parameters<typeof updateIssue.mutate>[0]["input"]) => updateIssue.mutate({ identifier: issue.identifier, input });
     const content = (
-        <div className={cx("flex min-h-0 flex-col", mode === "peek" ? "h-full" : "min-h-dvh")}>
+        <div className="flex h-full min-h-0 flex-col">
             <div className="flex items-center justify-between gap-3 border-b border-secondary px-5 py-3">
                 <div className="flex min-w-0 items-center gap-2 text-sm text-tertiary">
                     {onClose && <ButtonUtility icon={ArrowLeft} size="sm" color="tertiary" tooltip="Close issue" onClick={onClose} />}
@@ -225,7 +224,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             {content}
         </aside>
     ) : (
-        <main className="min-h-dvh bg-primary">{content}</main>
+        <main className="h-full min-h-0 bg-primary">{content}</main>
     );
 };
 

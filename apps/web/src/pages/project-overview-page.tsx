@@ -20,9 +20,10 @@ export const ProjectOverviewPage = () => {
     if (isError || !project) return <ErrorMessage message="Could not load the project." />;
 
     return (
-        <div className="flex min-h-dvh flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-primary">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="overview" />
-            <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-4 py-8 lg:px-8">
+            <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-8 lg:px-8">
+                <div className="flex flex-col gap-8">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                     <div>
                         <p className="font-mono text-xs text-fg-brand-primary">{project.issueKey}</p>
@@ -71,6 +72,7 @@ export const ProjectOverviewPage = () => {
                         />
                     </div>
                 </section>
+                </div>
             </main>
         </div>
     );

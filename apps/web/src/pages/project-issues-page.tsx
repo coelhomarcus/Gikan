@@ -67,9 +67,10 @@ export const ProjectIssuesPage = () => {
     }
 
     return (
-        <div className="flex min-h-dvh flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-primary">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="issues" />
-            <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5 px-4 py-5 lg:px-8">
+            <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-5 lg:px-8">
+                <div className="flex flex-col gap-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <p className="text-sm text-tertiary">{project?.issueKey ?? "Project"}</p>
@@ -212,6 +213,7 @@ export const ProjectIssuesPage = () => {
                         {filteredIssues.length === 0 && <p className="px-4 py-10 text-center text-sm text-tertiary">No issues found.</p>}
                     </div>
                 )}
+                </div>
             </main>
         </div>
     );

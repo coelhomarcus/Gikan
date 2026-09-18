@@ -3,9 +3,9 @@ import { Sidebar } from "./sidebar";
 
 export const AppShell = () => {
     return (
-        <div className="min-h-dvh bg-primary lg:flex">
+        <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-primary lg:flex-row">
             <Sidebar />
-            <main className="min-h-dvh min-w-0 lg:flex-1">
+            <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-primary">
                 <Outlet />
             </main>
         </div>

@@ -1,5 +1,19 @@
 import type { LucideIcon } from "lucide-react";
-import { ChevronDown, ExternalLink, LayoutGrid, LogOut, Menu, Search, Settings, X } from "lucide-react";
+import {
+    ArrowLeft,
+    BookOpen,
+    ChevronDown,
+    Columns3,
+    ExternalLink,
+    FileText,
+    LayoutGrid,
+    List,
+    LogOut,
+    Menu,
+    Search,
+    Settings,
+    X,
+} from "lucide-react";
 
 /**
  * Semantic application icons. Feature code should use this registry for shared UI actions so
@@ -8,8 +22,13 @@ import { ChevronDown, ExternalLink, LayoutGrid, LogOut, Menu, Search, Settings, 
 export const AppIcons: Record<string, LucideIcon> & {
     ChevronDown: LucideIcon;
     Close: LucideIcon;
+    Back: LucideIcon;
+    Board: LucideIcon;
+    Documents: LucideIcon;
     ExternalLink: LucideIcon;
+    Issues: LucideIcon;
     Menu: LucideIcon;
+    Overview: LucideIcon;
     Projects: LucideIcon;
     Search: LucideIcon;
     Settings: LucideIcon;
@@ -17,8 +36,13 @@ export const AppIcons: Record<string, LucideIcon> & {
 } = {
     ChevronDown,
     Close: X,
+    Back: ArrowLeft,
+    Board: Columns3,
+    Documents: BookOpen,
     ExternalLink,
+    Issues: List,
     Menu,
+    Overview: FileText,
     Projects: LayoutGrid,
     Search,
     Settings,
