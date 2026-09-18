@@ -441,6 +441,21 @@ function IssueProperties({
                 isDisabled={isPending}
                 onChange={(value) => save({ parentIssueId: value || null })}
             />
+            <div className="mt-2 flex flex-col gap-2 border-t border-secondary pt-3 text-xs">
+                <ReadOnlyProperty label="Project" value={`${issue.project.name} · ${issue.project.issueKey}`} />
+                <ReadOnlyProperty label="Created by" value={issue.createdBy.name} />
+                <ReadOnlyProperty label="Created" value={formatDate(issue.createdAt)} />
+                <ReadOnlyProperty label="Updated" value={formatDate(issue.updatedAt)} />
+            </div>
+        </div>
+    );
+}
+
+function ReadOnlyProperty({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-start justify-between gap-3">
+            <span className="text-tertiary">{label}</span>
+            <span className="min-w-0 truncate text-right text-secondary">{value}</span>
         </div>
     );
 }
@@ -731,6 +746,10 @@ function formatDistanceToNow(value: string) {
     const hours = Math.round(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
     return `${Math.round(hours / 24)}d ago`;
+}
+
+function formatDate(value: string) {
+    return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function errorMessage(reason: unknown, fallback = "Could not save the issue.") {
