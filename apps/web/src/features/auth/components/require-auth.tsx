@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { useAuth } from "../hooks/use-auth";
 
 export const RequireAuth = ({ children }: { children: ReactNode }) => {
@@ -7,7 +8,7 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
 
     if (isLoading) {
-        return null;
+        return <LoadingState label="Loading your session..." className="flex min-h-dvh items-center justify-center bg-primary" />;
     }
 
     if (!user) {

@@ -1,4 +1,4 @@
-import { ArrowLeft } from "@untitledui/icons";
+import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 
