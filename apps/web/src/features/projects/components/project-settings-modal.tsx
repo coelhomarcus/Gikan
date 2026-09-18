@@ -5,6 +5,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ColumnsPanel } from "@/features/board/components/columns-panel";
 import { CategoriesPanel } from "@/features/categories/components/categories-panel";
 import { MembersPanel } from "@/features/projects/components/members-panel";
+import { CyclesPanel } from "@/features/projects/components/cycles-panel";
 import { ProjectDetailsPanel } from "@/features/projects/components/project-details-panel";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
@@ -42,6 +43,7 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                                         { id: "columns", label: "Statuses" },
                                         { id: "members", label: "Members" },
                                         { id: "categories", label: "Labels" },
+                                        { id: "cycles", label: "Cycles" },
                                     ]}
                                 />
                                 <div className="min-h-0 min-w-0 flex-1 overflow-y-auto md:pl-6">
@@ -56,6 +58,9 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                                     </Tabs.Panel>
                                     <Tabs.Panel id="categories" className="w-full pt-0">
                                         <CategoriesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                    </Tabs.Panel>
+                                    <Tabs.Panel id="cycles" className="w-full pt-0">
+                                        <CyclesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
                                 </div>
                             </Tabs>

@@ -1,10 +1,12 @@
 import type {
     CreateIssueCommentInput,
+    CreateCycleInput,
     CreateIssueInput,
     CreateIssueRelationInput,
     IssueListQuery,
     TiptapDocument,
     UpdateIssueCommentInput,
+    UpdateCycleInput,
     UpdateIssueInput,
 } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
@@ -147,6 +149,14 @@ export function listCycles(projectId: string): Promise<Cycle[]> {
     return apiClient.get<{ cycles: Cycle[] }>(`/projects/${projectId}/cycles`).then((res) => res.cycles);
 }
 
-export function createCycle(projectId: string, input: { name: string; status?: Cycle["status"] }): Promise<Cycle> {
+export function createCycle(projectId: string, input: CreateCycleInput): Promise<Cycle> {
     return apiClient.post<{ cycle: Cycle }>(`/projects/${projectId}/cycles`, input).then((res) => res.cycle);
+}
+
+export function updateCycle(cycleId: string, input: UpdateCycleInput): Promise<Cycle> {
+    return apiClient.patch<{ cycle: Cycle }>(`/cycles/${cycleId}`, input).then((res) => res.cycle);
+}
+
+export function deleteCycle(cycleId: string): Promise<void> {
+    return apiClient.delete<void>(`/cycles/${cycleId}`);
 }

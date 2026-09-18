@@ -1,0 +1,127 @@
+import { useState } from "react";
+import { Trash2 } from "lucide-react";
+import type { Cycle } from "@/features/issues/api";
+import { useCreateCycle, useCycles, useDeleteCycle, useUpdateCycle } from "@/features/issues/hooks/use-issues";
+import { Button } from "@/components/base/buttons/button";
+import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
+import { ApiError } from "@/lib/api-client";
+
+interface CyclesPanelProps {
+    projectId: string;
+    isProjectOwner: boolean;
+}
+
+const statusLabels: Record<Cycle["status"], string> = { planned: "Planned", active: "Active", completed: "Completed" };
+
+export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => {
+    const { data: cycles, isLoading, isError } = useCycles(projectId);
+    const createCycle = useCreateCycle(projectId);
+    const updateCycle = useUpdateCycle(projectId);
+    const deleteCycle = useDeleteCycle(projectId);
+    const [name, setName] = useState("");
+    const [status, setStatus] = useState<Cycle["status"]>("planned");
+    const [startsAt, setStartsAt] = useState("");
+    const [endsAt, setEndsAt] = useState("");
+    const [error, setError] = useState<string | null>(null);
+
+    function submit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (!name.trim()) {
+            setError("Add a cycle name.");
+            return;
+        }
+        setError(null);
+        createCycle.mutate(
+            { name: name.trim(), status, startsAt: toIso(startsAt), endsAt: toIso(endsAt) },
+            {
+                onSuccess: () => {
+                    setName("");
+                    setStatus("planned");
+                    setStartsAt("");
+                    setEndsAt("");
+                },
+                onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not create the cycle."),
+            },
+        );
+    }
+
+    return (
+        <div className="flex flex-col gap-6">
+            {isProjectOwner && (
+                <form className="flex flex-col gap-4 rounded-lg border border-secondary p-4" onSubmit={submit}>
+                    <div>
+                        <h3 className="text-sm font-semibold text-primary">New cycle</h3>
+                        <p className="mt-1 text-sm text-tertiary">Plan a focused period of work for this project.</p>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
+                        <label className="grid gap-1 text-xs text-tertiary">
+                            Name
+                            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Cycle name" className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
+                        </label>
+                        <label className="grid gap-1 text-xs text-tertiary">
+                            Status
+                            <select value={status} onChange={(event) => setStatus(event.target.value as Cycle["status"])} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand">
+                                {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                            </select>
+                        </label>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="grid gap-1 text-xs text-tertiary">
+                            Starts
+                            <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
+                        </label>
+                        <label className="grid gap-1 text-xs text-tertiary">
+                            Ends
+                            <input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
+                        </label>
+                    </div>
+                    {error && <p role="alert" className="text-sm text-error-primary">{error}</p>}
+                    <div><Button type="submit" isLoading={createCycle.isPending}>Create cycle</Button></div>
+                </form>
+            )}
+
+            {isLoading && <LoadingState label="Loading cycles..." />}
+            {isError && <ErrorMessage message="Could not load the project cycles." />}
+            {!isLoading && !isError && cycles?.length === 0 && <EmptyState title="No cycles yet" description={isProjectOwner ? "Create a cycle to organize a focused period of work." : "This project does not have any cycles yet."} />}
+            {!isLoading && !isError && cycles && cycles.length > 0 && (
+                <div className="divide-y divide-secondary overflow-hidden rounded-lg border border-secondary">
+                    {cycles.map((cycle) => (
+                        <CycleRow key={cycle.id} cycle={cycle} isProjectOwner={isProjectOwner} isPending={updateCycle.isPending || deleteCycle.isPending} onStatusChange={(nextStatus) => updateCycle.mutate({ cycleId: cycle.id, input: { status: nextStatus } })} onDelete={() => deleteCycle.mutate(cycle.id)} />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
+function CycleRow({ cycle, isProjectOwner, isPending, onStatusChange, onDelete }: { cycle: Cycle; isProjectOwner: boolean; isPending: boolean; onStatusChange: (status: Cycle["status"]) => void; onDelete: () => void }) {
+    return (
+        <div className="flex flex-wrap items-center gap-3 px-3 py-3">
+            <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-primary">{cycle.name}</p>
+                <p className="mt-1 text-xs text-tertiary">
+                    Cycle {cycle.number}{cycle.startsAt || cycle.endsAt ? ` · ${formatPeriod(cycle.startsAt, cycle.endsAt)}` : " · No period set"}
+                </p>
+            </div>
+            {isProjectOwner ? (
+                <select value={cycle.status} disabled={isPending} onChange={(event) => onStatusChange(event.target.value as Cycle["status"])} aria-label={`${cycle.name} status`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
+                    {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                </select>
+            ) : <span className="text-xs text-tertiary">{statusLabels[cycle.status]}</span>}
+            {isProjectOwner && <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete cycle" />} title="Delete cycle" description={`The cycle "${cycle.name}" will be deleted. Issues in it will remain available.`} confirmLabel="Delete cycle" isPending={isPending} onConfirm={onDelete} />}
+        </div>
+    );
+}
+
+function toIso(value: string) {
+    return value ? new Date(value).toISOString() : null;
+}
+
+function formatPeriod(startsAt: string | null, endsAt: string | null) {
+    const format = (value: string | null) => (value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value)) : "?");
+    return `${format(startsAt)} – ${format(endsAt)}`;
+}
