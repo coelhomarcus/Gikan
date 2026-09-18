@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
@@ -15,6 +16,7 @@ const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((modul
 
 export const CreateProjectModal = () => {
     const mutation = useCreateProject();
+    const navigate = useNavigate();
     const { control, handleSubmit, reset, setError, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
         defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
@@ -28,9 +30,10 @@ export const CreateProjectModal = () => {
                     noValidate
                     onSubmit={handleSubmit((data) => {
                         mutation.mutate(data, {
-                            onSuccess: () => {
+                            onSuccess: (project) => {
                                 reset({ name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
                                 close();
+                                navigate(`/projects/${project.id}`);
                             },
                             onError: (error) => {
                                 setError("root", { message: error instanceof ApiError ? error.message : "Could not create the project" });
