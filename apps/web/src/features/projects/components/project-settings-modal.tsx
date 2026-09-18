@@ -24,36 +24,40 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
 
     return (
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()}>
-            <Modal className="max-w-3xl">
+            <Modal className="max-w-5xl">
                 <Dialog>
-                    <div className="flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="flex items-start justify-between gap-4 p-6 pb-0">
+                    <div className="flex max-h-[min(88vh,760px)] w-full min-w-0 flex-col overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
+                        <div className="flex shrink-0 items-start justify-between gap-4 p-5 pb-0 sm:p-6 sm:pb-0">
                             <h2 className="text-lg font-semibold text-primary">{project ? `${project.name} · Settings` : "Project settings"}</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
-                        <div className="p-6">
-                            <Tabs>
+                        <div className="flex min-h-0 min-w-0 flex-1 p-5 pt-4 sm:p-6 sm:pt-5">
+                            <Tabs className="min-h-0 min-w-0 flex-1 md:flex-row">
                                 <Tabs.List
-                                    type="button-border"
+                                    orientation="vertical"
+                                    type="line"
+                                    className="w-full shrink-0 pb-4 md:w-40 md:border-r md:border-secondary md:pr-4 md:pb-0"
                                     items={[
                                         { id: "general", label: "General" },
-                                        { id: "columns", label: "Columns" },
+                                        { id: "columns", label: "Statuses" },
                                         { id: "members", label: "Members" },
-                                        { id: "categories", label: "Categories" },
+                                        { id: "categories", label: "Labels" },
                                     ]}
                                 />
-                                <Tabs.Panel id="general" className="pt-5">
-                                    <ProjectDetailsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
-                                </Tabs.Panel>
-                                <Tabs.Panel id="columns" className="pt-5">
-                                    <ColumnsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
-                                </Tabs.Panel>
-                                <Tabs.Panel id="members" className="pt-5">
-                                    <MembersPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
-                                </Tabs.Panel>
-                                <Tabs.Panel id="categories" className="pt-5">
-                                    <CategoriesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
-                                </Tabs.Panel>
+                                <div className="min-h-0 min-w-0 flex-1 overflow-y-auto md:pl-6">
+                                    <Tabs.Panel id="general" className="w-full pt-0">
+                                        <ProjectDetailsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                    </Tabs.Panel>
+                                    <Tabs.Panel id="columns" className="w-full pt-0">
+                                        <ColumnsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                    </Tabs.Panel>
+                                    <Tabs.Panel id="members" className="w-full pt-0">
+                                        <MembersPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                    </Tabs.Panel>
+                                    <Tabs.Panel id="categories" className="w-full pt-0">
+                                        <CategoriesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
+                                    </Tabs.Panel>
+                                </div>
                             </Tabs>
                         </div>
                     </div>
