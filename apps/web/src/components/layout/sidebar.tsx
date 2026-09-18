@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Home02 } from "@untitledui/icons";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useLocation } from "react-router";
 import { NavItemBase } from "@/components/application/app-navigation/base-components/nav-item";
 import { SidebarNavigationSimple } from "@/components/application/app-navigation/sidebar-navigation/sidebar-simple";
+import { AppIcons } from "@/components/foundations/icons";
 import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { ProjectSearchModal } from "@/features/projects/components/project-search-modal";
 import { useProjects } from "@/features/projects/hooks/use-projects";
@@ -18,9 +18,9 @@ export const Sidebar = () => {
     const { data: projects } = useProjects();
 
     const navSlot = (
-        <ul className="flex flex-col px-4 pt-5">
+        <ul className="flex flex-col px-3 pt-4">
             <li className="py-px">
-                <NavItemBase type="link" href="/" icon={Home02} current={location.pathname === "/"}>
+                <NavItemBase type="link" href="/" icon={AppIcons.Projects} current={location.pathname === "/"}>
                     Projects
                 </NavItemBase>
             </li>

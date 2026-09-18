@@ -1,7 +1,7 @@
 import type { FocusEvent, ReactNode } from "react";
-import { SearchLg } from "@untitledui/icons";
 import { Link as AriaLink } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
+import { AppIcons } from "@/components/foundations/icons";
 import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 import { cx } from "@/utils/cx";
 import { MobileNavigationHeader } from "../base-components/mobile-header";
@@ -56,7 +56,7 @@ export const SidebarNavigationSimple = ({
               },
           }
         : {};
-    const MAIN_SIDEBAR_WIDTH = 280;
+    const MAIN_SIDEBAR_WIDTH = 232;
 
     const content = (
         <aside
@@ -66,26 +66,26 @@ export const SidebarNavigationSimple = ({
                 } as React.CSSProperties
             }
             className={cx(
-                "flex h-full w-full max-w-full flex-col justify-between overflow-auto bg-primary pt-4 lg:w-(--width) lg:pt-5",
+                "flex h-full w-full max-w-full flex-col justify-between overflow-auto bg-primary pt-3 lg:w-(--width) lg:pt-4",
                 !hideBorder && "border-secondary md:border-r",
                 className,
             )}
         >
-            <div className="flex flex-col gap-5 px-4 lg:px-5">
+            <div className="flex flex-col gap-4 px-3 lg:px-4">
                 <AriaLink href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
                     <GikanLogo className="h-6" />
                 </AriaLink>
 
                 {/* Mobile search input */}
-                <Input size="md" aria-label="Search" placeholder="Search" icon={SearchLg} className="md:hidden" {...searchTriggerProps} />
+                <Input size="md" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="md:hidden" {...searchTriggerProps} />
 
                 {/* Desktop search input */}
-                <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={SearchLg} className="max-md:hidden" {...searchTriggerProps} />
+                <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="max-md:hidden" {...searchTriggerProps} />
             </div>
 
             {navSlot ?? <NavList activeUrl={activeUrl} items={items} />}
 
-            <div className="mt-auto flex flex-col gap-3 px-4 py-4 lg:py-5">
+            <div className="mt-auto flex flex-col gap-2 px-3 py-3 lg:px-4 lg:py-4">
                 {footerItems.length > 0 && (
                     <ul className="flex flex-col">
                         {footerItems.map((item) => (

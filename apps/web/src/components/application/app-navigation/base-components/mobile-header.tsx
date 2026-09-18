@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from "react";
-import { X as CloseIcon, Menu02 } from "@untitledui/icons";
 import {
     Button as AriaButton,
     Dialog as AriaDialog,
@@ -8,6 +7,7 @@ import {
     ModalOverlay as AriaModalOverlay,
 } from "react-aria-components";
 import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
+import { AppIcons } from "@/components/foundations/icons";
 import { cx } from "@/utils/cx";
 
 export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
@@ -20,8 +20,8 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
                     aria-label="Expand navigation menu"
                     className="group flex items-center justify-center rounded-lg bg-primary p-2 text-fg-secondary outline-focus-ring hover:bg-primary_hover hover:text-fg-secondary_hover focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
-                    <Menu02 className="size-6 transition duration-200 ease-in-out group-aria-expanded:opacity-0" />
-                    <CloseIcon className="absolute size-6 opacity-0 transition duration-200 ease-in-out group-aria-expanded:opacity-100" />
+                    <AppIcons.Menu className="size-5 transition duration-200 ease-in-out group-aria-expanded:opacity-0" />
+                    <AppIcons.Close className="absolute size-6 opacity-0 transition duration-200 ease-in-out group-aria-expanded:opacity-100" />
                 </AriaButton>
             </header>
 
@@ -42,7 +42,7 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
                             onPress={() => state.close()}
                             className="fixed top-2.5 right-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
-                            <CloseIcon className="size-6" />
+                            <AppIcons.Close className="size-5" />
                         </AriaButton>
 
                         <AriaModal className="w-full max-w-74 cursor-auto will-change-transform">

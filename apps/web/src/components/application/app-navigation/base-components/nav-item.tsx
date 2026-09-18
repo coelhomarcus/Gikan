@@ -1,7 +1,7 @@
 import type { FC, HTMLAttributes, MouseEventHandler, ReactNode } from "react";
-import { ChevronDown, Share04 } from "@untitledui/icons";
 import { Link as AriaLink } from "react-aria-components";
 import { Badge } from "@/components/base/badges/badges";
+import { AppIcons } from "@/components/foundations/icons";
 import { cx, sortCx } from "@/utils/cx";
 
 const styles = sortCx({
@@ -37,7 +37,7 @@ export const NavItemBase = ({ current, type, badge, href, icon: Icon, children, 
         <Icon
             aria-hidden="true"
             className={cx(
-                "mr-2 size-5 shrink-0 text-fg-quaternary transition-inherit-all group-hover/item:text-fg-quaternary_hover",
+                "mr-2 size-4 shrink-0 text-fg-quaternary transition-inherit-all group-hover/item:text-fg-quaternary_hover",
                 current && "text-fg-quaternary_hover",
             )}
         />
@@ -55,7 +55,7 @@ export const NavItemBase = ({ current, type, badge, href, icon: Icon, children, 
     const labelElement = (
         <span
             className={cx(
-                "flex-1 text-sm font-semibold text-secondary transition-inherit-all group-hover/item:text-secondary_hover",
+                "flex-1 text-[13px] font-medium text-secondary transition-inherit-all group-hover/item:text-secondary_hover",
                 truncate && "truncate",
                 current && "text-secondary_hover",
             )}
@@ -65,7 +65,7 @@ export const NavItemBase = ({ current, type, badge, href, icon: Icon, children, 
     );
 
     const isExternal = href && href.startsWith("http");
-    const externalIcon = isExternal && <Share04 className="size-4 stroke-[2.5px] text-fg-quaternary" />;
+    const externalIcon = isExternal && <AppIcons.ExternalLink aria-hidden="true" className="size-3.5 text-fg-quaternary" />;
 
     if (type === "collapsible") {
         return (
@@ -76,7 +76,7 @@ export const NavItemBase = ({ current, type, badge, href, icon: Icon, children, 
 
                 {badgeElement}
 
-                <ChevronDown aria-hidden="true" className="ml-3 size-4 shrink-0 stroke-[2.5px] text-fg-quaternary in-open:-scale-y-100" />
+                <AppIcons.ChevronDown aria-hidden="true" className="ml-3 size-4 shrink-0 text-fg-quaternary in-open:-scale-y-100" />
             </summary>
         );
     }
