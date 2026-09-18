@@ -1,6 +1,7 @@
 import { updateProjectSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ExternalLink } from "lucide-react";
+import { lazy, Suspense } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -11,7 +12,8 @@ import { ApiError } from "@/lib/api-client";
 import { useProject } from "../hooks/use-project";
 import { useUpdateProject } from "../hooks/use-projects";
 import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
-import { ProjectIconPicker } from "./project-icon-picker";
+
+const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((module) => ({ default: module.ProjectIconPicker })));
 
 interface ProjectDetailsPanelProps {
     projectId: string;
@@ -102,7 +104,15 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             <ControlledTextarea control={control} name="description" label="Description" rows={3} />
             <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 
-            <Controller control={control} name="icon" render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />} />
+            <Controller
+                control={control}
+                name="icon"
+                render={({ field }) => (
+                    <Suspense fallback={<div className="h-24 animate-pulse rounded-md bg-secondary_alt" aria-label="Loading icon picker" />}>
+                        <ProjectIconPicker value={field.value} onChange={field.onChange} />
+                    </Suspense>
+                )}
+            />
 
             {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
             {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
