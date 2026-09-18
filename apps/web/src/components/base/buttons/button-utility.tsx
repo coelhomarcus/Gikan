@@ -9,7 +9,7 @@ import { isReactComponent } from "@/utils/is-react-component";
 
 export const styles = {
     secondary:
-        "bg-primary text-fg-quaternary shadow-xs-skeuomorphic ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-fg-quaternary_hover disabled:shadow-xs",
+        "bg-primary text-fg-quaternary ring-1 ring-primary ring-inset hover:bg-primary_hover hover:text-fg-quaternary_hover",
     tertiary: "text-fg-quaternary hover:bg-primary_hover hover:text-fg-quaternary_hover",
 };
 
@@ -95,7 +95,7 @@ export const ButtonUtility = ({
 
                 // Icon styles
                 "*:data-icon:pointer-events-none *:data-icon:shrink-0 *:data-icon:text-current *:data-icon:transition-inherit-all",
-                size === "xs" ? "*:data-icon:size-4" : "*:data-icon:size-5",
+                size === "xs" ? "*:data-icon:size-3.5" : "*:data-icon:size-4",
 
                 className,
             )}
