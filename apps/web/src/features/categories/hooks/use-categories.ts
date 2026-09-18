@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { CreateCategoryInput } from "@gikan/shared";
-import { createCategory, deleteCategory, listCategories } from "../api";
+import type { CreateCategoryInput, UpdateCategoryInput } from "@gikan/shared";
+import { createCategory, deleteCategory, listCategories, updateCategory } from "../api";
 
 export function categoriesQueryKey(projectId: string) {
     return ["projects", projectId, "categories"] as const;
@@ -33,5 +33,13 @@ export function useDeleteCategory(projectId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: categoriesQueryKey(projectId) });
         },
+    });
+}
+
+export function useUpdateCategory(projectId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ categoryId, input }: { categoryId: string; input: UpdateCategoryInput }) => updateCategory(projectId, categoryId, input),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: categoriesQueryKey(projectId) }),
     });
 }

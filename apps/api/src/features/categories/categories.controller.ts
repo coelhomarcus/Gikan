@@ -1,6 +1,6 @@
-import { createCategorySchema } from "@gikan/shared";
+import { createCategorySchema, updateCategorySchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
-import { createCategory, deleteCategory, listCategories } from "./categories.service";
+import { createCategory, deleteCategory, listCategories, updateCategory } from "./categories.service";
 
 export const list = asyncHandler<{ projectId: string }>(async (req, res) => {
     const categoryList = await listCategories(req.params.projectId);
@@ -20,4 +20,14 @@ export const remove = asyncHandler<{ projectId: string; categoryId: string }>(as
         isProjectOwner: req.projectMembership?.role === "owner",
     });
     res.status(204).send();
+});
+
+export const update = asyncHandler<{ projectId: string; categoryId: string }>(async (req, res) => {
+    const input = updateCategorySchema.parse(req.body);
+    const category = await updateCategory(req.params.projectId, req.params.categoryId, input, {
+        userId: req.user!.sub,
+        isAdmin: req.user!.isAdmin,
+        isProjectOwner: req.projectMembership?.role === "owner",
+    });
+    res.json({ category });
 });

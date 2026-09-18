@@ -1,4 +1,4 @@
-import type { CreateCategoryInput } from "@gikan/shared";
+import type { CreateCategoryInput, UpdateCategoryInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Category {
@@ -20,4 +20,8 @@ export function createCategory(projectId: string, input: CreateCategoryInput): P
 
 export function deleteCategory(projectId: string, categoryId: string): Promise<void> {
     return apiClient.delete<void>(`/projects/${projectId}/categories/${categoryId}`);
+}
+
+export function updateCategory(projectId: string, categoryId: string, input: UpdateCategoryInput): Promise<Category> {
+    return apiClient.patch<{ category: Category }>(`/projects/${projectId}/categories/${categoryId}`, input).then((res) => res.category);
 }

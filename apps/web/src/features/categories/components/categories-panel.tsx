@@ -1,6 +1,7 @@
 import { type CreateCategoryInput, createCategorySchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -12,7 +13,7 @@ import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
-import { useCategories, useCreateCategory, useDeleteCategory } from "../hooks/use-categories";
+import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from "../hooks/use-categories";
 import { CATEGORY_COLORS, CategoryBadge } from "./category-badge";
 
 interface CategoriesPanelProps {
@@ -25,6 +26,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
     const { data: categories, isLoading, isError } = useCategories(projectId);
     const createMutation = useCreateCategory(projectId);
     const deleteMutation = useDeleteCategory(projectId);
+    const updateMutation = useUpdateCategory(projectId);
 
     const { control, handleSubmit, reset, setError, formState } = useForm<CreateCategoryInput>({
         resolver: zodResolver(createCategorySchema),
@@ -91,7 +93,20 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
 
                         return (
                             <li key={category.id} className="flex items-center justify-between gap-3 rounded-lg border border-secondary px-3 py-2">
-                                <CategoryBadge category={category} />
+                                {canDelete ? (
+                                    <CategoryEditor
+                                        category={category}
+                                        isPending={updateMutation.isPending}
+                                        onSave={(input) =>
+                                            updateMutation.mutate(
+                                                { categoryId: category.id, input },
+                                                { onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not update the category" }) },
+                                            )
+                                        }
+                                    />
+                                ) : (
+                                    <CategoryBadge category={category} />
+                                )}
                                 {canDelete && (
                                     <ConfirmDialog
                                         trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete" />}
@@ -99,7 +114,11 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                                         description={`The category "${category.name}" will be deleted and removed from the issues that use it. This action cannot be undone.`}
                                         confirmLabel="Delete category"
                                         isPending={deleteMutation.isPending}
-                                        onConfirm={() => deleteMutation.mutate(category.id)}
+                                        onConfirm={() =>
+                                            deleteMutation.mutate(category.id, {
+                                                onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not delete the category" }),
+                                            })
+                                        }
                                     />
                                 )}
                             </li>
@@ -110,3 +129,23 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
         </div>
     );
 };
+
+function CategoryEditor({ category, isPending, onSave }: { category: { name: string; color: string | null }; isPending: boolean; onSave: (input: { name?: string; color?: string | null }) => void }) {
+    const [name, setName] = useState(category.name);
+    const [color, setColor] = useState(category.color ?? CATEGORY_COLORS[0]);
+    const isDirty = name.trim() !== category.name || color !== (category.color ?? CATEGORY_COLORS[0]);
+
+    return (
+        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+            <input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} aria-label={`Label ${category.name}`} className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-1 text-sm font-medium text-primary outline-none focus:border-secondary focus:bg-primary disabled:opacity-60" />
+            <div className="flex items-center gap-1.5">
+                {CATEGORY_COLORS.map((item) => (
+                    <button key={item} type="button" aria-label={`Use color ${item}`} aria-pressed={color === item} disabled={isPending} onClick={() => setColor(item)} className={cx("size-5 rounded-full disabled:opacity-50", color === item && "outline-2 outline-fg-primary outline-offset-1")} style={{ backgroundColor: item }} />
+                ))}
+                <Button size="xs" color="tertiary" isDisabled={isPending || !name.trim() || !isDirty} onClick={() => onSave({ name: name.trim(), color })}>
+                    Save
+                </Button>
+            </div>
+        </div>
+    );
+}
