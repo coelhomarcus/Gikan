@@ -77,6 +77,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
+    const peekRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
         if (!issue) return;
@@ -95,14 +96,33 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
 
     useEffect(() => {
         if (mode !== "peek") return;
+        const previouslyFocused = document.activeElement as HTMLElement | null;
+        const focusFrame = window.requestAnimationFrame(() => peekRef.current?.focus());
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
                 event.preventDefault();
                 onClose?.();
+                return;
+            }
+            if (event.key !== "Tab" || !peekRef.current) return;
+            const focusable = Array.from(peekRef.current.querySelectorAll<HTMLElement>("a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])"));
+            if (focusable.length === 0) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (event.shiftKey && document.activeElement === first) {
+                event.preventDefault();
+                last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+                event.preventDefault();
+                first.focus();
             }
         };
         window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
+        return () => {
+            window.cancelAnimationFrame(focusFrame);
+            window.removeEventListener("keydown", handleKeyDown);
+            previouslyFocused?.focus();
+        };
     }, [mode, onClose]);
 
     if (isLoading) return <LoadingState label="Loading issue..." className="p-6" />;
@@ -240,9 +260,12 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     );
 
     return mode === "peek" ? (
-        <aside aria-label={`Issue ${issue.identifier}`} className="fixed inset-y-0 right-0 z-40 w-full border-l border-secondary bg-primary shadow-2xl sm:w-[min(52rem,calc(100vw-3rem))]">
-            {content}
-        </aside>
+        <>
+            <div aria-hidden="true" className="fixed inset-0 z-30 bg-black/40" onMouseDown={() => onClose?.()} />
+            <aside ref={peekRef} tabIndex={-1} aria-label={`Issue ${issue.identifier}`} aria-modal="true" className="fixed inset-y-0 right-0 z-40 w-full border-l border-secondary bg-primary shadow-2xl outline-none sm:w-[min(52rem,calc(100vw-3rem))]">
+                {content}
+            </aside>
+        </>
     ) : (
         <main className="h-full min-h-0 bg-primary">{content}</main>
     );
