@@ -86,18 +86,6 @@ importers:
 
   apps/web:
     dependencies:
-      '@codemirror/lang-markdown':
-        specifier: ^6.5.2
-        version: 6.5.2
-      '@codemirror/language':
-        specifier: ^6.12.4
-        version: 6.12.4
-      '@codemirror/state':
-        specifier: ^6.7.5
-        version: 6.7.5
-      '@codemirror/view':
-        specifier: ^6.43.12
-        version: 6.43.12
       '@dnd-kit/core':
         specifier: ^6.3.1
         version: 6.3.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -122,9 +110,6 @@ importers:
       '@internationalized/date':
         specifier: ^3.12.4
         version: 3.12.4
-      '@lezer/highlight':
-        specifier: ^1.2.3
-        version: 1.2.3
       '@react-aria/utils':
         specifier: ^3.34.1
         version: 3.34.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -161,9 +146,6 @@ importers:
       '@tiptap/extensions':
         specifier: ^3.31.3
         version: 3.31.3(@tiptap/core@3.31.3(@tiptap/pm@3.31.3))(@tiptap/pm@3.31.3)
-      '@tiptap/markdown':
-        specifier: ^3.31.3
-        version: 3.31.3(@tiptap/core@3.31.3(@tiptap/pm@3.31.3))(@tiptap/pm@3.31.3)
       '@tiptap/pm':
         specifier: ^3.31.3
         version: 3.31.3
@@ -182,9 +164,6 @@ importers:
       '@untitledui/icons':
         specifier: ^0.0.22
         version: 0.0.22(react@19.2.8)
-      codemirror:
-        specifier: ^6.0.2
-        version: 6.0.2
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@19.2.8)
@@ -218,9 +197,6 @@ importers:
       react-hotkeys-hook:
         specifier: ^5.2.4
         version: 5.3.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      react-markdown:
-        specifier: ^10.1.0
-        version: 10.1.0(@types/react@19.2.18)(react@19.2.8)
       react-router:
         specifier: ^7.13.0
         version: 7.18.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -230,9 +206,6 @@ importers:
       recharts:
         specifier: ^3.8.0
         version: 3.10.1(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react-is@19.2.8)(react@19.2.8)(redux@5.0.1)
-      remark-gfm:
-        specifier: ^4.0.1
-        version: 4.0.1
       tailwind-merge:
         specifier: ^3.5.0
         version: 3.6.0
