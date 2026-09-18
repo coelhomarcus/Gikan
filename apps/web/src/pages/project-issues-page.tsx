@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Issue } from "@/features/issues/api";
-import { Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
@@ -50,6 +50,7 @@ export const ProjectIssuesPage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+    const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
     const columnById = useMemo(() => new Map((columns ?? []).map((column) => [column.id, column])), [columns]);
     const memberById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
@@ -286,8 +287,26 @@ export const ProjectIssuesPage = () => {
                             </div>
                             {groups.map((group) => (
                                 <section key={group.key} aria-label={group.label ?? "All issues"}>
-                                    {group.label && <h2 className="border-b border-secondary bg-secondary_alt px-3 py-2 text-xs font-medium text-secondary">{group.label}<span className="ml-2 text-tertiary">{group.issues.length}</span></h2>}
-                                    {group.issues.map((issue) => (
+                                    {group.label && (
+                                        <h2 className="border-b border-secondary bg-secondary_alt">
+                                            <button
+                                                type="button"
+                                                aria-expanded={!collapsedGroups.has(group.key)}
+                                                onClick={() => setCollapsedGroups((current) => {
+                                                    const next = new Set(current);
+                                                    if (next.has(group.key)) next.delete(group.key);
+                                                    else next.add(group.key);
+                                                    return next;
+                                                })}
+                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-secondary hover:bg-primary_hover"
+                                            >
+                                                <ChevronDown className={`size-3.5 text-fg-quaternary transition-transform ${collapsedGroups.has(group.key) ? "-rotate-90" : ""}`} aria-hidden="true" />
+                                                <span>{group.label}</span>
+                                                <span className="text-tertiary">{group.issues.length}</span>
+                                            </button>
+                                        </h2>
+                                    )}
+                                    {!collapsedGroups.has(group.key) && group.issues.map((issue) => (
                                         <IssueRow
                                             key={issue.id}
                                             issue={issue}
