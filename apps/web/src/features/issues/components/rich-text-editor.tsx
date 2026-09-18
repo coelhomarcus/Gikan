@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { TiptapDocument } from "@gikan/shared";
-import Link from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
@@ -98,24 +97,30 @@ export const RichTextEditor = ({
     className,
 }: RichTextEditorProps) => {
     const mentionSuggestion = useMemo(() => createMentionSuggestion(mentionItems), [mentionItems]);
+    const contentRef = useRef(content);
     const editor = useEditor({
         immediatelyRender: false,
         editable,
         content,
         extensions: [
-            StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
-            Link.configure({ openOnClick: !editable, autolink: true }),
+            StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: { openOnClick: !editable, autolink: true } }),
             TaskList,
             TaskItem.configure({ nested: true }),
             Placeholder.configure({ placeholder }),
             Mention.configure({ HTMLAttributes: { class: "mention" }, suggestion: mentionSuggestion }),
         ],
-        onUpdate: ({ editor: currentEditor }) => onChange?.(currentEditor.getJSON() as TiptapDocument),
+        onUpdate: ({ editor: currentEditor }) => {
+            const nextContent = currentEditor.getJSON() as TiptapDocument;
+            if (JSON.stringify(nextContent) === JSON.stringify(contentRef.current)) return;
+            contentRef.current = nextContent;
+            onChange?.(nextContent);
+        },
     });
 
     useEffect(() => {
         if (!editor) return;
-        editor.setEditable(editable);
+        contentRef.current = content;
+        if (editor.isEditable !== editable) editor.setEditable(editable);
         if (JSON.stringify(editor.getJSON()) !== JSON.stringify(content)) editor.commands.setContent(content, { emitUpdate: false });
     }, [content, editable, editor]);
 
