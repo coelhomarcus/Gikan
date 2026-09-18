@@ -553,7 +553,7 @@ function IssueComments({
                     </article>
                 ))}
                 <div className="rounded-lg border border-secondary">
-                    <RichTextEditor content={value} onChange={onChange} placeholder="Leave a comment..." />
+                    <RichTextEditor content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder="Leave a comment..." />
                     <div className="flex justify-end border-t border-secondary p-2">
                         <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length} onClick={onSubmit}>
                             Comment

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { TiptapDocument } from "@gikan/shared";
-import { Bold, CheckSquare, Code2, Heading2, Italic, Link2, List, Quote } from "lucide-react";
+import { Bold, Check, CheckSquare, Code2, Heading2, Italic, Link2, List, Quote, X } from "lucide-react";
 import Link from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
 import TaskItem from "@tiptap/extension-task-item";
@@ -96,6 +96,7 @@ interface RichTextEditorProps {
     placeholder?: string;
     mentionItems?: MentionItem[];
     className?: string;
+    onSubmitShortcut?: () => void;
 }
 
 export const RichTextEditor = ({
@@ -105,16 +106,29 @@ export const RichTextEditor = ({
     placeholder = "Write something...",
     mentionItems = [],
     className,
+    onSubmitShortcut,
 }: RichTextEditorProps) => {
     const mentionSuggestion = useMemo(() => createMentionSuggestion(mentionItems), [mentionItems]);
     const contentRef = useRef(content);
     const onChangeRef = useRef(onChange);
+    const onSubmitShortcutRef = useRef(onSubmitShortcut);
     const syncingRef = useRef(false);
     onChangeRef.current = onChange;
+    onSubmitShortcutRef.current = onSubmitShortcut;
     const editor = useEditor({
         immediatelyRender: false,
         editable,
         content,
+        editorProps: {
+            handleKeyDown: (_view, event) => {
+                if (onSubmitShortcutRef.current && (event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                    event.preventDefault();
+                    onSubmitShortcutRef.current();
+                    return true;
+                }
+                return false;
+            },
+        },
         extensions: [
             StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false }),
             Link.configure({ openOnClick: !editable, autolink: true }),
@@ -150,13 +164,23 @@ export const RichTextEditor = ({
 };
 
 function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof useEditor>> }) {
+    const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
+    const [url, setUrl] = useState("");
+
     const toggleLink = () => {
-        if (editor.isActive("link")) {
+        setUrl(editor.getAttributes("link").href ?? "");
+        setIsLinkEditorOpen(true);
+    };
+
+    const saveLink = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const href = url.trim();
+        if (!href) {
             editor.chain().focus().unsetLink().run();
-            return;
+        } else {
+            editor.chain().focus().setLink({ href }).run();
         }
-        const href = window.prompt("Link URL");
-        if (href) editor.chain().focus().setLink({ href }).run();
+        setIsLinkEditorOpen(false);
     };
 
     return (
@@ -175,6 +199,21 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
             <ButtonUtility icon={Quote} size="xs" color="tertiary" tooltip="Quote" onClick={() => editor.chain().focus().toggleBlockquote().run()} />
             <ButtonUtility icon={Code2} size="xs" color="tertiary" tooltip="Code block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
             <ButtonUtility icon={Link2} size="xs" color="tertiary" tooltip="Link" onClick={toggleLink} />
+            {isLinkEditorOpen && (
+                <form className="ml-1 flex items-center gap-1.5" onSubmit={saveLink}>
+                    <input
+                        autoFocus
+                        type="url"
+                        value={url}
+                        onChange={(event) => setUrl(event.target.value)}
+                        placeholder="https://example.com"
+                        aria-label="Link URL"
+                        className="h-7 w-52 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand"
+                    />
+                    <ButtonUtility icon={Check} type="submit" size="xs" color="secondary" tooltip="Save link" />
+                    <ButtonUtility icon={X} type="button" size="xs" color="tertiary" tooltip="Cancel" onClick={() => setIsLinkEditorOpen(false)} />
+                </form>
+            )}
         </div>
     );
 }
