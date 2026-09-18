@@ -1,4 +1,4 @@
-import { Clock } from "@untitledui/icons";
+import { Clock3 as Clock } from "lucide-react";
 import type { SelectItemType } from "@/components/base/select/select";
 
 /**

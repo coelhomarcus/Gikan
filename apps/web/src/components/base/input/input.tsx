@@ -1,5 +1,5 @@
 import { type ComponentType, type HTMLAttributes, type ReactNode, type Ref, createContext, useContext, useState } from "react";
-import { Eye, EyeOff, HelpCircle, InfoCircle } from "@untitledui/icons";
+import { CircleQuestionMark as HelpCircle, Eye, EyeOff, Info } from "lucide-react";
 import type { InputProps as AriaInputProps, TextFieldProps as AriaTextFieldProps } from "react-aria-components";
 import { Button as AriaButton, Group as AriaGroup, Input as AriaInput, TextField as AriaTextField } from "react-aria-components";
 import { HintText } from "@/components/base/input/hint-text";
@@ -154,7 +154,7 @@ export const InputBase = ({
 
             {/* Invalid icon */}
             {type !== "password" && (
-                <InfoCircle
+                <Info
                     className={cx(
                         "pointer-events-none absolute hidden size-4 stroke-[2.25px] text-fg-error-secondary group-invalid/input:block",
                         sizes[inputSize].iconTrailing,

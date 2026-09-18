@@ -1,6 +1,6 @@
 import type { FC, FocusEventHandler, PointerEventHandler, ReactNode, RefAttributes, RefObject } from "react";
 import { isValidElement, useCallback, useContext, useRef, useState } from "react";
-import { SearchLg } from "@untitledui/icons";
+import { Search } from "lucide-react";
 import type { ComboBoxProps as AriaComboBoxProps, GroupProps as AriaGroupProps, ListBoxProps as AriaListBoxProps } from "react-aria-components";
 import { ComboBox as AriaComboBox, Group as AriaGroup, Input as AriaInput, ListBox as AriaListBox, ComboBoxStateContext } from "react-aria-components";
 import { HintText } from "@/components/base/input/hint-text";
@@ -62,7 +62,7 @@ const ComboBoxValue = ({ size, shortcut, placeholder, shortcutClassName, icon: I
             ) : isValidElement(IconProp) ? (
                 IconProp
             ) : (
-                <SearchLg data-icon className="pointer-events-none" aria-hidden="true" />
+                        <Search data-icon className="pointer-events-none" aria-hidden="true" />
             )}
 
             <div className="relative flex w-full items-center">
