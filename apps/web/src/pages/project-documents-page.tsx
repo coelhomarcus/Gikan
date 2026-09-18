@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { TiptapDocument } from "@gikan/shared";
 import { Save } from "lucide-react";
-import { useParams } from "react-router";
+import { useBeforeUnload, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -18,6 +18,12 @@ export const ProjectDocumentsPage = () => {
     const isDirtyRef = useRef(false);
     const loadedDocumentId = useRef<string | null>(null);
     const saveRef = useRef<() => void>(() => undefined);
+
+    useBeforeUnload((event) => {
+        if (!isDirtyRef.current) return;
+        event.preventDefault();
+        event.returnValue = "";
+    });
 
     useEffect(() => {
         if (!document || isDirtyRef.current) return;
