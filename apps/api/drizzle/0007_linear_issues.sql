@@ -74,7 +74,17 @@ ALTER TABLE "issues" ALTER COLUMN "description_json" SET DEFAULT '{"type":"doc",
 ALTER TABLE "issues" ALTER COLUMN "description_json" SET NOT NULL;--> statement-breakpoint
 ALTER TABLE "issues" ADD CONSTRAINT "issues_project_number_unique" UNIQUE("project_id", "number");--> statement-breakpoint
 ALTER TABLE "issues" ADD CONSTRAINT "issues_parent_issue_id_fk" FOREIGN KEY ("parent_issue_id") REFERENCES "public"."issues"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "issues" ADD CONSTRAINT "issues_cycle_id_project_cycles_id_fk" FOREIGN KEY ("cycle_id") REFERENCES "public"."project_cycles"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'issues_cycle_id_project_cycles_id_fk'
+          AND conrelid = 'public.issues'::regclass
+    ) THEN
+        ALTER TABLE "issues" ADD CONSTRAINT "issues_cycle_id_project_cycles_id_fk" FOREIGN KEY ("cycle_id") REFERENCES "public"."project_cycles"("id") ON DELETE set null ON UPDATE no action;
+    END IF;
+END $$;--> statement-breakpoint
 CREATE INDEX "issues_parent_issue_id_idx" ON "issues" USING btree ("parent_issue_id");--> statement-breakpoint
 CREATE INDEX "issues_cycle_id_idx" ON "issues" USING btree ("cycle_id");--> statement-breakpoint
 CREATE TABLE "issue_comments" (
