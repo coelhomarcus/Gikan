@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { TiptapDocument } from "@gikan/shared";
 import { Bold, CheckSquare, Code2, Heading2, Italic, Link2, List, Quote } from "lucide-react";
+import Link from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
@@ -107,34 +108,41 @@ export const RichTextEditor = ({
 }: RichTextEditorProps) => {
     const mentionSuggestion = useMemo(() => createMentionSuggestion(mentionItems), [mentionItems]);
     const contentRef = useRef(content);
+    const onChangeRef = useRef(onChange);
+    const syncingRef = useRef(false);
+    onChangeRef.current = onChange;
     const editor = useEditor({
         immediatelyRender: false,
         editable,
         content,
         extensions: [
-            StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: { openOnClick: !editable, autolink: true } }),
+            StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false }),
+            Link.configure({ openOnClick: !editable, autolink: true }),
             TaskList,
             TaskItem.configure({ nested: true }),
             Placeholder.configure({ placeholder }),
             Mention.configure({ HTMLAttributes: { class: "mention" }, suggestion: mentionSuggestion }),
         ],
         onUpdate: ({ editor: currentEditor }) => {
+            if (syncingRef.current) return;
             const nextContent = currentEditor.getJSON() as TiptapDocument;
             if (JSON.stringify(nextContent) === JSON.stringify(contentRef.current)) return;
             contentRef.current = nextContent;
-            onChange?.(nextContent);
+            onChangeRef.current?.(nextContent);
         },
     });
 
     useEffect(() => {
         if (!editor) return;
         contentRef.current = content;
+        syncingRef.current = true;
         if (editor.isEditable !== editable) editor.setEditable(editable);
         if (JSON.stringify(editor.getJSON()) !== JSON.stringify(content)) editor.commands.setContent(content, { emitUpdate: false });
+        syncingRef.current = false;
     }, [content, editable, editor]);
 
     return (
-        <div className={cx("tiptap-editor min-h-32", !editable && "tiptap-editor-readonly", className)}>
+        <div className={cx("tiptap-editor", editable && "min-h-32", !editable && "tiptap-editor-readonly", className)}>
             <EditorContent editor={editor} />
             {editable && editor && <RichTextToolbar editor={editor} />}
         </div>

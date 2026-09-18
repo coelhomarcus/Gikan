@@ -65,6 +65,16 @@ input[type="number"] {
     color: var(--color-text-secondary);
 }
 
+.tiptap-editor .ProseMirror:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-border-brand) 70%, transparent);
+    outline-offset: -2px;
+}
+
+.tiptap-editor-readonly .ProseMirror {
+    min-height: 0;
+    padding: 0;
+}
+
 .tiptap-editor .ProseMirror > * + * {
     margin-top: 0.75rem;
 }
