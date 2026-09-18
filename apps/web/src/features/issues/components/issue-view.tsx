@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { TiptapDocument, UpdateIssueInput } from "@gikan/shared";
-import { ArrowLeft, Calendar, CheckCircle, Link2, Plus, Trash2, User, X } from "lucide-react";
+import { ArrowLeft, Calendar, CheckCircle, ExternalLink, Link2, Plus, Trash2, User, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -173,6 +173,15 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         tooltip="Copy issue link"
                         onClick={() => navigator.clipboard.writeText(window.location.href)}
                     />
+                    {mode === "peek" && (
+                        <ButtonUtility
+                            icon={ExternalLink}
+                            size="sm"
+                            color="tertiary"
+                            tooltip="Open full page"
+                            onClick={() => navigate(`/projects/${issue.projectId}/issues/${issue.identifier}`, { replace: true })}
+                        />
+                    )}
                     <ButtonUtility icon={X} size="sm" color="tertiary" tooltip="Close" onClick={onClose ?? (() => navigate(`/projects/${issue.projectId}/issues`))} />
                 </div>
             </div>
