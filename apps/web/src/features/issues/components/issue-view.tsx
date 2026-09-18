@@ -12,13 +12,16 @@ import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import {
     useCreateIssueComment,
+    useCreateIssueRelation,
     useCycles,
     useDeleteIssue,
     useDeleteIssueComment,
+    useDeleteIssueRelation,
     useIssue,
     useIssueActivity,
     useIssueComments,
     useIssueRelations,
+    useIssues,
     useUpdateIssue,
     useUpdateIssueComment,
 } from "../hooks/use-issues";
@@ -57,6 +60,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const { data: comments } = useIssueComments(issue?.identifier ?? resolvedIdentifier);
     const { data: activity } = useIssueActivity(issue?.identifier ?? resolvedIdentifier);
     const { data: relations } = useIssueRelations(issue?.identifier ?? resolvedIdentifier);
+    const { data: projectIssues } = useIssues(issue?.projectId ?? resolvedProjectId);
     const { data: columns } = useColumns(issue?.projectId ?? resolvedProjectId);
     const { data: members } = useProjectMembers(issue?.projectId ?? resolvedProjectId);
     const { data: categories } = useCategories(issue?.projectId ?? resolvedProjectId);
@@ -64,6 +68,8 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const createComment = useCreateIssueComment(issue?.identifier ?? resolvedIdentifier);
     const deleteComment = useDeleteIssueComment(issue?.identifier ?? resolvedIdentifier);
     const updateComment = useUpdateIssueComment(issue?.identifier ?? resolvedIdentifier);
+    const createRelation = useCreateIssueRelation(issue?.identifier ?? resolvedIdentifier);
+    const deleteRelation = useDeleteIssueRelation(issue?.identifier ?? resolvedIdentifier);
     const [description, setDescription] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     const [title, setTitle] = useState("");
     const [comment, setComment] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
@@ -155,7 +161,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         />
 
                         <div className="mt-5 lg:hidden">
-                            <IssueProperties issue={issue} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
+                            <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
                         </div>
 
                         <section className="mt-6 border-b border-secondary pb-6">
@@ -186,7 +192,15 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         </section>
 
                         <IssueSubIssues issue={issue} />
-                        <IssueRelations relations={relations ?? []} />
+                        <IssueRelations
+                            projectId={issue.projectId}
+                            issueId={issue.id}
+                            projectIssues={projectIssues ?? []}
+                            relations={relations ?? []}
+                            isPending={createRelation.isPending || deleteRelation.isPending}
+                            onAdd={(targetIssueIdentifier, type) => createRelation.mutateAsync({ targetIssueIdentifier, type }).then(() => undefined)}
+                            onDelete={(relationId) => deleteRelation.mutate(relationId)}
+                        />
                         <IssueActivity activity={activity ?? []} />
                         <IssueComments
                             comments={comments ?? []}
@@ -217,7 +231,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                     </div>
 
                     <aside className="hidden w-64 shrink-0 border-l border-secondary pl-6 lg:block">
-                        <IssueProperties issue={issue} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
+                        <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
                     </aside>
                 </div>
             </div>
@@ -262,6 +276,7 @@ function PropertySelect({
 
 function IssueProperties({
     issue,
+    projectIssues,
     columns,
     members,
     categories,
@@ -269,6 +284,7 @@ function IssueProperties({
     save,
 }: {
     issue: IssueDetail;
+    projectIssues?: Array<{ id: string; identifier: string; title: string }>;
     columns?: Array<{ id: string; name: string }>;
     members?: Array<{ id: string; name: string }>;
     categories?: Array<{ id: string; name: string }>;
@@ -324,6 +340,13 @@ function IssueProperties({
                 options={[{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: `${value} points` }))]}
                 onChange={(value) => save({ estimate: value ? Number(value) : null })}
             />
+            <PropertySelect
+                className="w-full"
+                value={issue.parent?.id ?? ""}
+                label="Parent"
+                options={[{ value: "", label: "No parent" }, ...(projectIssues ?? []).filter((candidate) => candidate.id !== issue.id).map((candidate) => ({ value: candidate.id, label: `${candidate.identifier} · ${candidate.title}` }))]}
+                onChange={(value) => save({ parentIssueId: value || null })}
+            />
         </div>
     );
 }
@@ -355,25 +378,89 @@ function IssueSubIssues({ issue }: { issue: NonNullable<ReturnType<typeof useIss
 }
 
 function IssueRelations({
+    projectId,
+    issueId,
+    projectIssues,
     relations,
+    isPending,
+    onAdd,
+    onDelete,
 }: {
-    relations: Array<{ id: string; type: string; target: { number: number; title: string; project: { issueKey: string } } }>;
+    projectId: string;
+    issueId: string;
+    projectIssues: Array<{ id: string; identifier: string; title: string }>;
+    relations: Array<{ id: string; type: string; target: { id: string; number: number; title: string; projectId: string; project: { issueKey: string } } }>;
+    isPending: boolean;
+    onAdd: (targetIssueIdentifier: string, type: "blocks" | "blocked_by" | "related" | "duplicate") => Promise<void>;
+    onDelete: (relationId: string) => void;
 }) {
-    if (!relations.length) return null;
+    const [targetIssueIdentifier, setTargetIssueIdentifier] = useState("");
+    const [type, setType] = useState<"blocks" | "blocked_by" | "related" | "duplicate">("related");
+    const [error, setError] = useState<string | null>(null);
+
+    async function addRelation(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const target = targetIssueIdentifier.trim();
+        if (!target) {
+            setError("Choose an issue to relate.");
+            return;
+        }
+        if (projectIssues.length > 0 && !projectIssues.some((projectIssue) => projectIssue.identifier.toLowerCase() === target.toLowerCase())) {
+            setError("Choose an issue from this project.");
+            return;
+        }
+        setError(null);
+        try {
+            await onAdd(target, type);
+            setTargetIssueIdentifier("");
+        } catch (reason) {
+            setError(reason instanceof Error ? reason.message : "Could not add the relation.");
+        }
+    }
+
     return (
         <section className="border-t border-secondary pt-5">
             <SectionTitle title="Relations" icon={Link2} />
             <div className="divide-y divide-secondary rounded-lg border border-secondary">
                 {relations.map((relation) => (
                     <div key={relation.id} className="flex items-center gap-3 px-3 py-2 text-sm">
-                        <span className="text-tertiary">{relation.type.replace("_", " ")}</span>
-                        <span className="font-mono text-xs text-fg-brand-primary">
-                            {relation.target.project.issueKey}-{relation.target.number}
-                        </span>
-                        <span className="text-primary">{relation.target.title}</span>
+                        <span className="shrink-0 text-xs text-tertiary">{relation.type.replace("_", " ")}</span>
+                        <Link
+                            to={`/projects/${relation.target.projectId || projectId}/issues/${relation.target.project.issueKey}-${relation.target.number}`}
+                            className="flex min-w-0 flex-1 items-center gap-2 hover:text-fg-brand-primary"
+                        >
+                            <span className="font-mono text-xs text-fg-brand-primary">
+                                {relation.target.project.issueKey}-{relation.target.number}
+                            </span>
+                            <span className="truncate text-primary">{relation.target.title}</span>
+                        </Link>
+                        <ButtonUtility icon={Trash2} size="xs" color="tertiary" className="text-error-primary hover:text-error-primary_hover" tooltip="Remove relation" onClick={() => onDelete(relation.id)} isDisabled={isPending} />
                     </div>
                 ))}
+                <form className="flex flex-col gap-2 p-2 sm:flex-row" onSubmit={addRelation}>
+                    <input
+                        list="issue-relation-options"
+                        value={targetIssueIdentifier}
+                        onChange={(event) => setTargetIssueIdentifier(event.target.value)}
+                        placeholder="Issue identifier"
+                        aria-label="Issue to relate"
+                        className="h-8 min-w-0 flex-1 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none placeholder:text-tertiary focus:border-brand"
+                    />
+                    <datalist id="issue-relation-options">
+                        {projectIssues.filter((projectIssue) => projectIssue.id !== issueId).map((projectIssue) => <option key={projectIssue.id} value={projectIssue.identifier}>{projectIssue.title}</option>)}
+                    </datalist>
+                    <select value={type} onChange={(event) => setType(event.target.value as typeof type)} aria-label="Relation type" className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
+                        <option value="related">Related to</option>
+                        <option value="blocks">Blocks</option>
+                        <option value="blocked_by">Blocked by</option>
+                        <option value="duplicate">Duplicate of</option>
+                    </select>
+                    <Button type="submit" size="xs" iconLeading={Plus} isLoading={isPending}>
+                        Add
+                    </Button>
+                </form>
             </div>
+            {error && <p role="alert" className="mt-2 text-xs text-error-primary">{error}</p>}
         </section>
     );
 }
