@@ -11,6 +11,7 @@ import { ControlledInput } from "@/components/form/controlled-input";
 import { AUTH_QUERY_KEY, updateProfile } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
+import { useTheme } from "@/providers/theme-provider";
 
 function initialsOf(name: string): string {
     return name
@@ -27,6 +28,7 @@ interface UserSettingsModalProps {
 
 export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
     const { user } = useAuth();
+    const { theme, setTheme } = useTheme();
     const queryClient = useQueryClient();
 
     const { control, handleSubmit, watch, setError, formState } = useForm({
@@ -79,6 +81,19 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                                     <p className="mt-1.5 truncate text-sm text-tertiary">{user.email}</p>
                                 </div>
                             </div>
+
+                            <label className="flex flex-col gap-1.5 text-sm font-medium text-secondary">
+                                Appearance
+                                <select
+                                    value={theme}
+                                    onChange={(event) => setTheme(event.target.value as typeof theme)}
+                                    className="h-10 rounded-md border border-secondary bg-primary px-3 text-sm font-normal text-primary outline-none transition focus:border-brand"
+                                >
+                                    <option value="system">System</option>
+                                    <option value="dark">Dark</option>
+                                    <option value="light">Light</option>
+                                </select>
+                            </label>
 
                             {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
                             {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
