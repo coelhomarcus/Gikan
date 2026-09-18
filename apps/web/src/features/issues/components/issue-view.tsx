@@ -78,6 +78,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const [titleSaveError, setTitleSaveError] = useState<string | null>(null);
     const [descriptionSaveError, setDescriptionSaveError] = useState<string | null>(null);
     const [propertySaveError, setPropertySaveError] = useState<string | null>(null);
+    const [commentSaveError, setCommentSaveError] = useState<string | null>(null);
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
@@ -248,11 +249,27 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             currentUserId={user?.id}
                             value={comment}
                             onChange={setComment}
-                            onSubmit={() => {
-                                createComment.mutate({ contentJson: comment }, { onSuccess: () => setComment(EMPTY_TIPTAP_DOCUMENT) });
+                            isSubmitting={createComment.isPending || updateComment.isPending}
+                            error={commentSaveError}
+                            onSubmit={async () => {
+                                setCommentSaveError(null);
+                                try {
+                                    await createComment.mutateAsync({ contentJson: comment });
+                                    setComment(EMPTY_TIPTAP_DOCUMENT);
+                                } catch (reason) {
+                                    setCommentSaveError(errorMessage(reason, "Could not add the comment."));
+                                }
                             }}
                             onDelete={(commentId) => deleteComment.mutate(commentId)}
-                            onEdit={(commentId, contentJson) => updateComment.mutate({ commentId, input: { contentJson } })}
+                            onEdit={async (commentId, contentJson) => {
+                                setCommentSaveError(null);
+                                try {
+                                    await updateComment.mutateAsync({ commentId, input: { contentJson } });
+                                } catch (reason) {
+                                    setCommentSaveError(errorMessage(reason, "Could not update the comment."));
+                                    throw reason;
+                                }
+                            }}
                         />
 
                         <div className="flex justify-end border-t border-secondary pt-4">
@@ -535,6 +552,8 @@ function IssueComments({
     currentUserId,
     value,
     onChange,
+    isSubmitting,
+    error,
     onSubmit,
     onDelete,
     onEdit,
@@ -543,9 +562,11 @@ function IssueComments({
     currentUserId?: string;
     value: TiptapDocument;
     onChange: (value: TiptapDocument) => void;
-    onSubmit: () => void;
+    isSubmitting: boolean;
+    error?: string | null;
+    onSubmit: () => void | Promise<void>;
     onDelete: (id: string) => void;
-    onEdit: (id: string, contentJson: TiptapDocument) => void;
+    onEdit: (id: string, contentJson: TiptapDocument) => void | Promise<void>;
 }) {
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
@@ -568,9 +589,14 @@ function IssueComments({
                                     </Button>
                                     <Button
                                         size="xs"
-                                        onClick={() => {
-                                            onEdit(entry.id, editingContent);
-                                            setEditingId(null);
+                                        isLoading={isSubmitting}
+                                        onClick={async () => {
+                                            try {
+                                                await onEdit(entry.id, editingContent);
+                                                setEditingId(null);
+                                            } catch {
+                                                // The parent displays the mutation error and preserves the editor.
+                                            }
                                         }}
                                     >
                                         Save
@@ -602,12 +628,13 @@ function IssueComments({
                 <div className="rounded-lg border border-secondary">
                     <RichTextEditor content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder="Leave a comment..." />
                     <div className="flex justify-end border-t border-secondary p-2">
-                        <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length} onClick={onSubmit}>
+                        <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length || isSubmitting} isLoading={isSubmitting} onClick={onSubmit}>
                             Comment
                         </Button>
                     </div>
                 </div>
             </div>
+            {error && <p role="alert" className="mt-2 text-xs text-error-primary">{error}</p>}
         </section>
     );
 }
@@ -629,8 +656,8 @@ function formatDistanceToNow(value: string) {
     return `${Math.round(hours / 24)}d ago`;
 }
 
-function errorMessage(reason: unknown) {
+function errorMessage(reason: unknown, fallback = "Could not save the issue.") {
     if (reason instanceof ApiError) return reason.message;
     if (reason instanceof Error) return reason.message;
-    return "Could not save the issue.";
+    return fallback;
 }

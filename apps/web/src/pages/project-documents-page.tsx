@@ -17,6 +17,7 @@ export const ProjectDocumentsPage = () => {
     const [isDirty, setIsDirty] = useState(false);
     const isDirtyRef = useRef(false);
     const loadedDocumentId = useRef<string | null>(null);
+    const saveRef = useRef<() => void>(() => undefined);
 
     useEffect(() => {
         if (!document || isDirtyRef.current) return;
@@ -30,13 +31,14 @@ export const ProjectDocumentsPage = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "s") return;
             event.preventDefault();
-            if (isDirtyRef.current && !mutation.isPending) save();
+            if (isDirtyRef.current && !mutation.isPending) saveRef.current();
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    });
+    }, [mutation.isPending]);
 
     function save() {
+        if (!isDirtyRef.current || mutation.isPending) return;
         mutation.mutate(
             { contentJson: content },
             {
@@ -47,6 +49,8 @@ export const ProjectDocumentsPage = () => {
             },
         );
     }
+
+    saveRef.current = save;
 
     if (isLoading) return <LoadingState label="Loading document..." className="p-6" />;
     if (isError || !document) return <ErrorMessage message="Could not load the project document." />;
