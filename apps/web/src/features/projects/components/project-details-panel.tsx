@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
 import { ApiError } from "@/lib/api-client";
@@ -37,7 +38,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             : undefined,
     });
 
-    if (isLoading) return <p className="text-tertiary">Loading...</p>;
+    if (isLoading) return <LoadingState label="Loading project..." />;
     if (isError || !project) return <ErrorMessage message="Could not load the project." />;
 
     if (!isProjectOwner) {

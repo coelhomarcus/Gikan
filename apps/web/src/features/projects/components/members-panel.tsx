@@ -6,7 +6,9 @@ import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ApiError } from "@/lib/api-client";
@@ -61,10 +63,12 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                 </form>
             )}
 
-            {isLoading && <p className="text-tertiary">Loading...</p>}
+            {isLoading && <LoadingState label="Loading members..." />}
             {isError && <ErrorMessage message="Could not load the project members." />}
 
-            {members && (
+            {!isLoading && !isError && members?.length === 0 && <EmptyState title="No members yet" description="Invite teammates to collaborate on this project." />}
+
+            {members && members.length > 0 && (
                 <ul className="flex flex-col gap-2">
                     {members.map((member) => (
                         <li key={member.id} className="flex items-center gap-3 rounded-lg border border-secondary px-3 py-2.5">

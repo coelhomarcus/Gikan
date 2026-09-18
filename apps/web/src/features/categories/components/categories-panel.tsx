@@ -4,7 +4,9 @@ import { Trash01 } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
@@ -77,10 +79,10 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                 {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
             </form>
 
-            {isLoading && <p className="text-tertiary">Loading...</p>}
+            {isLoading && <LoadingState label="Loading labels..." />}
             {isError && <ErrorMessage message="Could not load the project categories." />}
 
-            {categories && categories.length === 0 && <p className="text-sm text-tertiary">No categories created yet.</p>}
+            {categories && categories.length === 0 && <EmptyState title="No labels yet" description="Create a label to organize issues in this project." />}
 
             {categories && categories.length > 0 && (
                 <ul className="flex flex-col gap-2">

@@ -1,7 +1,9 @@
 import { arrayMove } from "@dnd-kit/sortable";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { useColumns, useUpdateColumn } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { ColumnColorPicker } from "./column-color-picker";
@@ -19,9 +21,9 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
     const { data: columns, isLoading, isError } = useColumns(projectId);
     const updateColumn = useUpdateColumn(projectId);
 
-    if (isLoading) return <p className="text-tertiary">Loading...</p>;
+    if (isLoading) return <LoadingState label="Loading statuses..." />;
     if (isError) return <ErrorMessage message="Could not load the project columns." />;
-    if (!columns || columns.length === 0) return <p className="text-sm text-tertiary">This project has no columns yet.</p>;
+    if (!columns || columns.length === 0) return <EmptyState title="No statuses yet" description="Create a status from the Board to start organizing issues." />;
 
     /** Moves a column one position and recalculates `position` between its new neighbors. */
     function moveColumn(columnId: string, direction: -1 | 1) {

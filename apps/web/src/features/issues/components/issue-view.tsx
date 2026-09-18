@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
@@ -104,7 +105,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [mode, onClose]);
 
-    if (isLoading) return <div className="p-6 text-sm text-tertiary">Loading issue...</div>;
+    if (isLoading) return <LoadingState label="Loading issue..." className="p-6" />;
     if (isError || !issue) return <ErrorMessage message="Could not load this issue." />;
 
     const save = (input: UpdateIssueInput) => updateIssue.mutate({ identifier: issue.identifier, input });

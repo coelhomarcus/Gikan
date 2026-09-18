@@ -4,6 +4,7 @@ import { Save } from "lucide-react";
 import { useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { EMPTY_TIPTAP_DOCUMENT, RichTextEditor } from "@/features/issues/components/rich-text-editor";
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
 import { useProjectDocument, useUpdateProjectDocument } from "@/features/projects/hooks/use-projects";
@@ -47,7 +48,7 @@ export const ProjectDocumentsPage = () => {
         );
     }
 
-    if (isLoading) return <p className="p-6 text-sm text-tertiary">Loading document...</p>;
+    if (isLoading) return <LoadingState label="Loading document..." className="p-6" />;
     if (isError || !document) return <ErrorMessage message="Could not load the project document." />;
 
     return (
