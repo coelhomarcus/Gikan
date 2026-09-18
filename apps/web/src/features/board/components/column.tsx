@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Plus, Trash2 } from "lucide-react";
+import { CircleDashed, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
@@ -120,6 +120,12 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                             onClick={() => onOpenCard(card.identifier)}
                         />
                     ))}
+                    {cards.length === 0 && (
+                        <div className="flex min-h-24 flex-col items-center justify-center gap-1 px-3 text-center">
+                            <CircleDashed className="size-4 text-fg-quaternary" aria-hidden="true" />
+                            <p className="text-xs text-tertiary">No issues here</p>
+                        </div>
+                    )}
                 </SortableContext>
             </div>
 
