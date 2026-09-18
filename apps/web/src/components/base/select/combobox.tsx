@@ -1,174 +1,121 @@
-import type { FC, FocusEventHandler, PointerEventHandler, ReactNode, RefAttributes, RefObject } from "react";
-import { isValidElement, useCallback, useContext, useRef, useState } from "react";
-import { Search } from "lucide-react";
-import type { ComboBoxProps as AriaComboBoxProps, GroupProps as AriaGroupProps, ListBoxProps as AriaListBoxProps } from "react-aria-components";
-import { ComboBox as AriaComboBox, Group as AriaGroup, Input as AriaInput, ListBox as AriaListBox, ComboBoxStateContext } from "react-aria-components";
+import type { FC, ReactNode, RefAttributes } from "react";
+import { useContext } from "react";
+import { ChevronDown, Search } from "lucide-react";
+import { Combobox as BaseCombobox } from "@base-ui/react/combobox";
+import { Avatar } from "@/components/base/avatar/avatar";
 import { HintText } from "@/components/base/input/hint-text";
 import { Label } from "@/components/base/input/label";
-import { Popover } from "@/components/base/select/popover";
-import { type CommonProps, SelectContext, type SelectItemType, sizes } from "@/components/base/select/select-shared";
-import { useResizeObserver } from "@/hooks/use-resize-observer";
 import { cx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
+import type { SelectItemType } from "./select-shared";
+import { SelectContext, sizes } from "./select-shared";
 
-interface ComboBoxProps extends Omit<AriaComboBoxProps<SelectItemType>, "children" | "items">, RefAttributes<HTMLDivElement>, CommonProps {
-    shortcut?: boolean;
+interface ComboBoxProps extends RefAttributes<HTMLDivElement> {
     items?: SelectItemType[];
-    popoverClassName?: string;
-    shortcutClassName?: string;
-    /** Leading icon component displayed before the input. */
-    icon?: FC | ReactNode;
-    children: AriaListBoxProps<SelectItemType>["children"];
-}
-
-interface ComboBoxValueProps extends AriaGroupProps {
-    size: "sm" | "md" | "lg";
-    shortcut: boolean;
+    children: ReactNode | ((item: SelectItemType) => ReactNode);
     placeholder?: string;
+    label?: string;
+    hint?: string;
+    tooltip?: string;
+    size?: "sm" | "md" | "lg";
+    shortcut?: boolean;
     shortcutClassName?: string;
+    popoverClassName?: string;
     icon?: FC | ReactNode;
-    onFocus?: FocusEventHandler;
-    onPointerEnter?: PointerEventHandler;
-    ref?: RefObject<HTMLDivElement | null>;
+    selectedKey?: string | number | null;
+    value?: string | number | null;
+    defaultValue?: string | number | null;
+    onSelectionChange?: (key: string | number | null) => void;
+    onValueChange?: (key: string | number | null) => void;
+    isDisabled?: boolean;
+    isInvalid?: boolean;
+    isRequired?: boolean;
+    className?: string;
 }
-
-const ComboBoxValue = ({ size, shortcut, placeholder, shortcutClassName, icon: IconProp, ...otherProps }: ComboBoxValueProps) => {
-    const state = useContext(ComboBoxStateContext);
-
-    const value = state?.selectedItem?.value || null;
-    const inputValue = state?.inputValue || null;
-
-    const first = inputValue?.split(value?.supportingText)?.[0] || "";
-    const last = inputValue?.split(first)[1];
-
-    return (
-        <AriaGroup
-            {...otherProps}
-            className={({ isFocusWithin, isDisabled }) =>
-                cx(
-                    "relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset",
-                    isDisabled && "cursor-not-allowed opacity-50",
-                    isFocusWithin && "ring-2 ring-brand",
-
-                    // Icon styles
-                    "*:data-icon:shrink-0 *:data-icon:text-fg-quaternary",
-
-                    sizes[size].root,
-                )
-            }
-        >
-            {isReactComponent(IconProp) ? (
-                <IconProp data-icon className="pointer-events-none" aria-hidden="true" />
-            ) : isValidElement(IconProp) ? (
-                IconProp
-            ) : (
-                        <Search data-icon className="pointer-events-none" aria-hidden="true" />
-            )}
-
-            <div className="relative flex w-full items-center">
-                {inputValue && (
-                    <span className={cx("absolute top-1/2 z-0 inline-flex w-full -translate-y-1/2 truncate", sizes[size].textContainer)} aria-hidden="true">
-                        <p className={cx("font-medium text-primary", sizes[size].text)}>{first}</p>
-                        {last && <p className={cx("-ml-0.75 text-tertiary", sizes[size].text)}>{last}</p>}
-                    </span>
-                )}
-
-                <AriaInput
-                    placeholder={placeholder}
-                    className={cx(
-                        "z-10 w-full appearance-none bg-transparent text-transparent caret-alpha-black/90 placeholder:text-placeholder focus:outline-hidden disabled:cursor-not-allowed",
-                        sizes[size].text,
-                    )}
-                />
-            </div>
-
-            {shortcut && (
-                <div
-                    className={cx(
-                        "absolute inset-y-0.5 right-0.5 z-10 hidden items-center rounded-r-[inherit] bg-linear-to-r from-transparent to-bg-primary to-40% pl-8 md:flex",
-                        sizes[size].shortcut,
-                        shortcutClassName,
-                    )}
-                >
-                    <span
-                        className="pointer-events-none rounded px-1 py-px text-xs font-medium text-quaternary ring-1 ring-secondary select-none ring-inset"
-                        aria-hidden="true"
-                    >
-                        ⌘K
-                    </span>
-                </div>
-            )}
-        </AriaGroup>
-    );
-};
 
 export const ComboBox = ({
-    placeholder = "Search",
-    shortcut = true,
-    size = "md",
+    items = [],
     children,
-    items,
+    placeholder = "Search",
+    label,
+    hint,
+    tooltip,
+    size = "md",
+    shortcut = false,
     shortcutClassName,
+    popoverClassName,
     icon,
-    hideRequiredIndicator,
-    ...otherProps
+    selectedKey,
+    value,
+    defaultValue,
+    onSelectionChange,
+    onValueChange,
+    isDisabled,
+    isInvalid,
+    isRequired,
+    className,
 }: ComboBoxProps) => {
-    const placeholderRef = useRef<HTMLDivElement>(null);
-    const [popoverWidth, setPopoverWidth] = useState("");
-
-    // Resize observer for popover width
-    const onResize = useCallback(() => {
-        if (!placeholderRef.current) return;
-
-        const divRect = placeholderRef.current?.getBoundingClientRect();
-
-        setPopoverWidth(divRect.width + "px");
-    }, [placeholderRef, setPopoverWidth]);
-
-    useResizeObserver({
-        ref: placeholderRef,
-        box: "border-box",
-        onResize,
-    });
+    const selectedValue = selectedKey !== undefined ? selectedKey : value;
+    const renderedItems = typeof children === "function" ? items.map((item) => children(item)) : children;
+    const IconComponent = isReactComponent(icon) ? (icon as FC) : null;
+    const iconNode = IconComponent ? null : (icon as ReactNode | undefined);
 
     return (
         <SelectContext.Provider value={{ size }}>
-            <AriaComboBox menuTrigger="focus" {...otherProps}>
-                {(state) => (
-                    <div className="flex flex-col gap-1.5">
-                        {otherProps.label && (
-                            <Label isRequired={hideRequiredIndicator ? false : state.isRequired} tooltip={otherProps.tooltip}>
-                                {otherProps.label}
-                            </Label>
-                        )}
-
-                        <ComboBoxValue
-                            ref={placeholderRef}
-                            placeholder={placeholder}
-                            shortcut={shortcut}
-                            shortcutClassName={shortcutClassName}
-                            icon={icon}
-                            size={size}
-                            // This is a workaround to correctly calculating the trigger width
-                            // while using ResizeObserver wasn't 100% reliable.
-                            onFocus={onResize}
-                            onPointerEnter={onResize}
-                        />
-
-                        <Popover size={size} triggerRef={placeholderRef} style={{ width: popoverWidth }} className={otherProps.popoverClassName}>
-                            <AriaListBox items={items} className="size-full outline-hidden">
-                                {children}
-                            </AriaListBox>
-                        </Popover>
-
-                        {otherProps.hint && (
-                            <HintText isInvalid={state.isInvalid} className={cx(size === "sm" && "text-xs")}>
-                                {otherProps.hint}
-                            </HintText>
-                        )}
-                    </div>
-                )}
-            </AriaComboBox>
+            <BaseCombobox.Root
+                items={items.map((item) => ({ value: item.id, label: item.label ?? String(item.id) }))}
+                value={selectedValue}
+                defaultValue={defaultValue}
+                disabled={isDisabled}
+                required={isRequired}
+                onValueChange={(nextValue) => {
+                    onSelectionChange?.(nextValue);
+                    onValueChange?.(nextValue);
+                }}
+            >
+                <div className={cx("flex min-w-0 flex-col gap-1.5", className)}>
+                    {label && <Label isRequired={isRequired} isInvalid={isInvalid} tooltip={tooltip}>{label}</Label>}
+                    <BaseCombobox.InputGroup
+                    className={cx(
+                        "relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset",
+                        "focus-within:ring-2 focus-within:ring-brand",
+                        "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+                        sizes[size].root,
+                    )}
+                    aria-invalid={isInvalid || undefined}
+                    >
+                        {IconComponent ? <IconComponent data-icon aria-hidden="true" /> : iconNode ?? <Search data-icon aria-hidden="true" />}
+                        <BaseCombobox.Input placeholder={placeholder} className={cx("min-w-0 flex-1 bg-transparent text-primary outline-none placeholder:text-placeholder", sizes[size].text)} />
+                        {shortcut && <span className={cx("hidden rounded px-1 py-px text-xs text-quaternary ring-1 ring-secondary md:inline-flex", shortcutClassName)}>⌘K</span>}
+                        <BaseCombobox.Trigger aria-label="Open options" className="shrink-0 text-fg-quaternary">
+                            <ChevronDown className="size-4" aria-hidden="true" />
+                        </BaseCombobox.Trigger>
+                    </BaseCombobox.InputGroup>
+                    <BaseCombobox.Portal>
+                    <BaseCombobox.Positioner className="z-50 outline-none" sideOffset={4}>
+                        <BaseCombobox.Popup className={cx("min-w-(--anchor-width) overflow-hidden rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none", popoverClassName)}>
+                            <BaseCombobox.List className="max-h-72 overflow-y-auto outline-none">{renderedItems}</BaseCombobox.List>
+                            <BaseCombobox.Empty className="px-3 py-6 text-center text-sm text-tertiary">No results found.</BaseCombobox.Empty>
+                        </BaseCombobox.Popup>
+                    </BaseCombobox.Positioner>
+                    </BaseCombobox.Portal>
+                    {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}
+                </div>
+            </BaseCombobox.Root>
         </SelectContext.Provider>
+    );
+};
+
+export const ComboBoxItem = ({ item, children }: { item: SelectItemType; children?: ReactNode }) => {
+    const { size } = useContext(SelectContext);
+    const Icon = item.icon;
+    return (
+        <BaseCombobox.Item value={item.id} disabled={item.isDisabled} className={(state) => cx("w-full rounded-md outline-none data-[highlighted]:bg-primary_hover", state.highlighted && "bg-primary_hover")}>
+            <div className={cx("flex cursor-pointer items-center", sizes[size].root)}>
+                {item.avatarUrl && <Avatar size="xs" src={item.avatarUrl} alt={item.label} />}
+                {isReactComponent(Icon) && (() => { const IconComponent = Icon as FC; return <IconComponent data-icon aria-hidden="true" />; })()}
+                <span className={cx("min-w-0 flex-1 truncate font-medium text-primary", sizes[size].text)}>{children ?? item.label}</span>
+            </div>
+        </BaseCombobox.Item>
     );
 };

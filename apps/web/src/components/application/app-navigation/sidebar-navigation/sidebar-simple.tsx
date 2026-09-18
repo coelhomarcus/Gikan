@@ -1,5 +1,4 @@
 import type { FocusEvent, ReactNode } from "react";
-import { Link as AriaLink } from "react-aria-components";
 import { Input } from "@/components/base/input/input";
 import { AppIcons } from "@/components/foundations/icons";
 import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
@@ -49,7 +48,7 @@ export const SidebarNavigationSimple = ({
 }: SidebarNavigationProps) => {
     const searchTriggerProps = onSearchClick
         ? {
-              isReadOnly: true,
+              readOnly: true,
               onFocus: (event: FocusEvent<HTMLInputElement>) => {
                   event.target.blur();
                   onSearchClick();
@@ -72,9 +71,9 @@ export const SidebarNavigationSimple = ({
             )}
         >
             <div className="flex flex-col gap-4 px-3 lg:px-4">
-                <AriaLink href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+                <a href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
                     <GikanLogo className="h-6" />
-                </AriaLink>
+                </a>
 
                 {/* Mobile search input */}
                 <Input size="md" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="md:hidden" {...searchTriggerProps} />

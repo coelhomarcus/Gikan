@@ -4,32 +4,15 @@ This is an **Untitled UI React** component library project built with:
 
 - **React 19** with TypeScript
 - **Tailwind CSS v4.2** for styling
-- **React Aria Components** as the foundation for accessibility and behavior
+- **Base UI** as the foundation for accessible interactive behavior
 
 ## Key Architecture Principles
 
 ### Component Foundation
 
-- All components are built on **React Aria Components** for consistent accessibility and behavior
+- Interactive primitives use **Base UI** wrappers for consistent accessibility and behavior
 - Components follow the compound component pattern with sub-components (e.g., `Select.Item`, `Select.ComboBox`)
 - TypeScript is used throughout for type safety
-
-### Import Naming Convention
-
-**CRITICAL**: All imports from `react-aria-components` must be prefixed with `Aria*` for clarity and consistency:
-
-```typescript
-// ✅ Correct
-import { Button as AriaButton, TextField as AriaTextField } from "react-aria-components";
-// ❌ Incorrect
-import { Button, TextField } from "react-aria-components";
-```
-
-This convention:
-
-- Prevents naming conflicts with custom components
-- Makes it clear when using base React Aria components
-- Maintains consistency across the entire codebase
 
 ### File Naming Convention
 
@@ -308,7 +291,7 @@ Select.ComboBox = ComboBox;
 
 ### Component State
 
-- Use React Aria's built-in state management
+- Use Base UI's built-in state management for interactive primitives
 - Local state for component-specific data
 - Context for shared component state (theme, router)
 
@@ -336,7 +319,7 @@ Select.ComboBox = ComboBox;
 ### When Adding New Components
 
 1. Follow the existing component structure
-2. Use React Aria Components as foundation
+2. Use Base UI as the foundation for interactive behavior
 3. Implement proper TypeScript types
 4. Add size and color variants where applicable
 5. Include accessibility features

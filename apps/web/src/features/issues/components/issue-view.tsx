@@ -4,6 +4,8 @@ import { ArrowLeft, Calendar, CheckCircle, ExternalLink, Link2, Plus, Trash2, Us
 import { Link, useBeforeUnload, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
+import { Select } from "@/components/base/select/select";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
@@ -368,6 +370,7 @@ function PropertySelect({
     onChange,
     className,
     isDisabled,
+    searchable,
 }: {
     label: string;
     value: string;
@@ -375,18 +378,38 @@ function PropertySelect({
     onChange: (value: string) => void;
     className?: string;
     isDisabled?: boolean;
+    searchable?: boolean;
 }) {
+    const items = options.map((option) => ({ id: option.value, label: option.label }));
+    if (searchable) {
+        return (
+            <ComboBox
+                className={`w-full ${className ?? ""}`}
+                items={items}
+                selectedKey={value || null}
+                onSelectionChange={(next) => onChange(String(next ?? ""))}
+                isDisabled={isDisabled}
+                label={label}
+                placeholder={options.find((option) => option.value === value)?.label ?? "Select"}
+                size="sm"
+            >
+                {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
+            </ComboBox>
+        );
+    }
+
     return (
-        <label className={`flex min-w-0 items-center gap-2 rounded-md border border-secondary bg-secondary_alt px-2.5 py-2 text-xs text-tertiary ${className ?? ""}`}>
-            <span>{label}</span>
-            <select disabled={isDisabled} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-right font-medium text-primary outline-none disabled:cursor-wait disabled:opacity-60">
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-        </label>
+        <Select
+            className={`w-full ${className ?? ""}`}
+            items={items}
+            selectedKey={value}
+            onSelectionChange={(next) => onChange(String(next ?? ""))}
+            isDisabled={isDisabled}
+            label={label}
+            size="sm"
+        >
+            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+        </Select>
     );
 }
 
@@ -441,6 +464,7 @@ function IssueProperties({
                 value={issue.assigneeId ?? ""}
                 label="Assignee"
                 options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name }))]}
+                searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ assigneeId: value || null })}
             />
@@ -449,6 +473,7 @@ function IssueProperties({
                 value={issue.categoryId ?? ""}
                 label="Label"
                 options={[{ value: "", label: "No label" }, ...(categories ?? []).map((category) => ({ value: category.id, label: category.name }))]}
+                searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ categoryId: value || null })}
             />
@@ -457,6 +482,7 @@ function IssueProperties({
                 value={issue.cycleId ?? ""}
                 label="Cycle"
                 options={[{ value: "", label: "No cycle" }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
+                searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ cycleId: value || null })}
             />
@@ -473,6 +499,7 @@ function IssueProperties({
                 value={issue.parent?.id ?? ""}
                 label="Parent"
                 options={[{ value: "", label: "No parent" }, ...(projectIssues ?? []).filter((candidate) => candidate.id !== issue.id).map((candidate) => ({ value: candidate.id, label: `${candidate.identifier} · ${candidate.title}` }))]}
+                searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ parentIssueId: value || null })}
             />
@@ -591,23 +618,31 @@ function IssueRelations({
                     </div>
                 ))}
                 <form className="flex flex-col gap-2 p-2 sm:flex-row" onSubmit={addRelation}>
-                    <input
-                        list="issue-relation-options"
-                        value={targetIssueIdentifier}
-                        onChange={(event) => setTargetIssueIdentifier(event.target.value)}
+                    <ComboBox
+                        className="min-w-0 flex-1 sm:min-w-48"
+                        items={projectIssues.filter((projectIssue) => projectIssue.id !== issueId).map((projectIssue) => ({ id: projectIssue.identifier, label: `${projectIssue.identifier} · ${projectIssue.title}` }))}
+                        selectedKey={targetIssueIdentifier || null}
+                        onSelectionChange={(next) => setTargetIssueIdentifier(String(next ?? ""))}
                         placeholder="Issue identifier"
-                        aria-label="Issue to relate"
-                        className="h-8 min-w-0 flex-1 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none placeholder:text-tertiary focus:border-brand"
-                    />
-                    <datalist id="issue-relation-options">
-                        {projectIssues.filter((projectIssue) => projectIssue.id !== issueId).map((projectIssue) => <option key={projectIssue.id} value={projectIssue.identifier}>{projectIssue.title}</option>)}
-                    </datalist>
-                    <select value={type} onChange={(event) => setType(event.target.value as typeof type)} aria-label="Relation type" className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
-                        <option value="related">Related to</option>
-                        <option value="blocks">Blocks</option>
-                        <option value="blocked_by">Blocked by</option>
-                        <option value="duplicate">Duplicate of</option>
-                    </select>
+                        size="sm"
+                    >
+                        {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
+                    </ComboBox>
+                    <Select
+                        className="sm:w-36"
+                        aria-label="Relation type"
+                        items={[
+                            { id: "related", label: "Related to" },
+                            { id: "blocks", label: "Blocks" },
+                            { id: "blocked_by", label: "Blocked by" },
+                            { id: "duplicate", label: "Duplicate of" },
+                        ]}
+                        selectedKey={type}
+                        onSelectionChange={(next) => setType((next ?? "related") as typeof type)}
+                        size="sm"
+                    >
+                        {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                    </Select>
                     <Button type="submit" size="xs" iconLeading={Plus} isLoading={isPending}>
                         Add
                     </Button>

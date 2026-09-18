@@ -1,9 +1,7 @@
-import type { ReactNode, Ref } from "react";
-import type { TextProps as AriaTextProps } from "react-aria-components";
-import { Text as AriaText } from "react-aria-components";
+import type { HTMLAttributes, ReactNode, Ref } from "react";
 import { cx } from "@/utils/cx";
 
-interface HintTextProps extends AriaTextProps {
+interface HintTextProps extends HTMLAttributes<HTMLElement> {
     /** Indicates that the hint text is an error message. */
     isInvalid?: boolean;
     ref?: Ref<HTMLElement>;
@@ -13,9 +11,8 @@ interface HintTextProps extends AriaTextProps {
 
 export const HintText = ({ isInvalid, className, size = "md", ...props }: HintTextProps) => {
     return (
-        <AriaText
+        <span
             {...props}
-            slot={isInvalid ? "errorMessage" : "description"}
             className={cx(
                 "text-sm text-tertiary",
 

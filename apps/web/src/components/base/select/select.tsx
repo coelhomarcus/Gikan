@@ -1,125 +1,135 @@
-import type { FC, ReactNode, Ref, RefAttributes } from "react";
-import { isValidElement } from "react";
+import type { FC, ReactNode, RefAttributes } from "react";
 import { ChevronDown } from "lucide-react";
-import type { SelectProps as AriaSelectProps } from "react-aria-components";
-import { Button as AriaButton, ListBox as AriaListBox, Select as AriaSelect, SelectValue as AriaSelectValue } from "react-aria-components";
+import { Select as BaseSelect } from "@base-ui/react/select";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { HintText } from "@/components/base/input/hint-text";
 import { Label } from "@/components/base/input/label";
 import { cx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
 import { ComboBox } from "./combobox";
-import { Popover } from "./popover";
 import { SelectItem } from "./select-item";
 import { type CommonProps, SelectContext, type SelectItemType, sizes } from "./select-shared";
 
 export { SelectContext, sizes, type CommonProps, type SelectItemType } from "./select-shared";
 
-export interface SelectProps extends Omit<AriaSelectProps<SelectItemType>, "children" | "items">, RefAttributes<HTMLDivElement>, CommonProps {
+export interface SelectProps extends RefAttributes<HTMLDivElement>, CommonProps {
     items?: SelectItemType[];
     popoverClassName?: string;
     icon?: FC | ReactNode;
+    selectedKey?: string | number | null;
+    defaultSelectedKey?: string | number | null;
+    value?: string | number | null;
+    defaultValue?: string | number | null;
+    onSelectionChange?: (key: string | number | null) => void;
+    onChange?: (value: string | number | null) => void;
+    isDisabled?: boolean;
+    isRequired?: boolean;
+    isInvalid?: boolean;
+    className?: string;
+    "aria-label"?: string;
     children: ReactNode | ((item: SelectItemType) => ReactNode);
 }
 
-interface SelectValueProps {
-    isOpen: boolean;
-    size: "sm" | "md" | "lg";
-    isFocused: boolean;
-    isDisabled: boolean;
-    placeholder?: string;
-    ref?: Ref<HTMLButtonElement>;
-    icon?: FC | ReactNode;
-}
+const SelectValue = ({ icon, size, placeholder, items }: { icon?: FC | ReactNode; size: "sm" | "md" | "lg"; placeholder?: string; items: SelectItemType[] }) => (
+    <BaseSelect.Value className={cx("flex min-w-0 flex-1 items-center truncate text-left", sizes[size].root)} placeholder={placeholder}>
+        {(value) => {
+            const selected = value as SelectItemType | string | number | null;
+            const selectedItem = (typeof selected === "object" && selected ? selected : items.find((item) => item.id === selected)) ?? null;
+            const Icon = selectedItem?.icon ?? icon;
 
-const SelectValue = ({ isOpen, isFocused, isDisabled, size, placeholder, icon, ref }: SelectValueProps) => {
-    return (
-        <AriaButton
-            ref={ref}
-            className={cx(
-                "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
-                (isFocused || isOpen) && "ring-2 ring-brand",
-                isDisabled && "cursor-not-allowed opacity-50",
-            )}
-        >
-            <AriaSelectValue<SelectItemType>
-                className={(state) =>
-                    cx(
-                        "flex h-max w-full items-center justify-start truncate text-left align-middle",
+            return (
+                <>
+                    {selectedItem?.avatarUrl && <Avatar size="xs" src={selectedItem.avatarUrl} alt={selectedItem.label} />}
+                    {isReactComponent(Icon) && <Icon data-icon aria-hidden="true" />}
+                    <span className={cx("min-w-0 truncate font-medium text-primary", sizes[size].text)}>
+                        {selectedItem?.label ?? (typeof selected === "string" || typeof selected === "number" ? String(selected) : placeholder)}
+                    </span>
+                </>
+            );
+        }}
+    </BaseSelect.Value>
+);
 
-                        sizes[size].root,
+const Select = ({
+    placeholder = "Select",
+    icon,
+    size = "md",
+    children,
+    items = [],
+    label,
+    hint,
+    tooltip,
+    hideRequiredIndicator,
+    className,
+    popoverClassName,
+    selectedKey,
+    defaultSelectedKey,
+    value,
+    defaultValue,
+    onSelectionChange,
+    onChange,
+    isDisabled,
+    isRequired,
+    isInvalid,
+    "aria-label": ariaLabel,
+    ...rest
+}: SelectProps) => {
+    const selectedValue = selectedKey !== undefined ? selectedKey : value;
+    const initialValue = defaultSelectedKey !== undefined ? defaultSelectedKey : defaultValue;
+    const renderedItems = typeof children === "function" ? items.map((item) => children(item)) : children;
 
-                        // With icon
-                        (state.selectedItems[0]?.icon || icon) && sizes[size].withIcon,
-
-                        // Icon styles
-                        "*:data-icon:shrink-0 *:data-icon:text-fg-quaternary",
-                    )
-                }
-            >
-                {(state) => {
-                    const selectedItem = state.selectedItems[0];
-                    const Icon = selectedItem?.icon || icon;
-
-                    return (
-                        <>
-                            {selectedItem?.avatarUrl ? (
-                                <Avatar size="xs" src={selectedItem.avatarUrl} alt={selectedItem.label} className={cx(size === "sm" && "size-5")} />
-                            ) : isReactComponent(Icon) ? (
-                                <Icon data-icon aria-hidden="true" />
-                            ) : isValidElement(Icon) ? (
-                                Icon
-                            ) : null}
-
-                            {selectedItem ? (
-                                <section className={cx("flex w-full truncate", sizes[size].textContainer)}>
-                                    <p className={cx("truncate font-medium text-primary", sizes[size].text)}>{selectedItem?.label}</p>
-                                    {selectedItem?.supportingText && <p className={cx("text-tertiary", sizes[size].text)}>{selectedItem?.supportingText}</p>}
-                                </section>
-                            ) : (
-                                <p className={cx("text-placeholder", sizes[size].text)}>{placeholder}</p>
-                            )}
-
-                            <ChevronDown
-                                aria-hidden="true"
-                                className={cx("ml-auto shrink-0 text-fg-quaternary", size === "lg" ? "size-5" : "size-4 stroke-[2.25px]")}
-                            />
-                        </>
-                    );
-                }}
-            </AriaSelectValue>
-        </AriaButton>
-    );
-};
-
-const Select = ({ placeholder = "Select", icon, size = "md", children, items, label, hint, tooltip, hideRequiredIndicator, className, ...rest }: SelectProps) => {
     return (
         <SelectContext.Provider value={{ size }}>
-            <AriaSelect {...rest} className={(state) => cx("flex flex-col gap-1.5", typeof className === "function" ? className(state) : className)}>
-                {(state) => (
-                    <>
-                        {label && (
-                            <Label isRequired={hideRequiredIndicator ? false : state.isRequired} tooltip={tooltip}>
-                                {label}
-                            </Label>
+            <BaseSelect.Root
+                {...rest}
+                value={selectedValue}
+                defaultValue={initialValue}
+                items={items.map((item) => ({ value: item.id, label: item.label ?? String(item.id) }))}
+                disabled={isDisabled}
+                required={isRequired}
+                onValueChange={(nextValue) => {
+                    onSelectionChange?.(nextValue);
+                    onChange?.(nextValue);
+                }}
+                aria-label={ariaLabel}
+            >
+                <div className={cx("flex flex-col gap-1.5", className)} data-invalid={isInvalid || undefined}>
+                    {label && (
+                        <Label isRequired={hideRequiredIndicator ? false : isRequired} isInvalid={isInvalid} tooltip={tooltip}>
+                            {label}
+                        </Label>
+                    )}
+                    <BaseSelect.Trigger
+                        className={cx(
+                            "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
+                            "focus-visible:ring-2 focus-visible:ring-brand",
+                            "disabled:cursor-not-allowed disabled:opacity-50",
+                            sizes[size].root,
                         )}
-
-                        <SelectValue {...state} {...{ size, placeholder }} icon={icon} />
-
-                        <Popover size={size} className={rest.popoverClassName}>
-                            <AriaListBox items={items} className="size-full outline-hidden">
-                                {children}
-                            </AriaListBox>
-                        </Popover>
-
-                        {hint && (
-                            <HintText isInvalid={state.isInvalid} className={cx(size === "sm" && "text-xs")}>
-                                {hint}
-                            </HintText>
-                        )}
-                    </>
-                )}
-            </AriaSelect>
+                        aria-invalid={isInvalid || undefined}
+                    >
+                        <SelectValue icon={icon} size={size} placeholder={placeholder} items={items} />
+                        <BaseSelect.Icon className="ml-auto shrink-0 text-fg-quaternary">
+                            <ChevronDown aria-hidden="true" className={size === "lg" ? "size-5" : "size-4 stroke-[2.25px]"} />
+                        </BaseSelect.Icon>
+                    </BaseSelect.Trigger>
+                    <BaseSelect.Portal>
+                        <BaseSelect.Positioner className="z-50 outline-none" sideOffset={4}>
+                            <BaseSelect.Popup
+                                className={cx(
+                                    "min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none",
+                                    "data-[side=bottom]:animate-in data-[side=bottom]:fade-in data-[side=bottom]:slide-in-from-top-1",
+                                    "data-[side=top]:animate-in data-[side=top]:fade-in data-[side=top]:slide-in-from-bottom-1",
+                                    popoverClassName,
+                                )}
+                            >
+                                <BaseSelect.List className="max-h-72 overflow-y-auto outline-none">{renderedItems}</BaseSelect.List>
+                            </BaseSelect.Popup>
+                        </BaseSelect.Positioner>
+                    </BaseSelect.Portal>
+                    {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}
+                </div>
+            </BaseSelect.Root>
         </SelectContext.Provider>
     );
 };

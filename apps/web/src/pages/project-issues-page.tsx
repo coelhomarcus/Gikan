@@ -5,6 +5,8 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from "reac
 import type { Location } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
+import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
+import { Select } from "@/components/base/select/select";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -281,16 +283,16 @@ export const ProjectIssuesPage = () => {
                                         aria-label="Search filter values"
                                         className="col-span-full h-8 rounded-md border border-secondary bg-secondary_alt px-2.5 text-xs text-primary outline-none placeholder:text-tertiary focus:border-brand"
                                     />
-                                    <FilterSelect label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={filterOptions((columns ?? []).map((item) => ({ value: item.id, label: item.name })), status)} />
+                                    <FilterSelect searchable label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={filterOptions((columns ?? []).map((item) => ({ value: item.id, label: item.name })), status)} />
                                     <FilterSelect
                                         label="Priority"
                                         value={priority}
                                         onChange={(value) => updateQuery("priority", value)}
                                         options={filterOptions(["high", "medium", "low"].map((value) => ({ value, label: capitalize(value) })), priority)}
                                     />
-                                    <FilterSelect label="Assignee" value={assignee} onChange={(value) => updateQuery("assignee", value)} options={filterOptions((members ?? []).map((item) => ({ value: item.id, label: item.name })), assignee)} />
-                                    <FilterSelect label="Label" value={category} onChange={(value) => updateQuery("label", value)} options={filterOptions((categories ?? []).map((item) => ({ value: item.id, label: item.name })), category)} />
-                                    <FilterSelect label="Cycle" value={cycle} onChange={(value) => updateQuery("cycle", value)} options={filterOptions((cycles ?? []).map((item) => ({ value: item.id, label: item.name })), cycle)} />
+                                    <FilterSelect searchable label="Assignee" value={assignee} onChange={(value) => updateQuery("assignee", value)} options={filterOptions((members ?? []).map((item) => ({ value: item.id, label: item.name })), assignee)} />
+                                    <FilterSelect searchable label="Label" value={category} onChange={(value) => updateQuery("label", value)} options={filterOptions((categories ?? []).map((item) => ({ value: item.id, label: item.name })), category)} />
+                                    <FilterSelect searchable label="Cycle" value={cycle} onChange={(value) => updateQuery("cycle", value)} options={filterOptions((cycles ?? []).map((item) => ({ value: item.id, label: item.name })), cycle)} />
                                     <button type="button" onClick={clearFilters} className="self-end text-left text-xs text-tertiary hover:text-primary">
                                         Clear filters
                                     </button>
@@ -437,19 +439,21 @@ function ToolbarButton({ active, icon: Icon, children, ...props }: { active?: bo
     );
 }
 
-function FilterSelect({ label, value, onChange, options }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }> }) {
+function FilterSelect({ label, value, onChange, options, searchable = false }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; searchable?: boolean }) {
+    const items = [...(label !== "Order by" && label !== "Group by" ? [{ value: "", label: "All" }] : []), ...options].map((option) => ({ id: option.value, label: option.label }));
+
+    if (searchable) {
+        return (
+            <ComboBox items={items} selectedKey={value || null} onSelectionChange={(next) => onChange(String(next ?? ""))} label={label} placeholder="All" size="sm">
+                {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
+            </ComboBox>
+        );
+    }
+
     return (
-        <label className="grid gap-1 text-xs text-tertiary">
-            {label}
-            <select value={value} onChange={(event) => onChange(event.target.value)} className="h-8 min-w-0 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
-                {label !== "Order by" && label !== "Group by" && <option value="">All</option>}
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                        {option.label}
-                    </option>
-                ))}
-            </select>
-        </label>
+        <Select items={items} selectedKey={value} onSelectionChange={(next) => onChange(String(next ?? ""))} label={label} size="sm">
+            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+        </Select>
     );
 }
 

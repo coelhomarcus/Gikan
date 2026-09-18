@@ -1,107 +1,41 @@
-import type { ReactNode } from "react";
-import type {
-    ButtonProps as AriaButtonProps,
-    TooltipProps as AriaTooltipProps,
-    TooltipTriggerComponentProps as AriaTooltipTriggerComponentProps,
-} from "react-aria-components";
-import { Button as AriaButton, OverlayArrow as AriaOverlayArrow, Tooltip as AriaTooltip, TooltipTrigger as AriaTooltipTrigger } from "react-aria-components";
+import type { ComponentProps, ReactElement, ReactNode } from "react";
+import { Tooltip as BaseTooltip } from "@base-ui/react/tooltip";
 import { cx } from "@/utils/cx";
 
-interface TooltipProps extends AriaTooltipTriggerComponentProps, Omit<AriaTooltipProps, "children"> {
-    /**
-     * The title of the tooltip.
-     */
+interface TooltipProps extends Omit<ComponentProps<typeof BaseTooltip.Root>, "children"> {
     title: ReactNode;
-    /**
-     * The description of the tooltip.
-     */
     description?: ReactNode;
-    /**
-     * Whether to show the arrow on the tooltip.
-     *
-     * @default false
-     */
     arrow?: boolean;
-    /**
-     * Delay in milliseconds before the tooltip is shown.
-     *
-     * @default 300
-     */
     delay?: number;
+    offset?: number;
+    placement?: string;
+    children: ReactNode;
+    isDisabled?: boolean;
 }
 
-export const Tooltip = ({
-    title,
-    description,
-    children,
-    arrow = false,
-    delay = 300,
-    closeDelay = 0,
-    trigger,
-    isDisabled,
-    isOpen,
-    defaultOpen,
-    offset = 6,
-    crossOffset,
-    placement = "top",
-    onOpenChange,
-    ...tooltipProps
-}: TooltipProps) => {
-    const isTopOrBottomLeft = ["top left", "top end", "bottom left", "bottom end"].includes(placement);
-    const isTopOrBottomRight = ["top right", "top start", "bottom right", "bottom start"].includes(placement);
-    // Set negative cross offset for left and right placement to visually balance the tooltip.
-    const calculatedCrossOffset = isTopOrBottomLeft ? -12 : isTopOrBottomRight ? 12 : 0;
+export const Tooltip = ({ title, description, arrow = false, delay = 300, offset = 6, placement = "top", children, isDisabled, ...props }: TooltipProps) => {
+    const side = placement.split(" ")[0] as "top" | "bottom" | "left" | "right";
 
     return (
-        <AriaTooltipTrigger {...{ trigger, delay, closeDelay, isDisabled, isOpen, defaultOpen, onOpenChange }}>
-            {children}
-
-            <AriaTooltip
-                {...tooltipProps}
-                offset={offset}
-                placement={placement}
-                crossOffset={crossOffset ?? calculatedCrossOffset}
-                className={({ isEntering, isExiting }) => cx(isEntering && "ease-out animate-in", isExiting && "ease-in animate-out")}
-            >
-                {({ isEntering, isExiting }) => (
-                    <div
-                        className={cx(
-                            "z-50 flex max-w-xs origin-(--trigger-anchor-point) flex-col items-start gap-1 rounded-lg bg-primary-solid px-3 shadow-lg will-change-transform",
-                            description ? "py-3" : "py-2",
-
-                            isEntering &&
-                                "ease-out animate-in fade-in zoom-in-95 in-placement-left:slide-in-from-right-0.5 in-placement-right:slide-in-from-left-0.5 in-placement-top:slide-in-from-bottom-0.5 in-placement-bottom:slide-in-from-top-0.5",
-                            isExiting &&
-                                "ease-in animate-out fade-out zoom-out-95 in-placement-left:slide-out-to-right-0.5 in-placement-right:slide-out-to-left-0.5 in-placement-top:slide-out-to-bottom-0.5 in-placement-bottom:slide-out-to-top-0.5",
-                        )}
-                    >
-                        <span className="text-xs font-semibold text-white">{title}</span>
-
-                        {description && <span className="text-xs font-medium text-tooltip-supporting-text">{description}</span>}
-
-                        {arrow && (
-                            <AriaOverlayArrow>
-                                <svg
-                                    viewBox="0 0 100 100"
-                                    className="size-2.5 fill-bg-primary-solid in-placement-left:-rotate-90 in-placement-right:rotate-90 in-placement-top:rotate-0 in-placement-bottom:rotate-180"
-                                >
-                                    <path d="M0,0 L35.858,35.858 Q50,50 64.142,35.858 L100,0 Z" />
-                                </svg>
-                            </AriaOverlayArrow>
-                        )}
-                    </div>
-                )}
-            </AriaTooltip>
-        </AriaTooltipTrigger>
+        <BaseTooltip.Provider delay={delay}>
+            <BaseTooltip.Root {...props} disabled={isDisabled}>
+                <BaseTooltip.Trigger render={children as ReactElement} />
+                <BaseTooltip.Portal>
+                    <BaseTooltip.Positioner side={side} sideOffset={offset}>
+                        <BaseTooltip.Popup className={cx("z-50 flex max-w-xs flex-col items-start gap-1 rounded-lg bg-primary-solid px-3 shadow-lg", description ? "py-3" : "py-2")}>
+                            {arrow && <BaseTooltip.Arrow className="fill-bg-primary-solid" />}
+                            <span className="text-xs font-semibold text-white">{title}</span>
+                            {description && <span className="text-xs font-medium text-tooltip-supporting-text">{description}</span>}
+                        </BaseTooltip.Popup>
+                    </BaseTooltip.Positioner>
+                </BaseTooltip.Portal>
+            </BaseTooltip.Root>
+        </BaseTooltip.Provider>
     );
 };
 
-interface TooltipTriggerProps extends AriaButtonProps {}
-
-export const TooltipTrigger = ({ children, className, ...buttonProps }: TooltipTriggerProps) => {
-    return (
-        <AriaButton {...buttonProps} className={(values) => cx("h-max w-max outline-hidden", typeof className === "function" ? className(values) : className)}>
-            {children}
-        </AriaButton>
-    );
-};
+export const TooltipTrigger = ({ children, className, isDisabled, ...props }: ComponentProps<typeof BaseTooltip.Trigger> & { isDisabled?: boolean }) => (
+    <BaseTooltip.Trigger {...props} disabled={isDisabled} className={cx("h-max w-max outline-hidden", typeof className === "function" ? undefined : className)}>
+        {children}
+    </BaseTooltip.Trigger>
+);

@@ -4,6 +4,7 @@ import type { Cycle } from "@/features/issues/api";
 import { useCreateCycle, useCycles, useDeleteCycle, useUpdateCycle } from "@/features/issues/hooks/use-issues";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Select } from "@/components/base/select/select";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -62,12 +63,15 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                             Name
                             <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Cycle name" className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
                         </label>
-                        <label className="grid gap-1 text-xs text-tertiary">
-                            Status
-                            <select value={status} onChange={(event) => setStatus(event.target.value as Cycle["status"])} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand">
-                                {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                            </select>
-                        </label>
+                        <Select
+                            label="Status"
+                            size="sm"
+                            items={Object.entries(statusLabels).map(([value, label]) => ({ id: value, label }))}
+                            selectedKey={status}
+                            onSelectionChange={(next) => setStatus((next ?? "planned") as Cycle["status"])}
+                        >
+                            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                        </Select>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <label className="grid gap-1 text-xs text-tertiary">
@@ -157,9 +161,17 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
                 )}
             </div>
             {isProjectOwner ? (
-                <select value={cycle.status} disabled={isPending} onChange={(event) => onStatusChange(event.target.value as Cycle["status"])} aria-label={`${cycle.name} status`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand">
-                    {Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
+                <Select
+                    className="w-32"
+                    size="sm"
+                    selectedKey={cycle.status}
+                    isDisabled={isPending}
+                    aria-label={`${cycle.name} status`}
+                    items={Object.entries(statusLabels).map(([value, label]) => ({ id: value, label }))}
+                    onSelectionChange={(next) => onStatusChange((next ?? cycle.status) as Cycle["status"])}
+                >
+                    {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                </Select>
             ) : <span className="text-xs text-tertiary">{statusLabels[cycle.status]}</span>}
             {isProjectOwner && (
                 <div className="flex items-center gap-1">

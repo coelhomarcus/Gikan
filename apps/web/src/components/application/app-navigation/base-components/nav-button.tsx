@@ -1,5 +1,4 @@
 import type { FC, MouseEventHandler, ReactNode } from "react";
-import { Pressable } from "react-aria-components";
 import { Tooltip } from "@/components/base/tooltip/tooltip";
 import { cx } from "@/utils/cx";
 
@@ -29,8 +28,7 @@ export const NavButton = ({ current, label, href, icon: Icon, className, tooltip
 
     return (
         <Tooltip isDisabled={!label} title={label} placement={tooltipPlacement}>
-            <Pressable>
-                <a
+            <a
                     href={href}
                     aria-label={label}
                     onClick={onClick}
@@ -61,8 +59,7 @@ export const NavButton = ({ current, label, href, icon: Icon, className, tooltip
                             {children}
                         </span>
                     )}
-                </a>
-            </Pressable>
+            </a>
         </Tooltip>
     );
 };

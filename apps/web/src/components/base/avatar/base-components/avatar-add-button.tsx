@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
-import type { ButtonProps as AriaButtonProps } from "react-aria-components";
-import { Tooltip as AriaTooltip, TooltipTrigger as AriaTooltipTrigger } from "@/components/base/tooltip/tooltip";
+import type { ButtonHTMLAttributes } from "react";
+import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
 import { cx } from "@/utils/cx";
 
 const sizes = {
@@ -9,15 +9,15 @@ const sizes = {
     md: { root: "size-10", icon: "size-5" },
 };
 
-interface AvatarAddButtonProps extends AriaButtonProps {
+interface AvatarAddButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
     size: "xs" | "sm" | "md";
     title?: string;
     className?: string;
 }
 
 export const AvatarAddButton = ({ size, className, title = "Add user", ...props }: AvatarAddButtonProps) => (
-    <AriaTooltip title={title}>
-        <AriaTooltipTrigger
+    <Tooltip title={title}>
+        <TooltipTrigger
             {...props}
             aria-label={title}
             className={cx(
@@ -27,6 +27,6 @@ export const AvatarAddButton = ({ size, className, title = "Add user", ...props 
             )}
         >
             <Plus className={cx("text-current transition-inherit-all", sizes[size].icon)} />
-        </AriaTooltipTrigger>
-    </AriaTooltip>
+        </TooltipTrigger>
+    </Tooltip>
 );

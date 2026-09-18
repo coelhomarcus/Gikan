@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Tabs } from "@/components/application/tabs/tabs";
 import { CloseButton } from "@/components/base/buttons/close-button";
+import { Select } from "@/components/base/select/select";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ColumnsPanel } from "@/features/board/components/columns-panel";
 import { CategoriesPanel } from "@/features/categories/components/categories-panel";
@@ -36,20 +37,22 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                         </div>
                         <div className="flex min-h-0 min-w-0 flex-1 p-5 pt-4 sm:p-6 sm:pt-5">
                             <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(String(key))} className="min-h-0 min-w-0 flex-1 md:flex-row">
-                                <label className="mb-4 flex flex-col gap-1.5 text-xs font-medium text-tertiary md:hidden">
-                                    Section
-                                    <select
-                                        value={activeTab}
-                                        onChange={(event) => setActiveTab(event.target.value)}
-                                        className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm font-normal text-primary outline-none focus:border-brand"
-                                    >
-                                        <option value="general">General</option>
-                                        <option value="columns">Statuses</option>
-                                        <option value="members">Members</option>
-                                        <option value="categories">Labels</option>
-                                        <option value="cycles">Cycles</option>
-                                    </select>
-                                </label>
+                                <Select
+                                    className="mb-4 md:hidden"
+                                    label="Section"
+                                    size="sm"
+                                    selectedKey={activeTab}
+                                    onSelectionChange={(next) => setActiveTab(String(next ?? "general"))}
+                                    items={[
+                                        { id: "general", label: "General" },
+                                        { id: "columns", label: "Statuses" },
+                                        { id: "members", label: "Members" },
+                                        { id: "categories", label: "Labels" },
+                                        { id: "cycles", label: "Cycles" },
+                                    ]}
+                                >
+                                    {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
+                                </Select>
                                 <Tabs.List
                                     orientation="vertical"
                                     type="line"

@@ -1,11 +1,9 @@
-import type { ReactNode, Ref } from "react";
+import type { LabelHTMLAttributes, ReactNode, Ref } from "react";
 import { CircleQuestionMark as HelpCircle } from "lucide-react";
-import type { LabelProps as AriaLabelProps } from "react-aria-components";
-import { Label as AriaLabel } from "react-aria-components";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
 import { cx } from "@/utils/cx";
 
-interface LabelProps extends AriaLabelProps {
+interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {
     children: ReactNode;
     isInvalid?: boolean;
     isRequired?: boolean;
@@ -16,7 +14,7 @@ interface LabelProps extends AriaLabelProps {
 
 export const Label = ({ isInvalid, isRequired, tooltip, tooltipDescription, className, ...props }: LabelProps) => {
     return (
-        <AriaLabel
+        <label
             // Used for conditionally hiding/showing the label element via CSS:
             // <Input label="Visible only on mobile" className="lg:**:data-label:hidden" />
             // or
@@ -53,7 +51,7 @@ export const Label = ({ isInvalid, isRequired, tooltip, tooltipDescription, clas
                     </TooltipTrigger>
                 </Tooltip>
             )}
-        </AriaLabel>
+        </label>
     );
 };
 

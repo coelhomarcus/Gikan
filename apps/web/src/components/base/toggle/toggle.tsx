@@ -1,137 +1,30 @@
-import type { ReactNode } from "react";
-import type { SwitchProps as AriaSwitchProps } from "react-aria-components";
-import { Switch as AriaSwitch } from "react-aria-components";
+import type { ComponentProps, ReactNode } from "react";
+import { Switch as BaseSwitch } from "@base-ui/react/switch";
 import { cx } from "@/utils/cx";
 
-interface ToggleBaseProps {
-    size?: "sm" | "md";
-    slim?: boolean;
+interface ToggleBaseProps { size?: "sm" | "md"; slim?: boolean; className?: string; isHovered?: boolean; isFocusVisible?: boolean; isSelected?: boolean; isDisabled?: boolean }
+
+export const ToggleBase = ({ className, isDisabled, isFocusVisible, isSelected, slim, size = "sm" }: ToggleBaseProps) => {
+    const root = slim ? (size === "sm" ? "h-4 w-8" : "h-5 w-10") : size === "sm" ? "h-5 w-9 p-0.5" : "h-6 w-11 p-0.5";
+    const thumb = slim ? (size === "sm" ? "size-4" : "size-5") : size === "sm" ? "size-4" : "size-5";
+    return <span aria-hidden className={cx("flex cursor-pointer rounded-full bg-tertiary ring-[0.5px] ring-secondary outline-focus-ring transition duration-150 ring-inset", isSelected && "bg-brand-solid", isDisabled && "cursor-not-allowed opacity-50", isFocusVisible && "outline-2 outline-offset-2", slim && "ring-1", root, className)}><span className={cx("rounded-full bg-fg-white shadow-sm transition-transform", slim && "border border-toggle-border shadow-xs", thumb, isSelected && (size === "sm" ? "translate-x-4" : "translate-x-5"))} /></span>;
+};
+
+interface ToggleProps extends Omit<ComponentProps<typeof BaseSwitch.Root>, "children" | "checked" | "defaultChecked" | "disabled" | "onCheckedChange" | "className"> {
     className?: string;
-    isHovered?: boolean;
-    isFocusVisible?: boolean;
-    isSelected?: boolean;
-    isDisabled?: boolean;
-}
-
-export const ToggleBase = ({ className, isHovered, isDisabled, isFocusVisible, isSelected, slim, size = "sm" }: ToggleBaseProps) => {
-    const styles = {
-        default: {
-            sm: {
-                root: "h-5 w-9 p-0.5",
-                switch: cx("size-4", isSelected && "translate-x-4"),
-            },
-            md: {
-                root: "h-6 w-11 p-0.5",
-                switch: cx("size-5", isSelected && "translate-x-5"),
-            },
-        },
-        slim: {
-            sm: {
-                root: "h-4 w-8",
-                switch: cx("size-4", isSelected && "translate-x-4"),
-            },
-            md: {
-                root: "h-5 w-10",
-                switch: cx("size-5", isSelected && "translate-x-5"),
-            },
-        },
-    };
-
-    const classes = slim ? styles.slim[size] : styles.default[size];
-
-    return (
-        <div
-            className={cx(
-                "cursor-pointer rounded-full bg-tertiary ring-[0.5px] ring-secondary outline-focus-ring transition duration-150 ease-linear ring-inset",
-                isSelected && "bg-brand-solid",
-                isSelected && isHovered && "bg-brand-solid_hover",
-                isDisabled && "cursor-not-allowed opacity-50",
-                isFocusVisible && "outline-2 outline-offset-2",
-
-                slim && "ring-1",
-                slim && isSelected && "ring-transparent",
-                classes.root,
-                className,
-            )}
-        >
-            <div
-                style={{
-                    transition: "transform 0.15s ease-in-out, translate 0.15s ease-in-out, border-color 0.1s linear, background-color 0.1s linear",
-                }}
-                className={cx(
-                    "rounded-full bg-fg-white shadow-sm",
-
-                    slim && "shadow-xs",
-                    slim && "border border-toggle-border",
-                    slim && isSelected && "border-toggle-slim-border_pressed",
-                    slim && isSelected && isHovered && "border-toggle-slim-border_pressed-hover",
-
-                    classes.switch,
-                )}
-            />
-        </div>
-    );
-};
-
-const styles = {
-    sm: {
-        root: "gap-2",
-        textWrapper: "",
-        label: "text-sm font-medium",
-        hint: "text-sm",
-    },
-    md: {
-        root: "gap-3",
-        textWrapper: "gap-0.5",
-        label: "text-md font-medium",
-        hint: "text-md",
-    },
-};
-
-interface ToggleProps extends AriaSwitchProps {
     size?: "sm" | "md";
     label?: string;
     hint?: ReactNode;
     slim?: boolean;
+    isSelected?: boolean;
+    defaultSelected?: boolean;
+    isDisabled?: boolean;
+    onChange?: (selected: boolean) => void;
 }
 
-export const Toggle = ({ label, hint, className, size = "sm", slim, ...ariaSwitchProps }: ToggleProps) => {
-    return (
-        <AriaSwitch
-            {...ariaSwitchProps}
-            className={(state) =>
-                cx(
-                    "flex w-max items-start",
-                    state.isDisabled && "cursor-not-allowed",
-                    styles[size].root,
-                    typeof className === "function" ? className(state) : className,
-                )
-            }
-        >
-            {({ isSelected, isDisabled, isFocusVisible, isHovered }) => (
-                <>
-                    <ToggleBase
-                        slim={slim}
-                        size={size}
-                        isHovered={isHovered}
-                        isDisabled={isDisabled}
-                        isFocusVisible={isFocusVisible}
-                        isSelected={isSelected}
-                        className={slim ? "mt-0.5" : ""}
-                    />
-
-                    {(label || hint) && (
-                        <div className={cx("flex flex-col", styles[size].textWrapper)}>
-                            {label && <p className={cx("text-secondary select-none", styles[size].label)}>{label}</p>}
-                            {hint && (
-                                <span className={cx("text-tertiary", styles[size].hint)} onClick={(event) => event.stopPropagation()}>
-                                    {hint}
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
-        </AriaSwitch>
-    );
-};
+export const Toggle = ({ label, hint, className, size = "sm", slim, isSelected, defaultSelected, isDisabled, onChange, ...props }: ToggleProps) => (
+    <BaseSwitch.Root {...props} checked={isSelected} defaultChecked={defaultSelected} disabled={isDisabled} onCheckedChange={(checked) => onChange?.(checked)} className={cx("flex w-max items-start gap-2", size === "md" && "gap-3", isDisabled && "cursor-not-allowed", className)}>
+        <ToggleBase slim={slim} size={size} isDisabled={isDisabled} isSelected={isSelected} className={slim ? "mt-0.5" : ""} />
+        {(label || hint) && <span className="flex flex-col gap-0.5"><span className={cx("text-secondary select-none", size === "md" ? "text-md" : "text-sm")}>{label}</span>{hint && <span className={cx("text-tertiary", size === "md" ? "text-md" : "text-sm")}>{hint}</span>}</span>}
+    </BaseSwitch.Root>
+);

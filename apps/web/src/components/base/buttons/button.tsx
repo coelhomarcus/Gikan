@@ -1,7 +1,6 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, DetailedHTMLProps, FC, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, FC, ReactNode } from "react";
 import React, { isValidElement } from "react";
-import type { ButtonProps as AriaButtonProps, LinkProps as AriaLinkProps } from "react-aria-components";
-import { Button as AriaButton, Link as AriaLink } from "react-aria-components";
+import { Button as BaseButton } from "@base-ui/react/button";
 import { cx, sortCx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
 
@@ -149,17 +148,15 @@ export interface CommonProps {
 /**
  * Props for the button variant (non-link)
  */
-export interface ButtonProps extends CommonProps, DetailedHTMLProps<Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color" | "slot">, HTMLButtonElement> {
-    /** Slot name for react-aria component */
-    slot?: AriaButtonProps["slot"];
+export interface ButtonProps extends CommonProps, Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> {
+    onPress?: () => void;
 }
 
 /**
  * Props for the link variant (anchor tag)
  */
-interface LinkProps extends CommonProps, DetailedHTMLProps<Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color">, HTMLAnchorElement> {
-    /** Options for the configured client side router. */
-    routerOptions?: AriaLinkProps["routerOptions"];
+interface LinkProps extends CommonProps, Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "color"> {
+    onPress?: () => void;
 }
 
 /** Union type of button and link props */
@@ -176,39 +173,28 @@ export const Button = ({
     isDisabled: disabled,
     isLoading: loading,
     showTextWhileLoading,
+    onPress,
     ...otherProps
 }: Props) => {
     const href = "href" in otherProps ? otherProps.href : undefined;
-    const Component = href ? AriaLink : AriaButton;
 
     const isIcon = (IconLeading || IconTrailing) && !children;
     const isLinkType = ["link-gray", "link-color", "link-destructive"].includes(color);
 
     noTextPadding = isLinkType || noTextPadding;
 
-    let props = {};
+    const props = href
+        ? { ...otherProps, href: disabled ? undefined : href, onClick: onPress ? () => onPress() : otherProps.onClick }
+        : { ...otherProps, type: otherProps.type || "button", disabled, onClick: onPress ? () => onPress() : otherProps.onClick };
 
-    if (href) {
-        props = {
-            ...otherProps,
-
-            href: disabled ? undefined : href,
-        };
-    } else {
-        props = {
-            ...otherProps,
-
-            type: otherProps.type || "button",
-            isPending: loading,
-        };
-    }
+    const Component = (href ? "a" : BaseButton) as React.ElementType;
+    const componentProps = props as Record<string, unknown>;
 
     return (
         <Component
             data-loading={loading ? true : undefined}
             data-icon-only={isIcon ? true : undefined}
-            {...props}
-            isDisabled={disabled}
+            {...componentProps}
             className={cx(
                 styles.common.root,
                 styles.sizes[size].root,
