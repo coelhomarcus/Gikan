@@ -117,7 +117,7 @@
     --color-white: rgb(255 255 255);
     --color-black: rgb(0 0 0);
 
-    /* These will be inverted in dark mode. */
+    /* These are used by the dark-only interface. */
     --color-alpha-white: rgb(255 255 255);
     --color-alpha-black: rgb(0 0 0);
 
@@ -134,7 +134,7 @@
     --color-brand-900: rgb(6 53 113);
     --color-brand-950: rgb(4 31 66);
 
-    /* LIGHT MODE VARIABLES */
+    /* BASE FALLBACK VARIABLES */
 
     --color-alpha-white: rgb(255 255 255);
     --color-alpha-black: rgb(0 0 0);
@@ -496,7 +496,7 @@
 }
 
 @layer base {
-    /* DARK MODE VARIABLES */
+    /* DARK MODE VARIABLES (the only supported application theme) */
 
     .dark-mode {
         --color-alpha-white: rgb(12 14 18);

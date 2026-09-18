@@ -21,7 +21,7 @@ This document remains the source of truth for the redesign. Implementation is be
 - Keep the application predominantly black/near-black. Explore a very slight warm-neutral shift without turning it into a light gray or saturated interface.
 - Use the existing React application and data contracts as the integration baseline, not a restriction on UI tooling. New dependencies, replacement primitives, and new component systems are allowed when they better support the target experience. React Aria/Untitled UI and other installed presentation libraries are not mandatory foundations.
 - Retain Geist and Geist Mono as the starting typography direction. Adopt `lucide-react` as the primary interface icon library and replace the limited current icon selection with a broader, coherent catalog.
-- Preserve the existing light/system theme capability, with dark as the primary design reference.
+- Use a dark-only interface; do not expose light or system theme switching.
 - Do not introduce workspaces, teams, Inbox, My Issues, milestones, saved views, multiple documents, attachments, AI tools, or real-time collaboration as part of this redesign.
 
 Complete missing presentation and interactions for existing capabilities when required by a redesigned screen. Treat new backend capabilities separately and record them explicitly; do not create decorative controls for unsupported features.
@@ -134,7 +134,7 @@ The accent is a proposal for Gikan, not an extracted Linear brand value. Keep pr
 
 Map existing aliases such as `bg-primary`, `bg-secondary`, `text-primary`, `text-tertiary`, `ring-secondary`, and `outline-focus-ring` to the approved roles. Do not globally shrink existing `text-sm`/`text-md` values without reviewing their consumers. Add explicit UI density tokens and migrate deliberately.
 
-Light mode gets corresponding semantic surfaces and readable text; do not reuse dark hex values or simply invert colors. Preserve stored theme choices and avoid a first-paint flash.
+The application uses dark semantic surfaces and readable text throughout. Do not reintroduce a light palette or stored theme choices; avoid a first-paint flash.
 
 ### Typography, sizing, and motion
 
@@ -407,7 +407,7 @@ Exercise owner, ordinary member, comment author, admin, unauthenticated, and non
 ### Completion checklist
 
 - [ ] Every routed screen, reachable settings section, modal, popover, menu, tooltip, and error/empty/loading state uses the new system.
-- [ ] Dark mode remains near-black and comfortable; supported light/system modes are coherent.
+- [ ] Dark mode remains near-black and comfortable across the supported browsers and viewports.
 - [ ] No unintended body overflow, clipped controls, duplicate scrollbars, or panel content below the virtual keyboard.
 - [ ] Same header positions, spacing, icon scale, focus styling, and feedback vocabulary throughout the application.
 - [ ] Lucide is the primary interface icon family; the expanded project picker is searchable and keyboard accessible, existing saved icons resolve correctly, and its full catalog does not inflate initial loading.

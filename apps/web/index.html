@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark-mode">
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/gikan-icon.svg" />
@@ -14,13 +14,9 @@
         <div id="root"></div>
         <script type="module" src="/src/main.tsx"></script>
         <script>
-            // On page load, best to add inline in `head` to avoid FOUC. Default theme is dark.
-            var stored = localStorage.getItem("ui-theme");
-            if (stored === "light") {
-                document.documentElement.classList.remove("dark-mode");
-            } else {
-                document.documentElement.classList.add("dark-mode");
-            }
+            // Apply dark mode before the app mounts so the interface never flashes light mode.
+            document.documentElement.classList.add("dark-mode");
+            document.documentElement.style.colorScheme = "dark";
         </script>
     </body>
 </html>

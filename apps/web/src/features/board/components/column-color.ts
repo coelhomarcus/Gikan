@@ -9,11 +9,9 @@ export const COLUMN_FALLBACK_COLOR = "#87888c";
 /**
  * Tints the issue with the column color.
  *
- * The issue sits on `bg-primary`, which is pure white in the light theme and nearly black in the
- * dark theme — painting the hex directly would harm readability in one of them. Mixing with the
- * surface solves this: because `--color-bg-primary` already changes between themes, the same
- * expression produces a dark tone in the dark theme and a pastel in the light theme without
- * detecting the theme in JS. Text continues to use the usual semantic tokens and remains legible.
+ * The issue sits on `bg-primary`, which is near-black in the dark-only application — painting the
+ * hex directly would create a harsh surface. Mixing with the semantic background keeps the status
+ * tint restrained while text continues to use the usual semantic tokens.
  *
  * Without a defined color, returns `undefined` and the issue keeps its previous neutral appearance.
  */
