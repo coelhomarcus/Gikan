@@ -82,6 +82,8 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
+    const titleVersion = useRef(0);
+    const descriptionVersion = useRef(0);
     const titleRef = useRef<HTMLTextAreaElement>(null);
     const peekRef = useRef<HTMLElement>(null);
 
@@ -97,6 +99,8 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             loadedIssueId.current = issue.id;
             titleDirty.current = false;
             descriptionDirty.current = false;
+            titleVersion.current = 0;
+            descriptionVersion.current = 0;
             setTitle(issue.title);
             setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
             return;
@@ -201,6 +205,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             value={title}
                             onChange={(event) => {
                                 titleDirty.current = true;
+                                titleVersion.current += 1;
                                 setTitleSaveError(null);
                                 setTitle(event.target.value);
                             }}
@@ -212,10 +217,13 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     return;
                                 }
                                 if (nextTitle !== issue.title) {
+                                    const saveVersion = titleVersion.current;
                                     updateIssue.mutate(
                                         { identifier: issue.identifier, input: { title: nextTitle } },
                                         {
-                                            onSuccess: () => (titleDirty.current = false),
+                                            onSuccess: () => {
+                                                if (titleVersion.current === saveVersion) titleDirty.current = false;
+                                            },
                                             onError: (reason) => setTitleSaveError(errorMessage(reason)),
                                         },
                                     );
@@ -237,6 +245,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 content={description}
                                 onChange={(value) => {
                                     descriptionDirty.current = true;
+                                    descriptionVersion.current += 1;
                                     setDescriptionSaveError(null);
                                     setDescription(value);
                                 }}
@@ -249,13 +258,18 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     color="tertiary"
                                     isDisabled={!descriptionDirty.current || JSON.stringify(description) === JSON.stringify(issue.descriptionJson)}
                                     onClick={() =>
-                                        updateIssue.mutate(
-                                            { identifier: issue.identifier, input: { descriptionJson: description } },
-                                            {
-                                                onSuccess: () => (descriptionDirty.current = false),
-                                                onError: (reason) => setDescriptionSaveError(errorMessage(reason)),
-                                            },
-                                        )
+                                        (() => {
+                                            const saveVersion = descriptionVersion.current;
+                                            updateIssue.mutate(
+                                                { identifier: issue.identifier, input: { descriptionJson: description } },
+                                                {
+                                                    onSuccess: () => {
+                                                        if (descriptionVersion.current === saveVersion) descriptionDirty.current = false;
+                                                    },
+                                                    onError: (reason) => setDescriptionSaveError(errorMessage(reason)),
+                                                },
+                                            );
+                                        })()
                                     }
                                 >
                                     Save description

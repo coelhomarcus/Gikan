@@ -18,6 +18,7 @@ export const ProjectDocumentsPage = () => {
     const isDirtyRef = useRef(false);
     const loadedDocumentId = useRef<string | null>(null);
     const saveRef = useRef<() => void>(() => undefined);
+    const contentVersion = useRef(0);
 
     useBeforeUnload((event) => {
         if (!isDirtyRef.current) return;
@@ -45,12 +46,15 @@ export const ProjectDocumentsPage = () => {
 
     function save() {
         if (!isDirtyRef.current || mutation.isPending) return;
+        const saveVersion = contentVersion.current;
         mutation.mutate(
             { contentJson: content },
             {
                 onSuccess: () => {
-                    isDirtyRef.current = false;
-                    setIsDirty(false);
+                    if (contentVersion.current === saveVersion) {
+                        isDirtyRef.current = false;
+                        setIsDirty(false);
+                    }
                 },
             },
         );
@@ -84,6 +88,7 @@ export const ProjectDocumentsPage = () => {
                         content={content}
                         onChange={(nextContent) => {
                             isDirtyRef.current = true;
+                            contentVersion.current += 1;
                             setIsDirty(true);
                             setContent(nextContent);
                         }}
