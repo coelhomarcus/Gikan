@@ -6,22 +6,20 @@ export function NotFound() {
     const router = useNavigate();
 
     return (
-        <section className="flex min-h-screen items-start bg-primary py-16 md:items-center md:py-24">
-            <div className="mx-auto max-w-container grow px-4 md:px-8">
-                <div className="flex w-full max-w-3xl flex-col gap-8 md:gap-12">
-                    <div className="flex flex-col gap-4 md:gap-6">
-                        <div className="flex flex-col gap-3">
-                            <span className="text-md font-semibold text-brand-secondary">404 Error</span>
-                            <h1 className="text-display-md font-semibold text-primary md:text-display-lg lg:text-display-xl">We couldn't find this page</h1>
-                        </div>
-                        <p className="text-lg text-tertiary md:text-xl">The page you're looking for doesn't exist or has been moved.</p>
+        <section className="flex min-h-dvh items-center justify-center bg-primary px-5 py-12 sm:px-8">
+            <div className="w-full max-w-md rounded-2xl border border-secondary bg-secondary_alt/40 p-6 shadow-2xl sm:p-8">
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-3">
+                        <span className="font-mono text-xs uppercase tracking-[0.16em] text-fg-brand-primary">404 · Not found</span>
+                        <h1 className="text-display-xs font-semibold tracking-tight text-primary">This page is missing.</h1>
+                        <p className="text-sm leading-relaxed text-tertiary">The link may be outdated, or the page may have moved somewhere else.</p>
                     </div>
 
-                    <div className="flex flex-col-reverse gap-3 sm:flex-row">
-                        <Button color="secondary" size="xl" iconLeading={ArrowLeft} onClick={() => router(-1)}>
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                        <Button color="secondary" size="md" iconLeading={ArrowLeft} onClick={() => router(-1)}>
                             Go back
                         </Button>
-                        <Button size="xl" onClick={() => router("/")}>
+                        <Button size="md" onClick={() => router("/")}>
                             Go home
                         </Button>
                     </div>
