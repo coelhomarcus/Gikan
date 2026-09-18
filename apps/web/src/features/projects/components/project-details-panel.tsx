@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { updateProjectSchema } from "@gikan/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { LinkExternal01 } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
@@ -41,7 +41,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
 
     if (!isProjectOwner) {
         return (
-            <div className="flex max-w-lg flex-col gap-5">
+            <div className="flex w-full flex-col gap-5">
                 <div>
                     <p className="text-sm font-medium text-secondary">Nome</p>
                     <p className="mt-1.5 flex items-center gap-2 text-sm text-tertiary">
@@ -75,7 +75,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
 
     return (
         <form
-            className="flex max-w-lg flex-col gap-5"
+            className="flex w-full flex-col gap-5"
             noValidate
             onSubmit={handleSubmit((data) =>
                 mutation.mutate(data, {
