@@ -153,7 +153,7 @@ function StatusRow({ column, index, count, isProjectOwner, isPending, onMove, on
                     <div className="flex shrink-0 items-center gap-1">
                         <ButtonUtility icon={ArrowLeft} size="sm" color="tertiary" tooltip="Move left" isDisabled={isPending || index === 0} onClick={() => onMove(-1)} />
                         <ButtonUtility icon={ArrowRight} size="sm" color="tertiary" tooltip="Move right" isDisabled={isPending || index === count - 1} onClick={() => onMove(1)} />
-                        <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete status" isDisabled={isPending} />} title="Delete status" description={`The status "${column.name}" will be deleted. Issues in it may be reassigned by the server.`} confirmLabel="Delete status" isPending={isPending} onConfirm={onDelete} />
+                        <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete status" isDisabled={isPending} />} title="Delete status" description={`The status "${column.name}" will be deleted. Move its issues first; statuses with issues cannot be deleted.`} confirmLabel="Delete status" isPending={isPending} onConfirm={onDelete} />
                     </div>
                 )}
             </div>
