@@ -14,6 +14,7 @@ import {
     useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { useLocation, useNavigate } from "react-router";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
@@ -40,6 +41,8 @@ const collisionDetection: CollisionDetection = (args) => {
 const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
 export const Board = ({ projectId }: { projectId: string }) => {
+    const location = useLocation();
+    const navigate = useNavigate();
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
     const { data: cards, isLoading: cardsLoading, isError: cardsError } = useCards(projectId);
     const { data: categories } = useCategories(projectId);
@@ -203,7 +206,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
                             projectId={projectId}
                             categoriesById={categoriesById}
                             membersById={membersById}
-                            onOpenCard={(cardId) => setModalTarget({ type: "edit", cardId })}
+                            onOpenCard={(identifier) => navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } })}
                             onCreateCard={(columnId) => setModalTarget({ type: "create", columnId })}
                         />
                     ))}

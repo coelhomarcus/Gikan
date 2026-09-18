@@ -289,7 +289,7 @@ export const ProjectNotesPage = () => {
 
     return (
         <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
-            <ProjectWorkspaceHeader projectId={projectId!} activeView="page" />
+            <ProjectWorkspaceHeader projectId={projectId!} activeView="documents" />
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
                 {isLoading && <p className="text-tertiary">Loading...</p>}

@@ -29,6 +29,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
         values: project
             ? {
                   name: project.name,
+                  issueKey: project.issueKey,
                   description: project.description ?? "",
                   repositoryUrl: project.repositoryUrl ?? "",
                   icon: (project.icon as typeof DEFAULT_PROJECT_ICON | null) ?? DEFAULT_PROJECT_ICON,
@@ -42,6 +43,10 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
     if (!isProjectOwner) {
         return (
             <div className="flex w-full flex-col gap-5">
+                <div>
+                    <p className="text-sm font-medium text-secondary">Issue key</p>
+                    <p className="mt-1.5 font-mono text-sm text-fg-brand-primary">{project.issueKey}</p>
+                </div>
                 <div>
                     <p className="text-sm font-medium text-secondary">Name</p>
                     <p className="mt-1.5 flex items-center gap-2 text-sm text-tertiary">
@@ -86,6 +91,13 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             )}
         >
             <ControlledInput control={control} name="name" label="Name" isRequired />
+            <ControlledInput
+                control={control}
+                name="issueKey"
+                label="Issue key"
+                isDisabled={project.nextIssueNumber > 1}
+                hint={project.nextIssueNumber > 1 ? "Locked after the first issue is created." : "2–8 uppercase letters or numbers"}
+            />
             <ControlledTextarea control={control} name="description" label="Description" rows={3} />
             <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 

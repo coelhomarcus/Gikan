@@ -1,7 +1,7 @@
-import type { CreateProjectInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
-import { and, desc, eq } from "drizzle-orm";
+import type { CreateProjectInput, TiptapDocument, UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
-import { boardColumns, projectMembers, projects, users } from "../../db/schema";
+import { boardColumns, issues, projectDocuments, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
 /** Initial colors for the default columns. The same hexes are used by migration 0005, which backfilled projects created before this field existed. */
@@ -14,6 +14,7 @@ const DEFAULT_COLUMNS = [
 const PROJECT_LIST_COLUMNS = {
     id: true,
     name: true,
+    issueKey: true,
     description: true,
     repositoryUrl: true,
     icon: true,
@@ -22,11 +23,34 @@ const PROJECT_LIST_COLUMNS = {
     updatedAt: true,
 } as const;
 
+function suggestedProjectKey(name: string): string {
+    const normalized = name.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    return (normalized.length >= 2 ? normalized : "PRJ").slice(0, 8);
+}
+
+async function resolveProjectKey(name: string, requestedKey?: string) {
+    const requested = requestedKey?.toUpperCase();
+    const existing = await db.query.projects.findMany({ columns: { issueKey: true } });
+    const taken = new Set(existing.map((project) => project.issueKey));
+    if (requested && !taken.has(requested)) return requested;
+    if (requested && taken.has(requested)) throw new HttpError(409, "Project key is already in use");
+
+    const base = suggestedProjectKey(name);
+    let candidate = base;
+    let suffix = 1;
+    while (taken.has(candidate)) {
+        const suffixText = String(suffix++);
+        candidate = `${base.slice(0, 8 - suffixText.length)}${suffixText}`;
+    }
+    return candidate;
+}
+
 export async function createProject(input: CreateProjectInput, creatorId: string) {
+    const issueKey = await resolveProjectKey(input.name, input.issueKey);
     return db.transaction(async (tx) => {
         const [project] = await tx
             .insert(projects)
-            .values({ name: input.name, description: input.description, repositoryUrl: input.repositoryUrl, icon: input.icon, createdBy: creatorId })
+            .values({ issueKey, name: input.name, description: input.description, repositoryUrl: input.repositoryUrl, icon: input.icon, createdBy: creatorId })
             .returning();
 
         await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });
@@ -66,6 +90,15 @@ export async function getProjectById(projectId: string) {
 }
 
 export async function updateProject(projectId: string, input: UpdateProjectInput) {
+    if (input.issueKey) {
+        const current = await getProjectById(projectId);
+        const [{ value: issueCount }] = await db.select({ value: count() }).from(issues).where(eq(issues.projectId, projectId));
+        if (issueCount > 0 && current.issueKey !== input.issueKey) {
+            throw new HttpError(409, "Project key cannot change after the first issue is created");
+        }
+        const duplicate = await db.query.projects.findFirst({ where: and(eq(projects.issueKey, input.issueKey), sql`${projects.id} <> ${projectId}`), columns: { id: true } });
+        if (duplicate) throw new HttpError(409, "Project key is already in use");
+    }
     const [project] = await db
         .update(projects)
         .set({ ...input, updatedAt: new Date() })
@@ -89,6 +122,22 @@ export async function updateProjectPage(projectId: string, input: UpdateProjectP
         throw new HttpError(404, "Project not found");
     }
     return project;
+}
+
+const EMPTY_DOCUMENT: TiptapDocument = { type: "doc", content: [] };
+
+export async function getProjectDocument(projectId: string) {
+    const document = await db.query.projectDocuments.findFirst({ where: eq(projectDocuments.projectId, projectId) });
+    return document ?? { id: null, projectId, contentJson: EMPTY_DOCUMENT, updatedAt: new Date().toISOString() };
+}
+
+export async function updateProjectDocument(projectId: string, input: UpdateProjectDocumentInput) {
+    const [document] = await db
+        .insert(projectDocuments)
+        .values({ projectId, contentJson: input.contentJson, updatedAt: new Date() })
+        .onConflictDoUpdate({ target: projectDocuments.projectId, set: { contentJson: input.contentJson, updatedAt: new Date() } })
+        .returning();
+    return document;
 }
 
 export async function deleteProject(projectId: string) {

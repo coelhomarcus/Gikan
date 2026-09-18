@@ -1,6 +1,6 @@
-import type { UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import type { UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type Project, createProject, listProjects, updateProject, updateProjectPage } from "../api";
+import { type Project, createProject, getProjectDocument, listProjects, updateProject, updateProjectDocument, updateProjectPage } from "../api";
 import { projectQueryKey } from "./use-project";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
@@ -54,5 +54,17 @@ export function useUpdateProjectPage(projectId: string) {
             queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
             queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
         },
+    });
+}
+
+export function useProjectDocument(projectId: string) {
+    return useQuery({ queryKey: ["projects", projectId, "document"], queryFn: () => getProjectDocument(projectId), enabled: !!projectId });
+}
+
+export function useUpdateProjectDocument(projectId: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (input: UpdateProjectDocumentInput) => updateProjectDocument(projectId, input),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId, "document"] }),
     });
 }

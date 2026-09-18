@@ -94,7 +94,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                                     <ConfirmDialog
                                         trigger={<ButtonUtility icon={Trash01} size="sm" color="tertiary" tooltip="Delete" />}
                                         title="Delete category"
-                                        description={`The category "${category.name}" will be deleted and removed from the cards that use it. This action cannot be undone.`}
+                                        description={`The category "${category.name}" will be deleted and removed from the issues that use it. This action cannot be undone.`}
                                         confirmLabel="Delete category"
                                         isPending={deleteMutation.isPending}
                                         onConfirm={() => deleteMutation.mutate(category.id)}

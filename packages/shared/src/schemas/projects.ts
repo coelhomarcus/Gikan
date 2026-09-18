@@ -42,9 +42,16 @@ export type ProjectIconKey = (typeof projectIconKeys)[number];
 
 const iconSchema = z.enum(projectIconKeys).nullable().optional();
 const projectPageContentSchema = z.string().max(100_000, "The page can contain at most 100,000 characters");
+const projectKeySchema = z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{2,8}$/, "Project key must contain 2 to 8 uppercase letters or numbers");
+const optionalProjectKeySchema = z.union([projectKeySchema, z.literal("")]).optional().transform((value) => value || undefined);
 
 export const createProjectSchema = z.object({
     name: z.string().trim().min(2).max(120),
+    issueKey: optionalProjectKeySchema,
     description: z.string().trim().max(2000).optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,
@@ -53,6 +60,7 @@ export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 
 export const updateProjectSchema = z.object({
     name: z.string().trim().min(2).max(120).optional(),
+    issueKey: optionalProjectKeySchema,
     description: z.string().trim().max(2000).nullable().optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,
@@ -63,6 +71,7 @@ export const updateProjectPageSchema = z.object({
     pageContent: projectPageContentSchema,
 });
 export type UpdateProjectPageInput = z.infer<typeof updateProjectPageSchema>;
+
 
 export const addProjectMemberSchema = z.object({
     username: z.string().trim().toLowerCase().min(1),

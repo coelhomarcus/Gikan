@@ -106,7 +106,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
             createCard.mutate(data, {
                 onSuccess: onClose,
                 onError: (error) => {
-                    setError("root", { message: error instanceof ApiError ? error.message : "Could not create the card" });
+                    setError("root", { message: error instanceof ApiError ? error.message : "Could not create the issue" });
                 },
             });
             return;
@@ -218,9 +218,9 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                                     Delete
                                                 </Button>
                                             }
-                                            title="Delete card"
-                                            description={`The card "${card?.title ?? ""}" will be deleted. This action cannot be undone.`}
-                                            confirmLabel="Delete card"
+                                            title="Delete issue"
+                                            description={`The issue "${card?.title ?? ""}" will be deleted. This action cannot be undone.`}
+                                            confirmLabel="Delete issue"
                                             isPending={deleteCard.isPending}
                                             onConfirm={() => deleteCard.mutate(target.cardId, { onSuccess: onClose })}
                                         />
@@ -231,7 +231,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                             Close
                                         </Button>
                                         <Button type="submit" isLoading={isPending}>
-                                            {isCreate ? "Create card" : "Save"}
+                                            {isCreate ? "Create issue" : "Save"}
                                         </Button>
                                     </div>
                                 </div>

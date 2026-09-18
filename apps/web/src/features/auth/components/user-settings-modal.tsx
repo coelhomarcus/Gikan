@@ -95,7 +95,7 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Administration</p>
                                     <p className="mt-1 text-sm text-tertiary">
-                                        Download a file with all database data (projects, cards, columns, categories, members, and users), useful for restoring
+                                        Download a file with all database data (projects, issues, columns, categories, members, and users), useful for restoring
                                         the platform if the database needs to be recreated from scratch.
                                     </p>
                                 </div>

@@ -58,6 +58,112 @@ input[type="number"] {
     -moz-appearance: textfield;
 }
 
+.tiptap-editor .ProseMirror {
+    min-height: 9rem;
+    outline: none;
+    padding: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.tiptap-editor .ProseMirror > * + * {
+    margin-top: 0.75rem;
+}
+
+.tiptap-editor .ProseMirror h1,
+.tiptap-editor .ProseMirror h2,
+.tiptap-editor .ProseMirror h3 {
+    color: var(--color-text-primary);
+    font-weight: 650;
+    line-height: 1.25;
+}
+
+.tiptap-editor .ProseMirror h1 {
+    font-size: 1.5rem;
+}
+
+.tiptap-editor .ProseMirror h2 {
+    font-size: 1.25rem;
+}
+
+.tiptap-editor .ProseMirror h3 {
+    font-size: 1.1rem;
+}
+
+.tiptap-editor .ProseMirror ul,
+.tiptap-editor .ProseMirror ol {
+    padding-left: 1.5rem;
+}
+
+.tiptap-editor .ProseMirror ul {
+    list-style: disc;
+}
+
+.tiptap-editor .ProseMirror ol {
+    list-style: decimal;
+}
+
+.tiptap-editor .ProseMirror blockquote {
+    border-left: 2px solid var(--color-border-brand);
+    color: var(--color-text-tertiary);
+    padding-left: 1rem;
+}
+
+.tiptap-editor .ProseMirror pre {
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    background: var(--color-bg-secondary);
+    padding: 0.75rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+}
+
+.tiptap-editor .ProseMirror code {
+    border-radius: 0.25rem;
+    background: var(--color-bg-secondary);
+    padding: 0.1rem 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+.tiptap-editor .ProseMirror pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.tiptap-editor .ProseMirror a,
+.tiptap-editor .mention {
+    color: var(--color-fg-brand-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.tiptap-editor .ProseMirror hr {
+    border-color: var(--color-border-secondary);
+}
+
+.tiptap-editor .ProseMirror ul[data-type="taskList"] {
+    list-style: none;
+    padding-left: 0;
+}
+
+.tiptap-editor .ProseMirror ul[data-type="taskList"] li {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.tiptap-editor .ProseMirror ul[data-type="taskList"] li > label {
+    margin-top: 0.2rem;
+}
+
+.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before {
+    float: left;
+    height: 0;
+    color: var(--color-text-placeholder);
+    content: attr(data-placeholder);
+    pointer-events: none;
+}
+
 /* Hide the default clear button (X) from search inputs. */
 input[type="search"]::-webkit-search-cancel-button {
     -webkit-appearance: none;

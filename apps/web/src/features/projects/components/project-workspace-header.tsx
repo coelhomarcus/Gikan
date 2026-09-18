@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BookOpen01, Columns03, LinkExternal01, Settings01 } from "@untitledui/icons";
+import { BookOpen01, Columns03, File06, LinkExternal01, List, Settings01 } from "@untitledui/icons";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -10,7 +10,7 @@ import { ProjectSettingsModal } from "./project-settings-modal";
 
 interface ProjectWorkspaceHeaderProps {
     projectId: string;
-    activeView: "board" | "page";
+    activeView: "overview" | "issues" | "board" | "documents";
 }
 
 export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspaceHeaderProps) => {
@@ -18,8 +18,10 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
     const { data: project } = useProject(projectId);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    const boardPath = `/projects/${projectId}`;
-    const pagePath = `${boardPath}/page`;
+    const overviewPath = `/projects/${projectId}`;
+    const issuesPath = `${overviewPath}/issues`;
+    const boardPath = `${overviewPath}/board`;
+    const documentsPath = `${overviewPath}/documents`;
 
     return (
         <>
@@ -34,11 +36,17 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
                 actions={
                     <div className="flex items-center gap-2">
                         <div className="flex rounded-lg bg-secondary_alt p-1 ring-1 ring-secondary ring-inset">
-                            <Button href={boardPath} color={activeView === "board" ? "secondary" : "tertiary"} size="xs" iconLeading={Columns03}>
-                                Kanban
+                            <Button href={overviewPath} color={activeView === "overview" ? "secondary" : "tertiary"} size="xs" iconLeading={File06}>
+                                Overview
                             </Button>
-                            <Button href={pagePath} color={activeView === "page" ? "secondary" : "tertiary"} size="xs" iconLeading={BookOpen01}>
-                                Page
+                            <Button href={issuesPath} color={activeView === "issues" ? "secondary" : "tertiary"} size="xs" iconLeading={List}>
+                                Issues
+                            </Button>
+                            <Button href={boardPath} color={activeView === "board" ? "secondary" : "tertiary"} size="xs" iconLeading={Columns03}>
+                                Board
+                            </Button>
+                            <Button href={documentsPath} color={activeView === "documents" ? "secondary" : "tertiary"} size="xs" iconLeading={BookOpen01}>
+                                Documents
                             </Button>
                         </div>
 

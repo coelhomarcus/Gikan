@@ -19,7 +19,7 @@ interface ColumnProps {
     projectId: string;
     categoriesById: Map<string, { name: string; color: string | null }>;
     membersById: Map<string, CardPerson>;
-    onOpenCard: (cardId: string) => void;
+    onOpenCard: (identifier: string) => void;
     onCreateCard: (columnId: string) => void;
 }
 
@@ -117,7 +117,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                             category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
                             assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
                             columnColor={column.color}
-                            onClick={() => onOpenCard(card.id)}
+                            onClick={() => onOpenCard(card.identifier)}
                         />
                     ))}
                 </SortableContext>
@@ -125,7 +125,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
 
             <div className="p-2">
                 <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateCard(column.id)} className="w-full justify-start">
-                    Add card
+                    Add issue
                 </Button>
             </div>
         </div>

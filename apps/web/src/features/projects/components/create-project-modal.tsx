@@ -15,7 +15,7 @@ export const CreateProjectModal = () => {
     const mutation = useCreateProject();
     const { control, handleSubmit, reset, setError, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
+        defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
     });
 
     return (
@@ -27,7 +27,7 @@ export const CreateProjectModal = () => {
                     onSubmit={handleSubmit((data) => {
                         mutation.mutate(data, {
                             onSuccess: () => {
-                                reset({ name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
+                                reset({ name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
                                 close();
                             },
                             onError: (error) => {
@@ -37,6 +37,7 @@ export const CreateProjectModal = () => {
                     })}
                 >
                     <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
+                    <ControlledInput control={control} name="issueKey" label="Issue key" placeholder="e.g. LIN" />
                     <ControlledTextarea control={control} name="description" label="Description" rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 

@@ -1,4 +1,4 @@
-import { boardColumns, cards, categories, projectMembers, projects, users } from "../../db/schema";
+import { boardColumns, categories, issueActivities, issueComments, issueRelations, issues, projectMembers, projectDocuments, projectCycles, projects, users } from "../../db/schema";
 import { db } from "../../db";
 
 export interface DatabaseBackup {
@@ -10,18 +10,28 @@ export interface DatabaseBackup {
         projectMembers: (typeof projectMembers.$inferSelect)[];
         boardColumns: (typeof boardColumns.$inferSelect)[];
         categories: (typeof categories.$inferSelect)[];
-        cards: (typeof cards.$inferSelect)[];
+        issues: (typeof issues.$inferSelect)[];
+        cycles: (typeof projectCycles.$inferSelect)[];
+        comments: (typeof issueComments.$inferSelect)[];
+        activities: (typeof issueActivities.$inferSelect)[];
+        relations: (typeof issueRelations.$inferSelect)[];
+        documents: (typeof projectDocuments.$inferSelect)[];
     };
 }
 
 export async function createBackup(): Promise<DatabaseBackup> {
-    const [usersRows, projectsRows, projectMembersRows, boardColumnsRows, categoriesRows, cardsRows] = await Promise.all([
+    const [usersRows, projectsRows, projectMembersRows, boardColumnsRows, categoriesRows, issuesRows, cyclesRows, commentsRows, activitiesRows, relationsRows, documentsRows] = await Promise.all([
         db.select().from(users),
         db.select().from(projects),
         db.select().from(projectMembers),
         db.select().from(boardColumns),
         db.select().from(categories),
-        db.select().from(cards),
+        db.select().from(issues),
+        db.select().from(projectCycles),
+        db.select().from(issueComments),
+        db.select().from(issueActivities),
+        db.select().from(issueRelations),
+        db.select().from(projectDocuments),
     ]);
 
     return {
@@ -33,7 +43,12 @@ export async function createBackup(): Promise<DatabaseBackup> {
             projectMembers: projectMembersRows,
             boardColumns: boardColumnsRows,
             categories: categoriesRows,
-            cards: cardsRows,
+            issues: issuesRows,
+            cycles: cyclesRows,
+            comments: commentsRows,
+            activities: activitiesRows,
+            relations: relationsRows,
+            documents: documentsRows,
         },
     };
 }

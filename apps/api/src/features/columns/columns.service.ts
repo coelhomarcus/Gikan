@@ -1,7 +1,7 @@
 import type { CreateColumnInput, UpdateColumnInput } from "@gikan/shared";
 import { and, asc, count, desc, eq } from "drizzle-orm";
 import { db } from "../../db";
-import { boardColumns, cards } from "../../db/schema";
+import { boardColumns, issues } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
 async function nextColumnPosition(projectId: string): Promise<number> {
@@ -54,10 +54,10 @@ export async function deleteColumn(projectId: string, columnId: string) {
         throw new HttpError(404, "Column not found");
     }
 
-    const [{ value: cardCount }] = await db.select({ value: count() }).from(cards).where(eq(cards.columnId, columnId));
+    const [{ value: issueCount }] = await db.select({ value: count() }).from(issues).where(eq(issues.columnId, columnId));
 
-    if (cardCount > 0) {
-        throw new HttpError(409, "Move the cards before deleting the column");
+    if (issueCount > 0) {
+        throw new HttpError(409, "Move the issues before deleting the column");
     }
 
     await db.delete(boardColumns).where(eq(boardColumns.id, columnId));
