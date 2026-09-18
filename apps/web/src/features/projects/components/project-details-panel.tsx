@@ -1,6 +1,6 @@
 import { updateProjectSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LinkExternal01 } from "@untitledui/icons";
+import { ExternalLink } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -68,7 +68,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
                             className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-brand-secondary hover:underline"
                         >
                             {project.repositoryUrl}
-                            <LinkExternal01 className="size-3.5 shrink-0" />
+                            <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
                         </a>
                     ) : (
                         <p className="mt-1.5 text-sm text-tertiary">—</p>

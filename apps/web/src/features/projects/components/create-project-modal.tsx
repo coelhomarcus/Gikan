@@ -1,6 +1,6 @@
 import { createProjectSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "@untitledui/icons";
+import { Plus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ControlledInput } from "@/components/form/controlled-input";

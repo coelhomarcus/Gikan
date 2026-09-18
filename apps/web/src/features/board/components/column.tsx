@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Plus, Trash01 } from "@untitledui/icons";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
@@ -97,7 +97,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                 <div className="flex shrink-0 items-center gap-1">
                     <span className="text-xs text-tertiary">{cards.length}</span>
                     <ConfirmDialog
-                        trigger={<ButtonUtility icon={Trash01} size="xs" color="tertiary" tooltip="Delete column" />}
+                        trigger={<ButtonUtility icon={Trash2} size="xs" color="tertiary" tooltip="Delete column" />}
                         title="Delete column"
                         description={`The column "${column.name}" will be deleted. This action cannot be undone.`}
                         confirmLabel="Delete column"

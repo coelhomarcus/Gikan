@@ -1,5 +1,5 @@
 import { arrayMove } from "@dnd-kit/sortable";
-import { ArrowLeft, ArrowRight } from "@untitledui/icons";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useColumns, useUpdateColumn } from "../hooks/use-board";

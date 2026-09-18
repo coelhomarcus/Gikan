@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "@untitledui/icons";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { useCreateColumn } from "../hooks/use-board";
