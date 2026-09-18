@@ -90,7 +90,23 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
             {!isLoading && !isError && cycles && cycles.length > 0 && (
                 <div className="divide-y divide-secondary overflow-hidden rounded-lg border border-secondary">
                     {cycles.map((cycle) => (
-                        <CycleRow key={cycle.id} cycle={cycle} isProjectOwner={isProjectOwner} isPending={updateCycle.isPending || deleteCycle.isPending} onStatusChange={(nextStatus) => updateCycle.mutate({ cycleId: cycle.id, input: { status: nextStatus } })} onDelete={() => deleteCycle.mutate(cycle.id)} />
+                        <CycleRow
+                            key={cycle.id}
+                            cycle={cycle}
+                            isProjectOwner={isProjectOwner}
+                            isPending={updateCycle.isPending || deleteCycle.isPending}
+                            onStatusChange={(nextStatus) =>
+                                updateCycle.mutate(
+                                    { cycleId: cycle.id, input: { status: nextStatus } },
+                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not update the cycle.") },
+                                )
+                            }
+                            onDelete={() =>
+                                deleteCycle.mutate(cycle.id, {
+                                    onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not delete the cycle."),
+                                })
+                            }
+                        />
                     ))}
                 </div>
             )}
