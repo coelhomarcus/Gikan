@@ -11,6 +11,7 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
+import { ApiError } from "@/lib/api-client";
 import {
     useCreateIssueComment,
     useCreateIssueRelation,
@@ -74,6 +75,9 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const [description, setDescription] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     const [title, setTitle] = useState("");
     const [comment, setComment] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
+    const [titleSaveError, setTitleSaveError] = useState<string | null>(null);
+    const [descriptionSaveError, setDescriptionSaveError] = useState<string | null>(null);
+    const [propertySaveError, setPropertySaveError] = useState<string | null>(null);
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
@@ -128,7 +132,13 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     if (isLoading) return <LoadingState label="Loading issue..." className="p-6" />;
     if (isError || !issue) return <ErrorMessage message="Could not load this issue." />;
 
-    const save = (input: UpdateIssueInput) => updateIssue.mutate({ identifier: issue.identifier, input });
+    const save = (input: UpdateIssueInput) => {
+        setPropertySaveError(null);
+        updateIssue.mutate(
+            { identifier: issue.identifier, input },
+            { onError: (reason) => setPropertySaveError(errorMessage(reason)) },
+        );
+    };
     const content = (
         <div className="flex h-full min-h-0 flex-col">
             <div className="flex items-center justify-between gap-3 border-b border-secondary px-5 py-3">
@@ -159,6 +169,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             value={title}
                             onChange={(event) => {
                                 titleDirty.current = true;
+                                setTitleSaveError(null);
                                 setTitle(event.target.value);
                             }}
                             onBlur={() => {
@@ -171,7 +182,10 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 if (nextTitle !== issue.title) {
                                     updateIssue.mutate(
                                         { identifier: issue.identifier, input: { title: nextTitle } },
-                                        { onSuccess: () => (titleDirty.current = false) },
+                                        {
+                                            onSuccess: () => (titleDirty.current = false),
+                                            onError: (reason) => setTitleSaveError(errorMessage(reason)),
+                                        },
                                     );
                                 } else {
                                     titleDirty.current = false;
@@ -180,9 +194,10 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             className="w-full border-0 bg-transparent text-2xl leading-8 font-semibold text-primary outline-none placeholder:text-tertiary"
                             aria-label="Issue title"
                         />
+                        {titleSaveError && <p role="alert" className="mt-1 text-xs text-error-primary">{titleSaveError}</p>}
 
                         <div className="mt-5 lg:hidden">
-                            <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
+                            <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} />
                         </div>
 
                         <section className="mt-6 border-b border-secondary pb-6">
@@ -190,6 +205,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 content={description}
                                 onChange={(value) => {
                                     descriptionDirty.current = true;
+                                    setDescriptionSaveError(null);
                                     setDescription(value);
                                 }}
                                 mentionItems={(members ?? []).map((member) => ({ id: member.id, label: member.username, description: member.name }))}
@@ -203,13 +219,17 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     onClick={() =>
                                         updateIssue.mutate(
                                             { identifier: issue.identifier, input: { descriptionJson: description } },
-                                            { onSuccess: () => (descriptionDirty.current = false) },
+                                            {
+                                                onSuccess: () => (descriptionDirty.current = false),
+                                                onError: (reason) => setDescriptionSaveError(errorMessage(reason)),
+                                            },
                                         )
                                     }
                                 >
                                     Save description
                                 </Button>
                             </div>
+                            {descriptionSaveError && <p role="alert" className="mt-2 text-right text-xs text-error-primary">{descriptionSaveError}</p>}
                         </section>
 
                         <IssueSubIssues issue={issue} />
@@ -252,7 +272,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                     </div>
 
                     <aside className="hidden w-64 shrink-0 border-l border-secondary pl-6 lg:block">
-                        <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
+                        <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} />
                     </aside>
                 </div>
             </div>
@@ -306,6 +326,7 @@ function IssueProperties({
     categories,
     cycles,
     save,
+    error,
 }: {
     issue: IssueDetail;
     projectIssues?: Array<{ id: string; identifier: string; title: string }>;
@@ -314,10 +335,12 @@ function IssueProperties({
     categories?: Array<{ id: string; name: string }>;
     cycles?: Array<{ id: string; name: string }>;
     save: (input: UpdateIssueInput) => void;
+    error?: string | null;
 }) {
     return (
         <div className="flex flex-col gap-2">
             <h2 className="mb-1 text-xs font-medium tracking-wide text-tertiary uppercase">Properties</h2>
+            {error && <p role="alert" className="text-xs text-error-primary">{error}</p>}
             <PropertySelect
                 className="w-full"
                 value={issue.columnId}
@@ -604,4 +627,10 @@ function formatDistanceToNow(value: string) {
     const hours = Math.round(minutes / 60);
     if (hours < 24) return `${hours}h ago`;
     return `${Math.round(hours / 24)}d ago`;
+}
+
+function errorMessage(reason: unknown) {
+    if (reason instanceof ApiError) return reason.message;
+    if (reason instanceof Error) return reason.message;
+    return "Could not save the issue.";
 }
