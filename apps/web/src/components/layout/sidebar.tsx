@@ -1,11 +1,15 @@
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
+import { Button } from "@/components/base/buttons/button";
 import { NavItemBase } from "@/components/application/app-navigation/base-components/nav-item";
 import { SidebarNavigationSimple } from "@/components/application/app-navigation/sidebar-navigation/sidebar-simple";
 import { AppIcons } from "@/components/foundations/icons";
 import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { ProjectSearchModal } from "@/features/projects/components/project-search-modal";
+import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
+import { useColumns } from "@/features/board/hooks/use-board";
 import { useProjects } from "@/features/projects/hooks/use-projects";
 import { SidebarAccount } from "./sidebar-account";
 
@@ -14,8 +18,12 @@ const SEARCH_SHORTCUT_LABEL = isMac ? "⌘K" : "Ctrl+K";
 
 export const Sidebar = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [isCreateOpen, setIsCreateOpen] = useState(false);
     const { data: projects } = useProjects();
+    const activeProjectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
+    const { data: activeColumns } = useColumns(activeProjectId);
 
     const navSlot = (
         <ul className="flex flex-col px-3 pt-4">
@@ -49,6 +57,13 @@ export const Sidebar = () => {
                     </ul>
                 </li>
             )}
+            {activeProjectId && activeColumns?.[0] && (
+                <li className="mt-2 px-1">
+                    <Button size="sm" iconLeading={Plus} color="secondary" className="w-full justify-start" onClick={() => setIsCreateOpen(true)}>
+                        New issue
+                    </Button>
+                </li>
+            )}
         </ul>
     );
 
@@ -73,6 +88,14 @@ export const Sidebar = () => {
                 searchShortcut={SEARCH_SHORTCUT_LABEL}
             />
             {isSearchOpen && <ProjectSearchModal onClose={() => setIsSearchOpen(false)} />}
+            {isCreateOpen && activeColumns?.[0] && (
+                <IssueQuickCreateModal
+                    projectId={activeProjectId}
+                    columnId={activeColumns[0].id}
+                    onClose={() => setIsCreateOpen(false)}
+                    onCreated={(identifier) => navigate(`/projects/${activeProjectId}/issues/${identifier}`)}
+                />
+            )}
         </>
     );
 };
