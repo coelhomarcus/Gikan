@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Issue } from "@/features/issues/api";
 import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
@@ -54,6 +54,8 @@ export const ProjectIssuesPage = () => {
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+    const filterRef = useRef<HTMLDivElement>(null);
+    const displayRef = useRef<HTMLDivElement>(null);
 
     const columnById = useMemo(() => new Map((columns ?? []).map((column) => [column.id, column])), [columns]);
     const memberById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
@@ -101,6 +103,26 @@ export const ProjectIssuesPage = () => {
     useEffect(() => {
         if (selectedIssueId && !orderedIssues.some((issue) => issue.id === selectedIssueId)) setSelectedIssueId(null);
     }, [orderedIssues, selectedIssueId]);
+
+    useEffect(() => {
+        if (!isFilterOpen && !isDisplayOpen) return;
+        function handlePointerDown(event: PointerEvent) {
+            const target = event.target as Node;
+            if (isFilterOpen && !filterRef.current?.contains(target)) setIsFilterOpen(false);
+            if (isDisplayOpen && !displayRef.current?.contains(target)) setIsDisplayOpen(false);
+        }
+        function handleKeyDown(event: KeyboardEvent) {
+            if (event.key !== "Escape") return;
+            if (isFilterOpen) setIsFilterOpen(false);
+            if (isDisplayOpen) setIsDisplayOpen(false);
+        }
+        document.addEventListener("pointerdown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isDisplayOpen, isFilterOpen]);
 
     useEffect(() => {
         if (!location.pathname.endsWith("/issues")) return;
@@ -244,7 +266,7 @@ export const ProjectIssuesPage = () => {
                             />
                         </label>
 
-                        <div className="relative">
+                        <div ref={filterRef} className="relative">
                             <ToolbarButton active={isFilterOpen || activeFilterCount > 0} icon={Filter} onClick={() => setIsFilterOpen((open) => !open)} aria-expanded={isFilterOpen}>
                                 Filter{activeFilterCount > 0 && ` · ${activeFilterCount}`}
                             </ToolbarButton>
@@ -275,7 +297,7 @@ export const ProjectIssuesPage = () => {
                             )}
                         </div>
 
-                        <div className="relative">
+                        <div ref={displayRef} className="relative">
                             <ToolbarButton active={isDisplayOpen || orderBy !== "position" || groupBy !== "none"} icon={SlidersHorizontal} onClick={() => setIsDisplayOpen((open) => !open)} aria-expanded={isDisplayOpen}>
                                 Display
                             </ToolbarButton>
