@@ -253,7 +253,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             onAdd={(targetIssueIdentifier, type) => createRelation.mutateAsync({ targetIssueIdentifier, type }).then(() => undefined)}
                             onDelete={(relationId) => deleteRelation.mutate(relationId)}
                         />
-                        <IssueActivity activity={activity ?? []} />
+                        <IssueActivity activity={activity ?? []} columns={columns ?? []} members={members ?? []} categories={categories ?? []} cycles={cycles ?? []} projectIssues={projectIssues ?? []} />
                         <IssueComments
                             comments={comments ?? []}
                             currentUserId={user?.id}
@@ -560,7 +560,14 @@ function IssueRelations({
     );
 }
 
-function IssueActivity({ activity }: { activity: Array<{ id: string; type: string; createdAt: string; actor: { name: string } }> }) {
+function IssueActivity({ activity, columns, members, categories, cycles, projectIssues }: {
+    activity: Array<{ id: string; type: string; createdAt: string; actor: { name: string }; payload: Record<string, unknown> }>;
+    columns: Array<{ id: string; name: string }>;
+    members: Array<{ id: string; name: string }>;
+    categories: Array<{ id: string; name: string }>;
+    cycles: Array<{ id: string; name: string }>;
+    projectIssues: Array<{ id: string; identifier: string; title: string }>;
+}) {
     if (!activity.length) return null;
     return (
         <section className="border-t border-secondary pt-5">
@@ -569,13 +576,33 @@ function IssueActivity({ activity }: { activity: Array<{ id: string; type: strin
                 {activity.map((entry) => (
                     <div key={entry.id} className="flex items-center gap-2 text-sm text-tertiary">
                         <span className="font-medium text-secondary">{entry.actor.name}</span>
-                        <span>{activityLabels[entry.type] ?? entry.type}</span>
+                        <span>{activityLabels[entry.type] ?? entry.type}{formatActivityChange(entry.payload, { columns, members, categories, cycles, projectIssues })}</span>
                         <span className="ml-auto text-xs">{formatDistanceToNow(entry.createdAt)}</span>
                     </div>
                 ))}
             </div>
         </section>
     );
+}
+
+function formatActivityChange(payload: Record<string, unknown>, lookups: {
+    columns: Array<{ id: string; name: string }>;
+    members: Array<{ id: string; name: string }>;
+    categories: Array<{ id: string; name: string }>;
+    cycles: Array<{ id: string; name: string }>;
+    projectIssues: Array<{ id: string; identifier: string; title: string }>;
+}) {
+    if (!("from" in payload) && !("to" in payload)) return "";
+    const field = String(payload.field ?? "");
+    const resolve = (value: unknown) => {
+        if (value === null || value === undefined || value === "") return "None";
+        const options = field === "columnId" ? lookups.columns : field === "assigneeId" ? lookups.members : field === "categoryId" ? lookups.categories : field === "cycleId" ? lookups.cycles : field === "parentIssueId" ? lookups.projectIssues : [];
+        const match = options.find((option) => option.id === value);
+        if (match && "identifier" in match) return match.identifier;
+        if (match) return match.name;
+        return String(value);
+    };
+    return ` · ${resolve(payload.from)} → ${resolve(payload.to)}`;
 }
 
 function IssueComments({
