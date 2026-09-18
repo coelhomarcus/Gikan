@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { TiptapDocument, UpdateIssueInput } from "@gikan/shared";
 import { ArrowLeft, Calendar, CheckCircle, ExternalLink, Link2, Plus, Trash2, User, X } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useBeforeUnload, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -84,6 +84,12 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const descriptionDirty = useRef(false);
     const titleRef = useRef<HTMLTextAreaElement>(null);
     const peekRef = useRef<HTMLElement>(null);
+
+    useBeforeUnload((event) => {
+        if (!titleDirty.current && !descriptionDirty.current && !comment.content?.length) return;
+        event.preventDefault();
+        event.returnValue = "";
+    });
 
     useEffect(() => {
         if (!issue) return;
