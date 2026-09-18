@@ -26,6 +26,7 @@ export const Sidebar = () => {
             </li>
             {(projects ?? []).length > 0 && (
                 <li className="py-0.25">
+                    <p className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-[0.08em] text-tertiary">Your projects</p>
                     <ul className="pb-1">
                         {(projects ?? []).map((project) => (
                             <li key={project.id} className="py-0.25">
@@ -37,9 +38,10 @@ export const Sidebar = () => {
                                     current={location.pathname === `/projects/${project.id}` || location.pathname.startsWith(`/projects/${project.id}/`)}
                                     truncate={false}
                                 >
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex min-w-0 items-center gap-2">
                                         <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
-                                        <span className="truncate">{project.name}</span>
+                                        <span className="min-w-0 flex-1 truncate">{project.name}</span>
+                                        <span className="font-mono text-[10px] text-tertiary">{project.issueKey}</span>
                                     </span>
                                 </NavItemBase>
                             </li>
