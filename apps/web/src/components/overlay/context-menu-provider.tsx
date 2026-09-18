@@ -30,25 +30,28 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         function handleContextMenu(event: MouseEvent) {
             const target = event.target as HTMLElement | null;
-            const issueElement = target?.closest<HTMLElement>("[data-issue-context]");
-            if (!issueElement) return;
+            const entityElement = target?.closest<HTMLElement>("[data-issue-context], [data-project-context]");
+            if (!entityElement) return;
 
             event.preventDefault();
-            const identifier = issueElement.dataset.issueIdentifier ?? "";
-            const projectId = issueElement.dataset.projectId ?? "";
-            const issueUrl = `/projects/${projectId}/issues/${identifier}`;
+            const isIssue = entityElement.hasAttribute("data-issue-context");
+            const projectId = entityElement.dataset.projectId ?? "";
+            const identifier = entityElement.dataset.issueIdentifier ?? "";
+            const projectUrl = `/projects/${projectId}`;
+            const entityUrl = isIssue ? `${projectUrl}/issues/${identifier}` : projectUrl;
+            const entityLabel = isIssue ? "issue" : "project";
             const items: ContextMenuItem[] = [
                 {
-                    key: "copy-issue",
-                    label: "Copy issue link",
+                    key: "copy-link",
+                    label: `Copy ${entityLabel} link`,
                     icon: Copy,
-                    onSelect: () => copy(`${window.location.origin}${issueUrl}`),
+                    onSelect: () => copy(`${window.location.origin}${entityUrl}`),
                 },
                 {
-                    key: "open-issue",
-                    label: "Open issue",
+                    key: "open-entity",
+                    label: `Open ${entityLabel}`,
                     icon: ExternalLink,
-                    onSelect: () => navigate(issueUrl),
+                    onSelect: () => navigate(entityUrl),
                 },
             ];
 
