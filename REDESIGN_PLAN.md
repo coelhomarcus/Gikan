@@ -1,6 +1,6 @@
 # Gikan — Complete Application Redesign
 
-Status: proposed implementation plan; application changes have not started.
+Status: implementation in progress; the plan is being delivered incrementally.
 Research date: September 18, 2026.
 Code baseline: `eb54771`.
 
@@ -10,7 +10,7 @@ Redesign every user-facing area of Gikan around a coherent, Linear-inspired prod
 
 The result should feel like one focused application across Projects, Overview, Issues, Board, issue details, Documents, settings, authentication, search, and every overlay or feedback state.
 
-This document is the deliverable for the planning stage. Its implementation phases are future work. Keep repository documentation and application copy in English.
+This document remains the source of truth for the redesign. Implementation is being delivered incrementally; keep repository documentation and application copy in English.
 
 ### Product boundaries
 
