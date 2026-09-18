@@ -173,7 +173,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         tooltip="Copy issue link"
                         onClick={() => navigator.clipboard.writeText(window.location.href)}
                     />
-                    <ButtonUtility icon={X} size="sm" color="tertiary" tooltip="Close" onClick={onClose ?? (() => navigate(-1))} />
+                    <ButtonUtility icon={X} size="sm" color="tertiary" tooltip="Close" onClick={onClose ?? (() => navigate(`/projects/${issue.projectId}/issues`))} />
                 </div>
             </div>
 
