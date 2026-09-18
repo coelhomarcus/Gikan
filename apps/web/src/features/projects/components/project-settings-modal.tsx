@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Tabs } from "@/components/application/tabs/tabs";
 import { CloseButton } from "@/components/base/buttons/close-button";
@@ -16,6 +17,7 @@ interface ProjectSettingsModalProps {
 }
 
 export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModalProps) => {
+    const [activeTab, setActiveTab] = useState("general");
     const { user } = useAuth();
     const { data: project } = useProject(projectId);
     const { data: members } = useProjectMembers(projectId);
@@ -33,11 +35,25 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
                         <div className="flex min-h-0 min-w-0 flex-1 p-5 pt-4 sm:p-6 sm:pt-5">
-                            <Tabs className="min-h-0 min-w-0 flex-1 md:flex-row">
+                            <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(String(key))} className="min-h-0 min-w-0 flex-1 md:flex-row">
+                                <label className="mb-4 flex flex-col gap-1.5 text-xs font-medium text-tertiary md:hidden">
+                                    Section
+                                    <select
+                                        value={activeTab}
+                                        onChange={(event) => setActiveTab(event.target.value)}
+                                        className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm font-normal text-primary outline-none focus:border-brand"
+                                    >
+                                        <option value="general">General</option>
+                                        <option value="columns">Statuses</option>
+                                        <option value="members">Members</option>
+                                        <option value="categories">Labels</option>
+                                        <option value="cycles">Cycles</option>
+                                    </select>
+                                </label>
                                 <Tabs.List
                                     orientation="vertical"
                                     type="line"
-                                    className="w-full shrink-0 pb-4 md:w-40 md:border-r md:border-secondary md:pr-4 md:pb-0"
+                                    className="hidden w-40 shrink-0 pb-4 md:flex md:border-r md:border-secondary md:pr-4 md:pb-0"
                                     items={[
                                         { id: "general", label: "General" },
                                         { id: "columns", label: "Statuses" },
