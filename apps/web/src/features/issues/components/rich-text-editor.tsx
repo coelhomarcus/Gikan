@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef } from "react";
 import type { TiptapDocument } from "@gikan/shared";
+import { Bold, CheckSquare, Code2, Heading2, Italic, Link2, List, Quote } from "lucide-react";
 import Mention from "@tiptap/extension-mention";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Placeholder } from "@tiptap/extensions";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Bold01, CheckSquare, Code02, Italic01, Link01, List, Type01 } from "@untitledui/icons";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { cx } from "@/utils/cx";
 
@@ -40,7 +40,16 @@ function createMentionSuggestion(items: MentionItem[]) {
                         const button = document.createElement("button");
                         button.type = "button";
                         button.className = `flex w-full flex-col rounded-md px-3 py-2 text-left ${index === selectedIndex ? "bg-secondary" : ""}`;
-                        button.innerHTML = `<span class="text-sm font-medium text-primary">@${item.label}</span>${item.description ? `<span class="text-xs text-tertiary">${item.description}</span>` : ""}`;
+                        const label = document.createElement("span");
+                        label.className = "text-sm font-medium text-primary";
+                        label.textContent = `@${item.label}`;
+                        button.appendChild(label);
+                        if (item.description) {
+                            const description = document.createElement("span");
+                            description.className = "text-xs text-tertiary";
+                            description.textContent = item.description;
+                            button.appendChild(description);
+                        }
                         button.addEventListener("mousedown", (event) => {
                             event.preventDefault();
                             props.command(item);
@@ -145,19 +154,19 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
     return (
         <div className="flex flex-wrap items-center gap-1 border-t border-secondary px-2 py-1">
             <ButtonUtility
-                icon={Type01}
+                icon={Heading2}
                 size="xs"
                 color="tertiary"
                 tooltip="Heading"
                 onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             />
-            <ButtonUtility icon={Bold01} size="xs" color="tertiary" tooltip="Bold" onClick={() => editor.chain().focus().toggleBold().run()} />
-            <ButtonUtility icon={Italic01} size="xs" color="tertiary" tooltip="Italic" onClick={() => editor.chain().focus().toggleItalic().run()} />
+            <ButtonUtility icon={Bold} size="xs" color="tertiary" tooltip="Bold" onClick={() => editor.chain().focus().toggleBold().run()} />
+            <ButtonUtility icon={Italic} size="xs" color="tertiary" tooltip="Italic" onClick={() => editor.chain().focus().toggleItalic().run()} />
             <ButtonUtility icon={List} size="xs" color="tertiary" tooltip="Bullet list" onClick={() => editor.chain().focus().toggleBulletList().run()} />
             <ButtonUtility icon={CheckSquare} size="xs" color="tertiary" tooltip="Task list" onClick={() => editor.chain().focus().toggleTaskList().run()} />
-            <ButtonUtility icon={List} size="xs" color="tertiary" tooltip="Quote" onClick={() => editor.chain().focus().toggleBlockquote().run()} />
-            <ButtonUtility icon={Code02} size="xs" color="tertiary" tooltip="Code block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
-            <ButtonUtility icon={Link01} size="xs" color="tertiary" tooltip="Link" onClick={toggleLink} />
+            <ButtonUtility icon={Quote} size="xs" color="tertiary" tooltip="Quote" onClick={() => editor.chain().focus().toggleBlockquote().run()} />
+            <ButtonUtility icon={Code2} size="xs" color="tertiary" tooltip="Code block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
+            <ButtonUtility icon={Link2} size="xs" color="tertiary" tooltip="Link" onClick={toggleLink} />
         </div>
     );
 }
