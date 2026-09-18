@@ -1,7 +1,7 @@
-import { createProjectSchema } from "@gikan/shared";
+import { Suspense, lazy } from "react";
+import { createProjectSchema, suggestProjectKey } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { lazy, Suspense } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
@@ -17,10 +17,12 @@ const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((modul
 export const CreateProjectModal = () => {
     const mutation = useCreateProject();
     const navigate = useNavigate();
-    const { control, handleSubmit, reset, setError, formState } = useForm({
+    const { control, handleSubmit, reset, setError, watch, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
+        defaultValues: { name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
     });
+    const projectName = watch("name");
+    const generatedIssueKey = suggestProjectKey(projectName);
 
     return (
         <ModalDialog trigger={<Button iconLeading={Plus}>New project</Button>} title="New project">
@@ -31,7 +33,7 @@ export const CreateProjectModal = () => {
                     onSubmit={handleSubmit((data) => {
                         mutation.mutate(data, {
                             onSuccess: (project) => {
-                                reset({ name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
+                                reset({ name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
                                 close();
                                 navigate(`/projects/${project.id}`);
                             },
@@ -42,7 +44,15 @@ export const CreateProjectModal = () => {
                     })}
                 >
                     <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
-                    <ControlledInput control={control} name="issueKey" label="Issue key" placeholder="e.g. LIN" />
+                    <div className="rounded-md border border-secondary bg-secondary_alt px-3 py-2.5">
+                        <div className="flex items-center justify-between gap-3">
+                            <span className="text-xs font-medium text-tertiary">Generated issue key</span>
+                            <span className="font-mono text-sm font-semibold text-fg-brand-primary">{projectName.trim() ? generatedIssueKey : "PRJ"}</span>
+                        </div>
+                        <p className="mt-1 text-xs text-tertiary">
+                            This key is generated from the project name and can be changed later before the first issue.
+                        </p>
+                    </div>
                     <ControlledTextarea control={control} name="description" label="Description" rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 

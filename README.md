@@ -57,6 +57,8 @@ pnpm dev:web   # http://localhost:5173
 
 Issues use public identifiers such as `LIN-184`. Opening an issue from the list or board displays a Peek panel while preserving the source screen. Direct navigation or a refresh displays the full issue page.
 
+Project issue keys are generated automatically from the project name (for example, `Todo Kanban` becomes `TK`). If the key is already in use, Gikan adds a numeric suffix.
+
 ## Useful commands
 
 ```bash

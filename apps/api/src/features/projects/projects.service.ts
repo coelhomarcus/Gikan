@@ -1,4 +1,4 @@
-import type { CreateProjectInput, TiptapDocument, UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import { suggestProjectKey, type CreateProjectInput, type TiptapDocument, type UpdateProjectDocumentInput, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, issues, projectDocuments, projectMembers, projects, users } from "../../db/schema";
@@ -23,19 +23,11 @@ const PROJECT_LIST_COLUMNS = {
     updatedAt: true,
 } as const;
 
-function suggestedProjectKey(name: string): string {
-    const normalized = name.toUpperCase().replace(/[^A-Z0-9]/g, "");
-    return (normalized.length >= 2 ? normalized : "PRJ").slice(0, 8);
-}
-
-async function resolveProjectKey(name: string, requestedKey?: string) {
-    const requested = requestedKey?.toUpperCase();
+async function resolveProjectKey(name: string) {
     const existing = await db.query.projects.findMany({ columns: { issueKey: true } });
     const taken = new Set(existing.map((project) => project.issueKey));
-    if (requested && !taken.has(requested)) return requested;
-    if (requested && taken.has(requested)) throw new HttpError(409, "Project key is already in use");
 
-    const base = suggestedProjectKey(name);
+    const base = suggestProjectKey(name);
     let candidate = base;
     let suffix = 1;
     while (taken.has(candidate)) {
@@ -46,26 +38,44 @@ async function resolveProjectKey(name: string, requestedKey?: string) {
 }
 
 export async function createProject(input: CreateProjectInput, creatorId: string) {
-    const issueKey = await resolveProjectKey(input.name, input.issueKey);
-    return db.transaction(async (tx) => {
-        const [project] = await tx
-            .insert(projects)
-            .values({ issueKey, name: input.name, description: input.description, repositoryUrl: input.repositoryUrl, icon: input.icon, createdBy: creatorId })
-            .returning();
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+        const issueKey = await resolveProjectKey(input.name);
 
-        await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });
+        try {
+            return await db.transaction(async (tx) => {
+                const [project] = await tx
+                    .insert(projects)
+                    .values({
+                        issueKey,
+                        name: input.name,
+                        description: input.description,
+                        repositoryUrl: input.repositoryUrl,
+                        icon: input.icon,
+                        createdBy: creatorId,
+                    })
+                    .returning();
 
-        await tx.insert(boardColumns).values(
-            DEFAULT_COLUMNS.map((column, index) => ({
-                projectId: project.id,
-                name: column.name,
-                color: column.color,
-                position: (index + 1) * 1000,
-            })),
-        );
+                await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });
 
-        return project;
-    });
+                await tx.insert(boardColumns).values(
+                    DEFAULT_COLUMNS.map((column, index) => ({
+                        projectId: project.id,
+                        name: column.name,
+                        color: column.color,
+                        position: (index + 1) * 1000,
+                    })),
+                );
+
+                return project;
+            });
+        } catch (error) {
+            const databaseError = error as { code?: string; constraint?: string };
+            const keyConflict = databaseError.code === "23505" && databaseError.constraint === "projects_issue_key_unique";
+            if (!keyConflict || attempt === 4) throw error;
+        }
+    }
+
+    throw new HttpError(409, "Could not generate a unique project key");
 }
 
 export async function listProjectsForUser(userId: string, isAdmin: boolean) {

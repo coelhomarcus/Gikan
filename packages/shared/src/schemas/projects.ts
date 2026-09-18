@@ -88,9 +88,22 @@ const projectKeySchema = z
     .regex(/^[A-Z0-9]{2,8}$/, "Project key must contain 2 to 8 uppercase letters or numbers");
 const optionalProjectKeySchema = z.union([projectKeySchema, z.literal("")]).optional().transform((value) => value || undefined);
 
+/** Generates the readable default key used when a project is created. */
+export function suggestProjectKey(name: string): string {
+    const normalized = name
+        .normalize("NFKD")
+        .replace(/\p{Diacritic}/gu, "")
+        .toUpperCase();
+    const words = normalized.split(/[^A-Z0-9]+/).filter(Boolean);
+    const compact = normalized.replace(/[^A-Z0-9]/g, "");
+    const initials = words.length > 1 ? words.map((word) => word[0]).join("") : compact;
+    const candidate = initials.slice(0, 8);
+
+    return candidate.length >= 2 ? candidate : "PRJ";
+}
+
 export const createProjectSchema = z.object({
     name: z.string().trim().min(2).max(120),
-    issueKey: optionalProjectKeySchema,
     description: z.string().trim().max(2000).optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,
