@@ -279,11 +279,14 @@ export const ProjectIssuesPage = () => {
                     {isError && <ErrorMessage message="Could not load the project issues." />}
                     {!isLoading && !isError && (
                         <div className="overflow-hidden rounded-lg border border-secondary">
-                            <div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] gap-3 border-b border-secondary px-3 py-2 text-[11px] font-medium tracking-wide text-tertiary uppercase sm:grid">
+                            <div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] gap-3 border-b border-secondary px-3 py-2 text-[11px] font-medium tracking-wide text-tertiary uppercase sm:grid lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem]">
                                 <span>Issue</span>
                                 <span>Status</span>
                                 <span>Priority</span>
                                 <span>Assignee</span>
+                                <span className="hidden lg:block">Label</span>
+                                <span className="hidden lg:block">Cycle</span>
+                                <span className="hidden text-right lg:block">Est.</span>
                             </div>
                             {groups.map((group) => (
                                 <section key={group.key} aria-label={group.label ?? "All issues"}>
@@ -421,7 +424,7 @@ function IssueRow({
             data-issue-id={issue.id}
             onClick={onOpen}
             onFocus={onSelect}
-            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5 ${
+            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
                 selected ? "bg-secondary" : ""
             }`}
         >
@@ -437,6 +440,9 @@ function IssueRow({
                 {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-secondary" />}
                 <span className="truncate">{member?.name ?? "Unassigned"}</span>
             </span>
+            <span className="hidden truncate text-xs text-tertiary lg:block">{category?.name ?? "—"}</span>
+            <span className="hidden truncate text-xs text-tertiary lg:block">{cycle?.name ?? "—"}</span>
+            <span className="hidden text-right font-mono text-xs text-tertiary lg:block">{issue.estimate ?? "—"}</span>
             <span className="hidden truncate text-[11px] text-tertiary max-sm:block">
                 {[category?.name, cycle?.name, `${issue.priority} priority`].filter(Boolean).join(" · ")}
             </span>
