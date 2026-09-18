@@ -1,13 +1,25 @@
 import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type BoardCard, type BoardColumn, createCard, createColumn, deleteCard, deleteColumn, listCards, listColumns, updateCard, updateColumn } from "../api";
+import type { Issue } from "@/features/issues/api";
+import { issueKey, issuesKey } from "@/features/issues/hooks/use-issues";
+import {
+    type BoardColumn,
+    createCard,
+    createColumn,
+    deleteCard,
+    deleteColumn,
+    listColumns,
+    updateCard,
+    updateColumn,
+} from "../api";
+import { listIssues } from "@/features/issues/api";
 
 function columnsKey(projectId: string) {
     return ["projects", projectId, "columns"] as const;
 }
 
 function cardsKey(projectId: string) {
-    return ["projects", projectId, "cards"] as const;
+    return issuesKey(projectId, { orderBy: "position" });
 }
 
 export function useColumns(projectId: string) {
@@ -15,7 +27,7 @@ export function useColumns(projectId: string) {
 }
 
 export function useCards(projectId: string) {
-    return useQuery({ queryKey: cardsKey(projectId), queryFn: () => listCards(projectId), enabled: !!projectId });
+    return useQuery({ queryKey: cardsKey(projectId), queryFn: () => listIssues(projectId, { orderBy: "position" }), enabled: !!projectId });
 }
 
 export function useCreateColumn(projectId: string) {
@@ -73,12 +85,23 @@ export function useUpdateCard(projectId: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ cardId, input }: { cardId: string; input: UpdateCardInput }) => updateCard(cardId, input),
-        onMutate: async ({ cardId, input }) => {
+        mutationFn: ({ identifier, input }: { identifier: string; input: UpdateCardInput }) => updateCard(identifier, input),
+        onMutate: async ({ identifier, input }) => {
             await queryClient.cancelQueries({ queryKey: cardsKey(projectId) });
-            const previous = queryClient.getQueryData<BoardCard[]>(cardsKey(projectId));
+            const previous = queryClient.getQueryData<Issue[]>(cardsKey(projectId));
+            const { importance, description: _description, ...issueInput } = input;
 
-            queryClient.setQueryData<BoardCard[]>(cardsKey(projectId), (old) => old?.map((card) => (card.id === cardId ? { ...card, ...input } : card)));
+            queryClient.setQueryData<Issue[]>(cardsKey(projectId), (old) =>
+                old?.map((issue) =>
+                    (issue.id === identifier || issue.identifier === identifier)
+                        ? {
+                              ...issue,
+                              ...issueInput,
+                              ...(importance ? { priority: importance } : {}),
+                          }
+                        : issue,
+                ),
+            );
 
             return { previous };
         },
@@ -89,7 +112,8 @@ export function useUpdateCard(projectId: string) {
         },
         onSettled: (_data, _error, variables) => {
             queryClient.invalidateQueries({ queryKey: cardsKey(projectId) });
-            queryClient.invalidateQueries({ queryKey: ["cards", variables.cardId] });
+            queryClient.invalidateQueries({ queryKey: issueKey(variables.identifier) });
+            queryClient.invalidateQueries({ queryKey: ["cards", variables.identifier] });
         },
     });
 }

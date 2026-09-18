@@ -18,14 +18,13 @@ import { useLocation, useNavigate } from "react-router";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
-import type { BoardCard } from "../api";
+import type { Issue } from "@/features/issues/api";
 import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
 import { CardItemContent } from "./card-item";
 import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
-import { columnTint } from "./column-color";
 
 /**
  * On a board, what matters is literally beneath the cursor (`pointerWithin`) — much more
@@ -50,9 +49,9 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const updateCard = useUpdateCard(projectId);
 
     const [modalTarget, setModalTarget] = useState<CardModalTarget | null>(null);
-    const [activeCard, setActiveCard] = useState<BoardCard | null>(null);
+    const [activeCard, setActiveCard] = useState<Issue | null>(null);
     const [activeCardWidth, setActiveCardWidth] = useState<number>();
-    const [dragCards, setDragCards] = useState<BoardCard[] | null>(null);
+    const [dragCards, setDragCards] = useState<Issue[] | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -67,7 +66,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const board = useMemo(() => dragCards ?? [...(cards ?? [])].sort((a, b) => a.position - b.position), [dragCards, cards]);
 
     /** Resolves the target column: `over` is the column itself (card area) or a card inside it. */
-    function resolveColumnId(overId: string, list: BoardCard[]): string | undefined {
+    function resolveColumnId(overId: string, list: Issue[]): string | undefined {
         if (columns?.some((column) => column.id === overId)) return overId;
         return list.find((card) => card.id === overId)?.columnId;
     }
@@ -162,7 +161,13 @@ export const Board = ({ projectId }: { projectId: string }) => {
         // would make the board fall back to old `cards` for one frame — the card would "return"
         // and only then move to the right place. Freezing the preview makes the board optimistic
         // immediately and only reverts on error.
-        updateCard.mutate({ cardId: activeId, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragCards(null) });
+        const activeIssue = list.find((issue) => issue.id === activeId);
+        if (!activeIssue) {
+            setDragCards(null);
+            return;
+        }
+
+        updateCard.mutate({ identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragCards(null) });
     }
 
     function handleDragCancel() {
@@ -180,11 +185,6 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
     const activeCategory = activeCard?.categoryId ? categoriesById.get(activeCard.categoryId) : undefined;
     const activeAssignee = activeCard?.assigneeId ? membersById.get(activeCard.assigneeId) : undefined;
-
-    // The column comes from the live list (not `activeCard`, frozen at drag start), so the clone
-    // changes color when crossing into another column and previews its appearance at the destination.
-    const activeColumnId = activeCard ? board.find((card) => card.id === activeCard.id)?.columnId : undefined;
-    const activeColumnColor = columns?.find((column) => column.id === activeColumnId)?.color;
 
     return (
         <>
@@ -216,8 +216,8 @@ export const Board = ({ projectId }: { projectId: string }) => {
                 <DragOverlay>
                     {activeCard && (
                         <div
-                            style={{ width: activeCardWidth, ...columnTint(activeColumnColor) }}
-                            className="flex cursor-grabbing flex-col gap-2 rounded-lg border border-secondary bg-primary p-3 shadow-lg ring-2 ring-brand"
+                            style={{ width: activeCardWidth }}
+                            className="flex cursor-grabbing flex-col gap-2 rounded-md border border-brand bg-primary p-3 shadow-lg"
                         >
                             <CardItemContent card={activeCard} category={activeCategory} assignee={activeAssignee} />
                         </div>

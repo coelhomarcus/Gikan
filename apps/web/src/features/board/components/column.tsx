@@ -8,14 +8,15 @@ import { Input } from "@/components/base/input/input";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
-import type { BoardCard, BoardColumn, CardPerson } from "../api";
+import type { Issue } from "@/features/issues/api";
+import type { BoardColumn, CardPerson } from "../api";
 import { useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { CardItem } from "./card-item";
 import { COLUMN_FALLBACK_COLOR } from "./column-color";
 
 interface ColumnProps {
     column: BoardColumn;
-    cards: BoardCard[];
+    cards: Issue[];
     projectId: string;
     categoriesById: Map<string, { name: string; color: string | null }>;
     membersById: Map<string, CardPerson>;
@@ -63,7 +64,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
     }
 
     return (
-        <div className="flex w-80 shrink-0 flex-col rounded-xl bg-secondary">
+        <div className="flex h-full max-h-full w-80 shrink-0 flex-col rounded-lg bg-secondary">
             <div className="flex items-center justify-between gap-2 px-3 py-2.5">
                 {isEditingName ? (
                     <Input
@@ -108,7 +109,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
 
             {error && <p className="px-3 pb-2 text-xs text-error-primary">{error}</p>}
 
-            <div ref={setDropRef} className={cx("flex min-h-20 flex-1 flex-col gap-2 rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
+            <div ref={setDropRef} className={cx("min-h-20 min-h-0 flex-1 overflow-y-auto rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
                 <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                     {cards.map((card) => (
                         <CardItem
@@ -116,7 +117,6 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                             card={card}
                             category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
                             assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
-                            columnColor={column.color}
                             onClick={() => onOpenCard(card.identifier)}
                         />
                     ))}

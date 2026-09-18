@@ -113,7 +113,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
         }
 
         updateCard.mutate(
-            { cardId: target.cardId, input: data },
+            { identifier: target.cardId, input: data },
             {
                 onSuccess: onClose,
                 onError: (error) => {
