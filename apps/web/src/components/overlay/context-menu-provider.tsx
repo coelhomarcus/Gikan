@@ -75,7 +75,24 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             if (event.key === "Escape") {
                 event.preventDefault();
                 setState(null);
+                return;
             }
+
+            if (!menuRef.current || !["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+            const items = [...menuRef.current.querySelectorAll<HTMLButtonElement>("button")];
+            if (items.length === 0) return;
+
+            event.preventDefault();
+            const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+            const nextIndex =
+                event.key === "Home"
+                    ? 0
+                    : event.key === "End"
+                      ? items.length - 1
+                      : event.key === "ArrowDown"
+                        ? (currentIndex + 1 + items.length) % items.length
+                        : (currentIndex - 1 + items.length) % items.length;
+            items[nextIndex]?.focus();
         }
 
         document.addEventListener("mousedown", handlePointerDown);
