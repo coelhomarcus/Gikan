@@ -82,6 +82,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
+    const titleRef = useRef<HTMLTextAreaElement>(null);
     const peekRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
@@ -98,6 +99,13 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         if (!titleDirty.current) setTitle(issue.title);
         if (!descriptionDirty.current) setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
     }, [issue]);
+
+    useEffect(() => {
+        const titleElement = titleRef.current;
+        if (!titleElement) return;
+        titleElement.style.height = "auto";
+        titleElement.style.height = `${titleElement.scrollHeight}px`;
+    }, [title]);
 
     useEffect(() => {
         if (mode !== "peek") return;
@@ -166,7 +174,9 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             <div className="min-h-0 flex-1 overflow-y-auto">
                 <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8 lg:flex-row lg:items-start lg:gap-10 lg:px-10">
                     <div className="min-w-0 flex-1">
-                        <input
+                        <textarea
+                            ref={titleRef}
+                            rows={1}
                             value={title}
                             onChange={(event) => {
                                 titleDirty.current = true;
@@ -192,7 +202,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     titleDirty.current = false;
                                 }
                             }}
-                            className="w-full border-0 bg-transparent text-2xl leading-8 font-semibold text-primary outline-none placeholder:text-tertiary"
+                            className="min-h-8 w-full resize-none overflow-hidden border-0 bg-transparent text-2xl leading-8 font-semibold text-primary outline-none placeholder:text-tertiary"
                             aria-label="Issue title"
                         />
                         {titleSaveError && <p role="alert" className="mt-1 text-xs text-error-primary">{titleSaveError}</p>}
