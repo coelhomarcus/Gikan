@@ -181,7 +181,7 @@ During phase 1, evaluate alternatives such as Radix UI, Base UI, or shadcn/ui al
 
 Prototype a nested dialog/popover, a searchable property picker, the command menu, and a mobile sheet against the proposed tokens. Compare keyboard/focus behavior, screen-reader support, styling freedom, touch behavior, React compatibility, implementation effort, and performance. Record the chosen foundation and the migration rationale before propagating it across screens.
 
-Prefer one coherent primitive foundation for overlapping controls, with focused additions where useful. Do not ship several competing dialog/menu systems without a specific reason. Preserve behavior and data contracts during replacements, test accessibility again, and remove superseded dependencies once their consumers have migrated. No packages are installed during this planning-only stage.
+Prefer one coherent primitive foundation for overlapping controls, with focused additions where useful. Do not ship several competing dialog/menu systems without a specific reason. Preserve behavior and data contracts during replacements, test accessibility again, and remove superseded dependencies once their consumers have migrated. The implementation may install or replace packages when that materially improves the target experience; the current product uses React Aria primitives, Tiptap, and Lucide as its active foundations.
 
 ### Accessibility constraints
 
