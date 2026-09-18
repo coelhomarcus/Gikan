@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { useLocation, useNavigate } from "react-router";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Input } from "@/components/base/input/input";
@@ -14,7 +14,8 @@ interface ProjectSearchModalProps {
 
 type SearchResult =
     | { type: "project"; id: string; title: string; key: string; description: string | null; icon: string | null }
-    | { type: "issue"; id: string; title: string; key: string; description: string | null; icon: null };
+    | { type: "issue"; id: string; title: string; key: string; description: string | null; icon: null }
+    | { type: "command"; id: string; title: string; key: string; description: string; icon: null; path: string };
 
 export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
     const [query, setQuery] = useState("");
@@ -33,8 +34,15 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
         const issueResults: SearchResult[] = (issues ?? [])
             .filter((issue) => !normalized || `${issue.identifier} ${issue.title}`.toLowerCase().includes(normalized))
             .map((issue) => ({ type: "issue", id: issue.identifier, title: issue.title, key: issue.identifier, description: null, icon: null }));
-        return { projects: projectResults, issues: issueResults, all: [...projectResults, ...issueResults] };
-    }, [issues, projects, query]);
+        const commandResults: SearchResult[] = activeProjectId
+            ? [
+                  { type: "command" as const, id: "issues", title: "Open Issues", key: "Navigation", description: "Browse and filter issues in this project.", icon: null, path: `/projects/${activeProjectId}/issues` },
+                  { type: "command" as const, id: "board", title: "Open Board", key: "Navigation", description: "Move issues through project statuses.", icon: null, path: `/projects/${activeProjectId}/board` },
+                  { type: "command" as const, id: "documents", title: "Open Documents", key: "Navigation", description: "Open the project document.", icon: null, path: `/projects/${activeProjectId}/documents` },
+              ].filter((command) => !normalized || `${command.title} ${command.description}`.toLowerCase().includes(normalized))
+            : [];
+        return { projects: projectResults, issues: issueResults, commands: commandResults, all: [...projectResults, ...issueResults, ...commandResults] };
+    }, [activeProjectId, issues, projects, query]);
 
     useEffect(() => setSelectedIndex(0), [query]);
     useEffect(() => setSelectedIndex((index) => Math.min(index, Math.max(results.all.length - 1, 0))), [results.all.length]);
@@ -43,7 +51,7 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
         if (result.type === "project") {
             navigate(`/projects/${result.id}`);
         } else if (activeProjectId) {
-            navigate(`/projects/${activeProjectId}/issues/${result.id}`, { state: { backgroundLocation: location } });
+            navigate(result.type === "command" ? result.path : `/projects/${activeProjectId}/issues/${result.id}`, result.type === "command" ? undefined : { state: { backgroundLocation: location } });
         }
         onClose();
     }
@@ -84,6 +92,11 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                                             <ResultGroup label="Issues in this project" results={results.issues} selectedIndex={selectedIndex} offset={results.projects.length} onOpen={openResult} />
                                         </div>
                                     )}
+                                    {results.commands.length > 0 && (
+                                        <div className="mt-2">
+                                            <ResultGroup label="Commands" results={results.commands} selectedIndex={selectedIndex} offset={results.projects.length + results.issues.length} onOpen={openResult} />
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
@@ -109,7 +122,7 @@ function ResultGroup({ label, results, selectedIndex, offset, onOpen }: { label:
                             className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover ${isSelected ? "bg-secondary" : ""}`}
                             aria-current={isSelected ? "true" : undefined}
                         >
-                            {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-fg-quaternary" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-secondary text-[9px] text-fg-quaternary">#</span>}
+                            {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-fg-quaternary" /> : result.type === "command" ? <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-fg-quaternary" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-secondary text-[9px] text-fg-quaternary">#</span>}
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <span className="flex min-w-0 items-baseline gap-2">
                                     <span className="truncate text-sm font-medium text-primary">{result.title}</span>
