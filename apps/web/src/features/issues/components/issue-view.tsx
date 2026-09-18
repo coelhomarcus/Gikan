@@ -208,7 +208,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         {titleSaveError && <p role="alert" className="mt-1 text-xs text-error-primary">{titleSaveError}</p>}
 
                         <div className="mt-5 lg:hidden">
-                            <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} />
+                            <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} isPending={updateIssue.isPending} />
                         </div>
 
                         <section className="mt-6 border-b border-secondary pb-6">
@@ -299,7 +299,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                     </div>
 
                     <aside className="hidden w-64 shrink-0 border-l border-secondary pl-6 lg:block">
-                        <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} />
+                        <IssueProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} isPending={updateIssue.isPending} />
                     </aside>
                 </div>
             </div>
@@ -324,17 +324,19 @@ function PropertySelect({
     options,
     onChange,
     className,
+    isDisabled,
 }: {
     label: string;
     value: string;
     options: Array<{ value: string; label: string }>;
     onChange: (value: string) => void;
     className?: string;
+    isDisabled?: boolean;
 }) {
     return (
         <label className={`flex min-w-0 items-center gap-2 rounded-md border border-secondary bg-secondary_alt px-2.5 py-2 text-xs text-tertiary ${className ?? ""}`}>
             <span>{label}</span>
-            <select value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-right font-medium text-primary outline-none">
+            <select disabled={isDisabled} value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-right font-medium text-primary outline-none disabled:cursor-wait disabled:opacity-60">
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
                         {option.label}
@@ -354,6 +356,7 @@ function IssueProperties({
     cycles,
     save,
     error,
+    isPending,
 }: {
     issue: IssueDetail;
     projectIssues?: Array<{ id: string; identifier: string; title: string }>;
@@ -363,16 +366,19 @@ function IssueProperties({
     cycles?: Array<{ id: string; name: string }>;
     save: (input: UpdateIssueInput) => void;
     error?: string | null;
+    isPending: boolean;
 }) {
     return (
         <div className="flex flex-col gap-2">
             <h2 className="mb-1 text-xs font-medium tracking-wide text-tertiary uppercase">Properties</h2>
             {error && <p role="alert" className="text-xs text-error-primary">{error}</p>}
+            {isPending && <p className="text-xs text-tertiary">Saving property...</p>}
             <PropertySelect
                 className="w-full"
                 value={issue.columnId}
                 label="Status"
                 options={(columns ?? []).map((column) => ({ value: column.id, label: column.name }))}
+                isDisabled={isPending}
                 onChange={(value) => save({ columnId: value })}
             />
             <PropertySelect
@@ -384,6 +390,7 @@ function IssueProperties({
                     { value: "medium", label: "Medium" },
                     { value: "high", label: "High" },
                 ]}
+                isDisabled={isPending}
                 onChange={(value) => save({ priority: value as "low" | "medium" | "high" })}
             />
             <PropertySelect
@@ -391,6 +398,7 @@ function IssueProperties({
                 value={issue.assigneeId ?? ""}
                 label="Assignee"
                 options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name }))]}
+                isDisabled={isPending}
                 onChange={(value) => save({ assigneeId: value || null })}
             />
             <PropertySelect
@@ -398,6 +406,7 @@ function IssueProperties({
                 value={issue.categoryId ?? ""}
                 label="Label"
                 options={[{ value: "", label: "No label" }, ...(categories ?? []).map((category) => ({ value: category.id, label: category.name }))]}
+                isDisabled={isPending}
                 onChange={(value) => save({ categoryId: value || null })}
             />
             <PropertySelect
@@ -405,6 +414,7 @@ function IssueProperties({
                 value={issue.cycleId ?? ""}
                 label="Cycle"
                 options={[{ value: "", label: "No cycle" }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
+                isDisabled={isPending}
                 onChange={(value) => save({ cycleId: value || null })}
             />
             <PropertySelect
@@ -412,6 +422,7 @@ function IssueProperties({
                 value={String(issue.estimate ?? "")}
                 label="Estimate"
                 options={[{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: `${value} points` }))]}
+                isDisabled={isPending}
                 onChange={(value) => save({ estimate: value ? Number(value) : null })}
             />
             <PropertySelect
@@ -419,6 +430,7 @@ function IssueProperties({
                 value={issue.parent?.id ?? ""}
                 label="Parent"
                 options={[{ value: "", label: "No parent" }, ...(projectIssues ?? []).filter((candidate) => candidate.id !== issue.id).map((candidate) => ({ value: candidate.id, label: `${candidate.identifier} · ${candidate.title}` }))]}
+                isDisabled={isPending}
                 onChange={(value) => save({ parentIssueId: value || null })}
             />
         </div>
