@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
-import type { TiptapDocument } from "@gikan/shared";
-import { ArrowLeft, Calendar, CheckCircle, Link01, Plus, Trash01, User01, X } from "@untitledui/icons";
+import { useEffect, useRef, useState } from "react";
+import type { TiptapDocument, UpdateIssueInput } from "@gikan/shared";
+import { ArrowLeft, Calendar, CheckCircle, Link2, Plus, Trash2, User, X } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
@@ -21,6 +22,7 @@ import {
     useUpdateIssue,
     useUpdateIssueComment,
 } from "../hooks/use-issues";
+import type { IssueDetail } from "../api";
 import { EMPTY_TIPTAP_DOCUMENT, RichTextEditor } from "./rich-text-editor";
 
 interface IssueViewProps {
@@ -65,11 +67,23 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const [description, setDescription] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     const [title, setTitle] = useState("");
     const [comment, setComment] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
+    const loadedIssueId = useRef<string | null>(null);
+    const titleDirty = useRef(false);
+    const descriptionDirty = useRef(false);
 
     useEffect(() => {
         if (!issue) return;
-        setTitle(issue.title);
-        setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
+        if (loadedIssueId.current !== issue.id) {
+            loadedIssueId.current = issue.id;
+            titleDirty.current = false;
+            descriptionDirty.current = false;
+            setTitle(issue.title);
+            setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
+            return;
+        }
+
+        if (!titleDirty.current) setTitle(issue.title);
+        if (!descriptionDirty.current) setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
     }, [issue]);
 
     useEffect(() => {
@@ -87,7 +101,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     if (isLoading) return <div className="p-6 text-sm text-tertiary">Loading issue...</div>;
     if (isError || !issue) return <ErrorMessage message="Could not load this issue." />;
 
-    const save = (input: Parameters<typeof updateIssue.mutate>[0]["input"]) => updateIssue.mutate({ identifier: issue.identifier, input });
+    const save = (input: UpdateIssueInput) => updateIssue.mutate({ identifier: issue.identifier, input });
     const content = (
         <div className="flex h-full min-h-0 flex-col">
             <div className="flex items-center justify-between gap-3 border-b border-secondary px-5 py-3">
@@ -101,7 +115,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                 </div>
                 <div className="flex items-center gap-1">
                     <ButtonUtility
-                        icon={Link01}
+                        icon={Link2}
                         size="sm"
                         color="tertiary"
                         tooltip="Copy issue link"
@@ -112,115 +126,106 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-5 py-8 lg:px-10">
-                    <input
-                        value={title}
-                        onChange={(event) => setTitle(event.target.value)}
-                        onBlur={() => title.trim() && title !== issue.title && save({ title: title.trim() })}
-                        className="w-full border-0 bg-transparent text-display-xs font-semibold text-primary outline-none placeholder:text-tertiary"
-                        aria-label="Issue title"
-                    />
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8 lg:flex-row lg:items-start lg:gap-10 lg:px-10">
+                    <div className="min-w-0 flex-1">
+                        <input
+                            value={title}
+                            onChange={(event) => {
+                                titleDirty.current = true;
+                                setTitle(event.target.value);
+                            }}
+                            onBlur={() => {
+                                const nextTitle = title.trim();
+                                if (!nextTitle) {
+                                    setTitle(issue.title);
+                                    titleDirty.current = false;
+                                    return;
+                                }
+                                if (nextTitle !== issue.title) {
+                                    updateIssue.mutate(
+                                        { identifier: issue.identifier, input: { title: nextTitle } },
+                                        { onSuccess: () => (titleDirty.current = false) },
+                                    );
+                                } else {
+                                    titleDirty.current = false;
+                                }
+                            }}
+                            className="w-full border-0 bg-transparent text-2xl leading-8 font-semibold text-primary outline-none placeholder:text-tertiary"
+                            aria-label="Issue title"
+                        />
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <PropertySelect
-                            value={issue.columnId}
-                            label="Status"
-                            options={(columns ?? []).map((column) => ({ value: column.id, label: column.name }))}
-                            onChange={(value) => save({ columnId: value })}
-                        />
-                        <PropertySelect
-                            value={issue.priority}
-                            label="Priority"
-                            options={[
-                                { value: "low", label: "Low" },
-                                { value: "medium", label: "Medium" },
-                                { value: "high", label: "High" },
-                            ]}
-                            onChange={(value) => save({ priority: value as "low" | "medium" | "high" })}
-                        />
-                        <PropertySelect
-                            value={issue.assigneeId ?? ""}
-                            label="Assignee"
-                            options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name }))]}
-                            onChange={(value) => save({ assigneeId: value || null })}
-                        />
-                        <PropertySelect
-                            value={issue.categoryId ?? ""}
-                            label="Label"
-                            options={[
-                                { value: "", label: "No label" },
-                                ...(categories ?? []).map((category) => ({ value: category.id, label: category.name })),
-                            ]}
-                            onChange={(value) => save({ categoryId: value || null })}
-                        />
-                        <PropertySelect
-                            value={issue.cycleId ?? ""}
-                            label="Cycle"
-                            options={[{ value: "", label: "No cycle" }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
-                            onChange={(value) => save({ cycleId: value || null })}
-                        />
-                        <PropertySelect
-                            value={String(issue.estimate ?? "")}
-                            label="Estimate"
-                            options={[
-                                { value: "", label: "No estimate" },
-                                ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: `${value} points` })),
-                            ]}
-                            onChange={(value) => save({ estimate: value ? Number(value) : null })}
-                        />
-                    </div>
-
-                    <section className="border-b border-secondary pb-6">
-                        <RichTextEditor
-                            content={description}
-                            onChange={setDescription}
-                            mentionItems={(members ?? []).map((member) => ({ id: member.id, label: member.username, description: member.name }))}
-                            placeholder="Describe the issue..."
-                        />
-                        <div className="mt-2 flex justify-end">
-                            <Button
-                                size="xs"
-                                color="tertiary"
-                                isDisabled={JSON.stringify(description) === JSON.stringify(issue.descriptionJson)}
-                                onClick={() => save({ descriptionJson: description })}
-                            >
-                                Save description
-                            </Button>
+                        <div className="mt-5 lg:hidden">
+                            <IssueProperties issue={issue} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
                         </div>
-                    </section>
 
-                    <IssueSubIssues issue={issue} />
-                    <IssueRelations relations={relations ?? []} />
-                    <IssueActivity activity={activity ?? []} />
-                    <IssueComments
-                        comments={comments ?? []}
-                        currentUserId={user?.id}
-                        value={comment}
-                        onChange={setComment}
-                        onSubmit={() => {
-                            createComment.mutate({ contentJson: comment }, { onSuccess: () => setComment(EMPTY_TIPTAP_DOCUMENT) });
-                        }}
-                        onDelete={(commentId) => deleteComment.mutate(commentId)}
-                        onEdit={(commentId, contentJson) => updateComment.mutate({ commentId, input: { contentJson } })}
-                    />
+                        <section className="mt-6 border-b border-secondary pb-6">
+                            <RichTextEditor
+                                content={description}
+                                onChange={(value) => {
+                                    descriptionDirty.current = true;
+                                    setDescription(value);
+                                }}
+                                mentionItems={(members ?? []).map((member) => ({ id: member.id, label: member.username, description: member.name }))}
+                                placeholder="Describe the issue..."
+                            />
+                            <div className="mt-2 flex justify-end">
+                                <Button
+                                    size="xs"
+                                    color="tertiary"
+                                    isDisabled={!descriptionDirty.current || JSON.stringify(description) === JSON.stringify(issue.descriptionJson)}
+                                    onClick={() =>
+                                        updateIssue.mutate(
+                                            { identifier: issue.identifier, input: { descriptionJson: description } },
+                                            { onSuccess: () => (descriptionDirty.current = false) },
+                                        )
+                                    }
+                                >
+                                    Save description
+                                </Button>
+                            </div>
+                        </section>
 
-                    <div className="flex justify-end border-t border-secondary pt-4">
-                        <Button
-                            color="secondary-destructive"
-                            size="sm"
-                            iconLeading={Trash01}
-                            onClick={() => deleteIssue.mutate(issue.identifier, { onSuccess: onClose ?? (() => navigate(`/projects/${issue.projectId}`)) })}
-                        >
-                            Delete issue
-                        </Button>
+                        <IssueSubIssues issue={issue} />
+                        <IssueRelations relations={relations ?? []} />
+                        <IssueActivity activity={activity ?? []} />
+                        <IssueComments
+                            comments={comments ?? []}
+                            currentUserId={user?.id}
+                            value={comment}
+                            onChange={setComment}
+                            onSubmit={() => {
+                                createComment.mutate({ contentJson: comment }, { onSuccess: () => setComment(EMPTY_TIPTAP_DOCUMENT) });
+                            }}
+                            onDelete={(commentId) => deleteComment.mutate(commentId)}
+                            onEdit={(commentId, contentJson) => updateComment.mutate({ commentId, input: { contentJson } })}
+                        />
+
+                        <div className="flex justify-end border-t border-secondary pt-4">
+                            <ConfirmDialog
+                                trigger={
+                                    <Button color="secondary-destructive" size="sm" iconLeading={Trash2}>
+                                        Delete issue
+                                    </Button>
+                                }
+                                title="Delete issue"
+                                description={`The issue "${issue.title}" will be deleted permanently.`}
+                                confirmLabel="Delete issue"
+                                isPending={deleteIssue.isPending}
+                                onConfirm={() => deleteIssue.mutate(issue.identifier, { onSuccess: onClose ?? (() => navigate(`/projects/${issue.projectId}`)) })}
+                            />
+                        </div>
                     </div>
+
+                    <aside className="hidden w-64 shrink-0 border-l border-secondary pl-6 lg:block">
+                        <IssueProperties issue={issue} columns={columns} members={members} categories={categories} cycles={cycles} save={save} />
+                    </aside>
                 </div>
             </div>
         </div>
     );
 
     return mode === "peek" ? (
-        <aside className="fixed inset-y-0 right-0 z-40 w-full border-l border-secondary bg-primary shadow-2xl sm:w-[min(48rem,calc(100vw-3rem))]">
+        <aside aria-label={`Issue ${issue.identifier}`} className="fixed inset-y-0 right-0 z-40 w-full border-l border-secondary bg-primary shadow-2xl sm:w-[min(52rem,calc(100vw-3rem))]">
             {content}
         </aside>
     ) : (
@@ -233,16 +238,18 @@ function PropertySelect({
     value,
     options,
     onChange,
+    className,
 }: {
     label: string;
     value: string;
     options: Array<{ value: string; label: string }>;
     onChange: (value: string) => void;
+    className?: string;
 }) {
     return (
-        <label className="inline-flex items-center gap-1.5 rounded-md border border-secondary bg-secondary_alt px-2 py-1 text-xs text-tertiary">
+        <label className={`flex min-w-0 items-center gap-2 rounded-md border border-secondary bg-secondary_alt px-2.5 py-2 text-xs text-tertiary ${className ?? ""}`}>
             <span>{label}</span>
-            <select value={value} onChange={(event) => onChange(event.target.value)} className="max-w-32 bg-transparent font-medium text-primary outline-none">
+            <select value={value} onChange={(event) => onChange(event.target.value)} className="min-w-0 flex-1 bg-transparent text-right font-medium text-primary outline-none">
                 {options.map((option) => (
                     <option key={option.value} value={option.value}>
                         {option.label}
@@ -250,6 +257,74 @@ function PropertySelect({
                 ))}
             </select>
         </label>
+    );
+}
+
+function IssueProperties({
+    issue,
+    columns,
+    members,
+    categories,
+    cycles,
+    save,
+}: {
+    issue: IssueDetail;
+    columns?: Array<{ id: string; name: string }>;
+    members?: Array<{ id: string; name: string }>;
+    categories?: Array<{ id: string; name: string }>;
+    cycles?: Array<{ id: string; name: string }>;
+    save: (input: UpdateIssueInput) => void;
+}) {
+    return (
+        <div className="flex flex-col gap-2">
+            <h2 className="mb-1 text-xs font-medium tracking-wide text-tertiary uppercase">Properties</h2>
+            <PropertySelect
+                className="w-full"
+                value={issue.columnId}
+                label="Status"
+                options={(columns ?? []).map((column) => ({ value: column.id, label: column.name }))}
+                onChange={(value) => save({ columnId: value })}
+            />
+            <PropertySelect
+                className="w-full"
+                value={issue.priority}
+                label="Priority"
+                options={[
+                    { value: "low", label: "Low" },
+                    { value: "medium", label: "Medium" },
+                    { value: "high", label: "High" },
+                ]}
+                onChange={(value) => save({ priority: value as "low" | "medium" | "high" })}
+            />
+            <PropertySelect
+                className="w-full"
+                value={issue.assigneeId ?? ""}
+                label="Assignee"
+                options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name }))]}
+                onChange={(value) => save({ assigneeId: value || null })}
+            />
+            <PropertySelect
+                className="w-full"
+                value={issue.categoryId ?? ""}
+                label="Label"
+                options={[{ value: "", label: "No label" }, ...(categories ?? []).map((category) => ({ value: category.id, label: category.name }))]}
+                onChange={(value) => save({ categoryId: value || null })}
+            />
+            <PropertySelect
+                className="w-full"
+                value={issue.cycleId ?? ""}
+                label="Cycle"
+                options={[{ value: "", label: "No cycle" }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
+                onChange={(value) => save({ cycleId: value || null })}
+            />
+            <PropertySelect
+                className="w-full"
+                value={String(issue.estimate ?? "")}
+                label="Estimate"
+                options={[{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: `${value} points` }))]}
+                onChange={(value) => save({ estimate: value ? Number(value) : null })}
+            />
+        </div>
     );
 }
 
@@ -287,7 +362,7 @@ function IssueRelations({
     if (!relations.length) return null;
     return (
         <section className="border-t border-secondary pt-5">
-            <SectionTitle title="Relations" icon={Link01} />
+            <SectionTitle title="Relations" icon={Link2} />
             <div className="divide-y divide-secondary rounded-lg border border-secondary">
                 {relations.map((relation) => (
                     <div key={relation.id} className="flex items-center gap-3 px-3 py-2 text-sm">
@@ -342,7 +417,7 @@ function IssueComments({
     const [editingContent, setEditingContent] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     return (
         <section className="border-t border-secondary pt-5">
-            <SectionTitle title="Comments" icon={User01} />
+            <SectionTitle title="Comments" icon={User} />
             <div className="flex flex-col gap-4">
                 {comments.map((entry) => (
                     <article key={entry.id} className="rounded-lg border border-secondary p-4">
