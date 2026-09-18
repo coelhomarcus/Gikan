@@ -246,6 +246,8 @@ export interface InputProps
     hint?: ReactNode;
     /** Whether to hide required indicator from label */
     hideRequiredIndicator?: boolean;
+    /** Additional attributes for the native input element. */
+    inputProps?: Pick<AriaInputProps, "role" | "aria-controls" | "aria-activedescendant" | "aria-expanded">;
 }
 
 export const Input = ({
@@ -256,6 +258,7 @@ export const Input = ({
     hint,
     shortcut,
     hideRequiredIndicator,
+    inputProps,
     className,
     ref,
     groupRef,
@@ -292,6 +295,7 @@ export const Input = ({
                             tooltip,
                             type,
                         }}
+                        {...inputProps}
                     />
 
                     {hint && <HintText isInvalid={isInvalid}>{hint}</HintText>}

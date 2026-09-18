@@ -76,10 +76,24 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                 <Dialog>
                     <div className="flex max-h-[70vh] w-full flex-col overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
                         <div className="border-b border-secondary p-3">
-                            <Input autoFocus aria-label="Search projects and issues" placeholder="Search projects and issues..." icon={Search} value={query} onChange={setQuery} onKeyDown={handleKeyDown} />
+                            <Input
+                                autoFocus
+                                aria-label="Search projects and issues"
+                                inputProps={{
+                                    "aria-controls": "gikan-search-results",
+                                    "aria-activedescendant": results.all[selectedIndex] ? resultDomId(results.all[selectedIndex]) : undefined,
+                                    "aria-expanded": "true",
+                                    role: "combobox",
+                                }}
+                                placeholder="Search projects and issues..."
+                                icon={Search}
+                                value={query}
+                                onChange={setQuery}
+                                onKeyDown={handleKeyDown}
+                            />
                         </div>
 
-                        <div className="flex flex-col overflow-y-auto p-2">
+                        <div id="gikan-search-results" role="listbox" aria-label="Search results" className="flex flex-col overflow-y-auto p-2">
                             {isLoading ? (
                                 <LoadingState label="Searching..." className="px-3 py-4" />
                             ) : results.all.length === 0 ? (
@@ -118,9 +132,11 @@ function ResultGroup({ label, results, selectedIndex, offset, onOpen }: { label:
                         <button
                             key={`${result.type}-${result.id}`}
                             type="button"
+                            id={resultDomId(result)}
+                            role="option"
+                            aria-selected={isSelected}
                             onClick={() => onOpen(result)}
                             className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover ${isSelected ? "bg-secondary" : ""}`}
-                            aria-current={isSelected ? "true" : undefined}
                         >
                             {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-fg-quaternary" /> : result.type === "command" ? <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-fg-quaternary" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-secondary text-[9px] text-fg-quaternary">#</span>}
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -137,4 +153,8 @@ function ResultGroup({ label, results, selectedIndex, offset, onOpen }: { label:
             </div>
         </section>
     );
+}
+
+function resultDomId(result: SearchResult) {
+    return `gikan-search-result-${result.type}-${result.id}`;
 }
