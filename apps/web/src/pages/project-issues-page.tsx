@@ -14,6 +14,7 @@ import { useCreateIssue, useCycles, useIssues } from "@/features/issues/hooks/us
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
+import { ApiError } from "@/lib/api-client";
 
 type OrderBy = "position" | "priority" | "updated" | "number";
 type GroupBy = "none" | "status" | "assignee" | "cycle";
@@ -47,6 +48,7 @@ export const ProjectIssuesPage = () => {
     const createIssue = useCreateIssue(projectId!);
     const [isCreating, setIsCreating] = useState(false);
     const [title, setTitle] = useState("");
+    const [createError, setCreateError] = useState<string | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
@@ -153,7 +155,15 @@ export const ProjectIssuesPage = () => {
     }
 
     function submitIssue() {
-        if (!title.trim() || !columns?.[0]) return;
+        if (!title.trim()) {
+            setCreateError("Add a title to create the issue.");
+            return;
+        }
+        if (!columns?.[0]) {
+            setCreateError("Create a status before adding an issue.");
+            return;
+        }
+        setCreateError(null);
         createIssue.mutate(
             { columnId: columns[0].id, title: title.trim(), priority: "medium" },
             {
@@ -162,6 +172,7 @@ export const ProjectIssuesPage = () => {
                     setIsCreating(false);
                     openIssue(issue.identifier);
                 },
+                onError: (reason) => setCreateError(reason instanceof ApiError ? reason.message : "Could not create the issue."),
             },
         );
     }
@@ -178,7 +189,14 @@ export const ProjectIssuesPage = () => {
                             <p className="font-mono text-xs text-fg-brand-primary">{project?.issueKey ?? "Project"}</p>
                             <h1 className="mt-1 text-xl font-semibold text-primary">Issues</h1>
                         </div>
-                        <Button size="sm" iconLeading={Plus} onClick={() => setIsCreating(true)}>
+                        <Button
+                            size="sm"
+                            iconLeading={Plus}
+                            onClick={() => {
+                                setCreateError(null);
+                                setIsCreating(true);
+                            }}
+                        >
                             New issue
                         </Button>
                     </div>
@@ -188,7 +206,10 @@ export const ProjectIssuesPage = () => {
                             <input
                                 autoFocus
                                 value={title}
-                                onChange={(event) => setTitle(event.target.value)}
+                                onChange={(event) => {
+                                    setCreateError(null);
+                                    setTitle(event.target.value);
+                                }}
                                 onKeyDown={(event) => event.key === "Enter" && submitIssue()}
                                 placeholder="Issue title"
                                 className="min-w-0 flex-1 bg-transparent px-2 text-sm text-primary outline-none"
@@ -199,6 +220,7 @@ export const ProjectIssuesPage = () => {
                             <Button size="xs" color="tertiary" onClick={() => setIsCreating(false)}>
                                 Cancel
                             </Button>
+                            {createError && <p role="alert" className="text-xs text-error-primary">{createError}</p>}
                         </div>
                     )}
 
