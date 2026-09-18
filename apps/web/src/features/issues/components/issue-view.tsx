@@ -138,8 +138,14 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         };
     }, [mode, onClose]);
 
-    if (isLoading) return <LoadingState label="Loading issue..." className="p-6" />;
-    if (isError || !issue) return <ErrorMessage message="Could not load this issue." />;
+    if (isLoading) {
+        const state = <LoadingState label="Loading issue..." className="p-6" />;
+        return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
+    }
+    if (isError || !issue) {
+        const state = <ErrorMessage message="Could not load this issue." />;
+        return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
+    }
 
     const save = (input: UpdateIssueInput) => {
         setPropertySaveError(null);
@@ -750,6 +756,17 @@ function formatDistanceToNow(value: string) {
 
 function formatDate(value: string) {
     return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function IssuePeekState({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {
+    return (
+        <>
+            <div aria-hidden="true" className="fixed inset-0 z-30 bg-black/40" onMouseDown={() => onClose?.()} />
+            <aside role="dialog" aria-modal="true" aria-label="Issue panel" className="fixed inset-y-0 right-0 z-40 flex w-full items-start border-l border-secondary bg-primary shadow-2xl sm:w-[min(52rem,calc(100vw-3rem))]">
+                <div className="w-full">{children}</div>
+            </aside>
+        </>
+    );
 }
 
 function errorMessage(reason: unknown, fallback = "Could not save the issue.") {
