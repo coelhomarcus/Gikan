@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Issue } from "@/features/issues/api";
 import { Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
 import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
+import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { ImportanceBadge } from "@/features/board/components/importance-badge";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
@@ -47,6 +49,7 @@ export const ProjectIssuesPage = () => {
     const [title, setTitle] = useState("");
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);
+    const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
 
     const columnById = useMemo(() => new Map((columns ?? []).map((column) => [column.id, column])), [columns]);
     const memberById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
@@ -89,6 +92,39 @@ export const ProjectIssuesPage = () => {
             issues: groupedIssues,
         }));
     }, [columnById, cycleById, filteredIssues, groupBy, memberById]);
+    const orderedIssues = useMemo(() => groups.flatMap((group) => group.issues), [groups]);
+
+    useEffect(() => {
+        if (selectedIssueId && !orderedIssues.some((issue) => issue.id === selectedIssueId)) setSelectedIssueId(null);
+    }, [orderedIssues, selectedIssueId]);
+
+    useEffect(() => {
+        if (!location.pathname.endsWith("/issues")) return;
+
+        function handleListKeyDown(event: KeyboardEvent) {
+            const target = event.target as HTMLElement | null;
+            if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
+            if (orderedIssues.length === 0) return;
+
+            const currentIndex = orderedIssues.findIndex((issue) => issue.id === selectedIssueId);
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                const direction = event.key === "ArrowDown" ? 1 : -1;
+                const nextIndex = currentIndex < 0 ? (direction === 1 ? 0 : orderedIssues.length - 1) : (currentIndex + direction + orderedIssues.length) % orderedIssues.length;
+                const nextIssue = orderedIssues[nextIndex];
+                setSelectedIssueId(nextIssue.id);
+                document.querySelector<HTMLElement>(`[data-issue-id="${nextIssue.id}"]`)?.scrollIntoView({ block: "nearest" });
+            }
+            if (event.key === "Enter" && currentIndex >= 0) {
+                event.preventDefault();
+                openIssue(orderedIssues[currentIndex].identifier);
+            }
+            if (event.key === "Escape") setSelectedIssueId(null);
+        }
+
+        window.addEventListener("keydown", handleListKeyDown);
+        return () => window.removeEventListener("keydown", handleListKeyDown);
+    }, [location.pathname, orderedIssues, selectedIssueId]);
 
     function updateQuery(key: string, value: string) {
         setSearchParams(
@@ -238,7 +274,7 @@ export const ProjectIssuesPage = () => {
                         </div>
                     )}
 
-                    {isLoading && <p className="text-sm text-tertiary">Loading issues...</p>}
+                    {isLoading && <LoadingState label="Loading issues..." className="py-3" />}
                     {isError && <ErrorMessage message="Could not load the project issues." />}
                     {!isLoading && !isError && (
                         <div className="overflow-hidden rounded-lg border border-secondary">
@@ -259,12 +295,30 @@ export const ProjectIssuesPage = () => {
                                             member={issue.assigneeId ? memberById.get(issue.assigneeId) : undefined}
                                             category={issue.categoryId ? categoryById.get(issue.categoryId) : undefined}
                                             cycle={issue.cycleId ? cycleById.get(issue.cycleId) : undefined}
+                                            selected={selectedIssueId === issue.id}
+                                            onSelect={() => setSelectedIssueId(issue.id)}
                                             onOpen={() => openIssue(issue.identifier)}
                                         />
                                     ))}
                                 </section>
                             ))}
-                            {filteredIssues.length === 0 && <p className="px-4 py-10 text-center text-sm text-tertiary">No issues found.</p>}
+                            {filteredIssues.length === 0 && (
+                                <EmptyState
+                                    title={issues?.length ? "No issues match these filters" : "No issues yet"}
+                                    description={issues?.length ? "Try clearing a filter or changing your search." : "Create your first issue to start tracking work in this project."}
+                                    action={
+                                        issues?.length ? (
+                                            <Button size="sm" color="secondary" onClick={clearFilters}>
+                                                Clear filters
+                                            </Button>
+                                        ) : (
+                                            <Button size="sm" iconLeading={Plus} onClick={() => setIsCreating(true)}>
+                                                New issue
+                                            </Button>
+                                        )
+                                    }
+                                />
+                            )}
                         </div>
                     )}
                 </div>
@@ -329,6 +383,8 @@ function IssueRow({
     member,
     category,
     cycle,
+    selected,
+    onSelect,
     onOpen,
 }: {
     issue: Issue;
@@ -336,10 +392,20 @@ function IssueRow({
     member?: { name: string; avatarUrl: string | null };
     category?: { name: string; color: string | null };
     cycle?: { name: string };
+    selected: boolean;
+    onSelect: () => void;
     onOpen: () => void;
 }) {
     return (
-        <button type="button" onClick={onOpen} className="grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5">
+        <button
+            type="button"
+            data-issue-id={issue.id}
+            onClick={onOpen}
+            onFocus={onSelect}
+            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5 ${
+                selected ? "bg-secondary" : ""
+            }`}
+        >
             <span className="flex min-w-0 items-center gap-2">
                 <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
                 <span className="shrink-0 font-mono text-[11px] text-fg-brand-primary">{issue.identifier}</span>
