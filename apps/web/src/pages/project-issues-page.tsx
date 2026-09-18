@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Issue } from "@/features/issues/api";
 import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
-import { useLocation, useNavigate, useParams, useSearchParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { EmptyState } from "@/components/feedback/empty-state";
@@ -313,6 +313,7 @@ export const ProjectIssuesPage = () => {
                                         <IssueRow
                                             key={issue.id}
                                             issue={issue}
+                                            projectId={projectId!}
                                             column={columnById.get(issue.columnId)}
                                             member={issue.assigneeId ? memberById.get(issue.assigneeId) : undefined}
                                             category={issue.categoryId ? categoryById.get(issue.categoryId) : undefined}
@@ -401,6 +402,7 @@ function FilterChip({ label, onClear }: { label: string; onClear: () => void }) 
 
 function IssueRow({
     issue,
+    projectId,
     column,
     member,
     category,
@@ -410,6 +412,7 @@ function IssueRow({
     onOpen,
 }: {
     issue: Issue;
+    projectId: string;
     column?: { name: string; color: string | null };
     member?: { name: string; avatarUrl: string | null };
     category?: { name: string; color: string | null };
@@ -419,18 +422,31 @@ function IssueRow({
     onOpen: () => void;
 }) {
     return (
-        <button
-            type="button"
+        <div
+            role="button"
+            tabIndex={0}
             data-issue-id={issue.id}
             onClick={onOpen}
             onFocus={onSelect}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onOpen();
+                }
+            }}
             className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
                 selected ? "bg-secondary" : ""
             }`}
         >
             <span className="flex min-w-0 items-center gap-2">
                 <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
-                <span className="shrink-0 font-mono text-[11px] text-fg-brand-primary">{issue.identifier}</span>
+                <Link
+                    to={`/projects/${projectId}/issues/${issue.identifier}`}
+                    onClick={(event) => event.stopPropagation()}
+                    className="shrink-0 font-mono text-[11px] text-fg-brand-primary hover:underline"
+                >
+                    {issue.identifier}
+                </Link>
                 <span className="min-w-0 truncate text-sm text-primary">{issue.title}</span>
                 <span className="ml-auto hidden shrink-0 text-[11px] text-tertiary max-sm:block">{column?.name}</span>
             </span>
@@ -446,7 +462,7 @@ function IssueRow({
             <span className="hidden truncate text-[11px] text-tertiary max-sm:block">
                 {[category?.name, cycle?.name, `${issue.priority} priority`].filter(Boolean).join(" · ")}
             </span>
-        </button>
+        </div>
     );
 }
 
