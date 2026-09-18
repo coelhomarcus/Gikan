@@ -259,7 +259,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             currentUserId={user?.id}
                             value={comment}
                             onChange={setComment}
-                            isSubmitting={createComment.isPending || updateComment.isPending}
+                            isSubmitting={createComment.isPending || updateComment.isPending || deleteComment.isPending}
                             error={commentSaveError}
                             onSubmit={async () => {
                                 setCommentSaveError(null);
@@ -270,7 +270,15 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     setCommentSaveError(errorMessage(reason, "Could not add the comment."));
                                 }
                             }}
-                            onDelete={(commentId) => deleteComment.mutate(commentId)}
+                            onDelete={async (commentId) => {
+                                setCommentSaveError(null);
+                                try {
+                                    await deleteComment.mutateAsync(commentId);
+                                } catch (reason) {
+                                    setCommentSaveError(errorMessage(reason, "Could not delete the comment."));
+                                    throw reason;
+                                }
+                            }}
                             onEdit={async (commentId, contentJson) => {
                                 setCommentSaveError(null);
                                 try {
@@ -623,7 +631,7 @@ function IssueComments({
     isSubmitting: boolean;
     error?: string | null;
     onSubmit: () => void | Promise<void>;
-    onDelete: (id: string) => void;
+    onDelete: (id: string) => void | Promise<void>;
     onEdit: (id: string, contentJson: TiptapDocument) => void | Promise<void>;
 }) {
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -676,7 +684,18 @@ function IssueComments({
                                 >
                                     Edit
                                 </button>
-                                <button type="button" className="text-xs text-error-primary" onClick={() => onDelete(entry.id)}>
+                                <button
+                                    type="button"
+                                    disabled={isSubmitting}
+                                    className="text-xs text-error-primary disabled:cursor-not-allowed disabled:opacity-50"
+                                    onClick={async () => {
+                                        try {
+                                            await onDelete(entry.id);
+                                        } catch {
+                                            // The parent displays the mutation error.
+                                        }
+                                    }}
+                                >
                                     Delete
                                 </button>
                             </div>
