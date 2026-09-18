@@ -1,6 +1,6 @@
 import { type AddProjectMemberInput, addProjectMemberSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { UserMinus01 } from "@untitledui/icons";
+import { UserRoundMinus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Badge } from "@/components/base/badges/badges";
@@ -82,7 +82,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                             </Badge>
                             {isProjectOwner && member.role !== "owner" && (
                                 <ConfirmDialog
-                                    trigger={<ButtonUtility icon={UserMinus01} size="sm" color="tertiary" tooltip="Remove" />}
+                                    trigger={<ButtonUtility icon={UserRoundMinus} size="sm" color="tertiary" tooltip="Remove" />}
                                     title="Remove member"
                                     description={`${member.name} (@${member.username}) will lose access to this project. You can invite them again later.`}
                                     confirmLabel="Remove member"

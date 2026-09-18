@@ -1,6 +1,6 @@
 import { type CreateCategoryInput, createCategorySchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash01 } from "@untitledui/icons";
+import { Trash2 } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
@@ -94,7 +94,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                                 <CategoryBadge category={category} />
                                 {canDelete && (
                                     <ConfirmDialog
-                                        trigger={<ButtonUtility icon={Trash01} size="sm" color="tertiary" tooltip="Delete" />}
+                                        trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete" />}
                                         title="Delete category"
                                         description={`The category "${category.name}" will be deleted and removed from the issues that use it. This action cannot be undone.`}
                                         confirmLabel="Delete category"

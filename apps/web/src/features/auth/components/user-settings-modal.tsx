@@ -1,7 +1,7 @@
 import { updateProfileSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Download01 } from "@untitledui/icons";
+import { Download } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -99,7 +99,7 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                                         the platform if the database needs to be recreated from scratch.
                                     </p>
                                 </div>
-                                <Button href="/api/admin/backup" download color="secondary" size="sm" iconLeading={Download01} className="w-fit">
+                                <Button href="/api/admin/backup" download color="secondary" size="sm" iconLeading={Download} className="w-fit">
                                     Download database backup
                                 </Button>
                             </div>
