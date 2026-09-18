@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, Plus } from "lucide-react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
@@ -21,9 +21,22 @@ export const Sidebar = () => {
     const navigate = useNavigate();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
+    const [isProjectsExpanded, setIsProjectsExpanded] = useState(() => typeof window === "undefined" || localStorage.getItem("gikan-projects-expanded") !== "false");
     const { data: projects } = useProjects();
     const activeProjectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
     const { data: activeColumns } = useColumns(activeProjectId);
+
+    useEffect(() => {
+        if (activeProjectId) setIsProjectsExpanded(true);
+    }, [activeProjectId]);
+
+    function toggleProjects() {
+        setIsProjectsExpanded((expanded) => {
+            const next = !expanded;
+            localStorage.setItem("gikan-projects-expanded", String(next));
+            return next;
+        });
+    }
 
     const navSlot = (
         <ul className="flex flex-col px-3 pt-4">
@@ -34,12 +47,13 @@ export const Sidebar = () => {
             </li>
             {(projects ?? []).length > 0 && (
                 <li className="py-0.25">
-                    <p className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-[0.08em] text-tertiary">Your projects</p>
-                    <ul className="pb-1">
+                    <button type="button" aria-expanded={isProjectsExpanded} onClick={toggleProjects} className="flex w-full items-center justify-between rounded px-3 pb-1 pt-3 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-tertiary hover:text-secondary">
+                        Your projects
+                        <ChevronDown aria-hidden="true" className={`size-3.5 transition-transform ${isProjectsExpanded ? "" : "-rotate-90"}`} />
+                    </button>
+                    {isProjectsExpanded && <ul className="pb-1">
                         {(projects ?? []).map((project) => (
                             <li key={project.id} className="py-0.25">
-                                {/* `collapsible-child` does not render the `icon` prop (`link` does), so the icon
-                                    stays next to the text and truncation is handled by the inner span. */}
                                 <NavItemBase
                                     type="collapsible-child"
                                     href={`/projects/${project.id}`}
@@ -54,7 +68,7 @@ export const Sidebar = () => {
                                 </NavItemBase>
                             </li>
                         ))}
-                    </ul>
+                    </ul>}
                 </li>
             )}
             {activeProjectId && activeColumns?.[0] && (
