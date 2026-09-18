@@ -1,13 +1,16 @@
 # Gikan
 
-Multi-project Todo/Kanban platform. Sign in with registration restricted by a special code, then manage projects with Kanban boards (columns and cards), members, categories, assignees, priorities, and creation history.
+Multi-project issue tracking platform inspired by Linear. Sign in with registration restricted by a special code, then manage projects with issues, Kanban boards, members, labels, assignees, priorities, cycles, comments, and activity history.
+
+Projects remain the main organizational unit. The Kanban board and the issue list are two views of the same issue collection.
 
 See [PLAN.md](./PLAN.md) for the complete history of project checkpoints and technical decisions.
 
 ## Stack
 
-- **Backend**: Express + TypeScript (CommonJS) + Drizzle ORM + Zod, in `apps/api`.
+- **Backend**: Express + TypeScript + Drizzle ORM + Zod, in `apps/api`.
 - **Frontend**: Vite + React + TypeScript + React Router + Tailwind CSS v4 + Untitled UI (React Aria), in `apps/web`.
+- **Rich text**: Tiptap with StarterKit, task lists, links, mentions, and JSON persistence.
 - **Shared**: Zod schemas and types used by both sides, in `packages/shared`.
 - **Database**: PostgreSQL (external — you provide `DATABASE_URL`).
 - **Deployment**: A single Dockerfile; the backend serves the frontend build.
@@ -47,11 +50,33 @@ See [PLAN.md](./PLAN.md) for the complete history of project checkpoints and tec
 
 5. Open `http://localhost:5173` and create an account using the `SPECIAL_REGISTRATION_CODE` configured in `.env`. If your `username` is included in `ADMIN_USERNAMES`, the account is created as an admin.
 
+## Project experience
+
+Each project includes four views:
+
+- `/projects/:projectId` — project overview with status counters, active cycle, estimates, and shortcuts.
+- `/projects/:projectId/issues` — dense issue list with search, filters, and sorting.
+- `/projects/:projectId/board` — Kanban view using the project's columns as issue statuses.
+- `/projects/:projectId/documents` — the project's primary rich-text document.
+
+`/projects/:projectId/page` remains available as a compatibility redirect to Documents.
+
+Issues receive a public identifier such as `LIN-184`, where `LIN` is the project's issue key and `184` is the issue number. Opening an issue from the list or board preserves the source screen and displays the issue in a Peek panel. Direct navigation or a refresh displays the full issue page.
+
+Issues support:
+
+- Inline title and property editing for status, priority, assignee, label, cycle, and estimate.
+- Rich-text descriptions and comments stored as Tiptap JSON.
+- Sub-issues, same-project relations, comments, and immutable activity history.
+- Hard deletion, with protection against deleting an issue that still has sub-issues.
+
 ### Other useful commands
 
 ```bash
 pnpm -r typecheck                         # typecheck all packages
+pnpm build                                 # build frontend and backend
 pnpm --filter @gikan/api db:generate      # generate a new migration from the schema
+pnpm db:migrate                            # apply migrations locally
 ```
 
 ## Environment variables
@@ -75,7 +100,7 @@ pnpm --filter @gikan/api build   # creates apps/api/dist (esbuild bundle)
 
 ## Docker / Dokploy deployment
 
-The root `Dockerfile` builds the frontend and backend into one image that runs migrations on boot and then starts the server:
+The root `Dockerfile` builds the frontend and backend into one image. On container startup it runs `node dist/migrate.js` before starting the API server, so pending Drizzle migrations are applied automatically. `DATABASE_URL` must point to a reachable PostgreSQL instance before the container starts.
 
 ```bash
 docker build -t gikan .
@@ -92,6 +117,8 @@ docker run -p 3000:3000 \
 
 In **Dokploy**, create an application from the repository Dockerfile (without docker-compose — PostgreSQL is external), configure the environment variables above in the dashboard, and point the domain to port `3000` (or the value configured in `PORT`).
 
+The migration also backfills existing projects with deterministic issue keys, converts the former cards table into issues while preserving IDs and timestamps, and converts legacy Markdown descriptions and project pages into Tiptap JSON.
+
 ## Structure
 
 ```
@@ -99,5 +126,5 @@ apps/
 ├── api/     # Express + Drizzle + Zod, organized by feature (routes → controller → service)
 └── web/     # Vite + React + Tailwind + Untitled UI, features/ (logic) + pages/ (routes)
 packages/
-└── shared/  # Shared Zod schemas and types
+└── shared/  # Shared Zod schemas, types, and Markdown/Tiptap conversion
 ```
