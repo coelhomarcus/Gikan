@@ -16,6 +16,7 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { useLocation, useNavigate } from "react-router";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { LoadingState } from "@/components/feedback/loading-state";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import type { Issue } from "@/features/issues/api";
@@ -176,7 +177,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     }
 
     if (columnsLoading || cardsLoading) {
-        return <p className="text-tertiary">Loading...</p>;
+        return <LoadingState label="Loading board..." className="p-4" />;
     }
 
     if (columnsError || cardsError) {
