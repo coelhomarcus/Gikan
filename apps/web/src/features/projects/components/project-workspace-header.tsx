@@ -27,7 +27,7 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
                 title={
                     <span className="flex min-w-0 items-center gap-2">
                         <ProjectIcon icon={project?.icon} className="size-4.5 shrink-0 text-fg-quaternary" />
-                        <span className="truncate">{project?.name ?? "Projeto"}</span>
+                        <span className="truncate">{project?.name ?? "Project"}</span>
                     </span>
                 }
                 onBack={() => navigate("/")}
@@ -38,7 +38,7 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
                                 Kanban
                             </Button>
                             <Button href={pagePath} color={activeView === "page" ? "secondary" : "tertiary"} size="xs" iconLeading={BookOpen01}>
-                                Página
+                                Page
                             </Button>
                         </div>
 
@@ -47,13 +47,13 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
                                 icon={LinkExternal01}
                                 size="sm"
                                 color="tertiary"
-                                tooltip="Abrir repositório"
+                                tooltip="Open repository"
                                 href={project.repositoryUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             />
                         )}
-                        <ButtonUtility icon={Settings01} size="sm" color="tertiary" tooltip="Configurações" onClick={() => setIsSettingsOpen(true)} />
+                        <ButtonUtility icon={Settings01} size="sm" color="tertiary" tooltip="Settings" onClick={() => setIsSettingsOpen(true)} />
                     </div>
                 }
             />

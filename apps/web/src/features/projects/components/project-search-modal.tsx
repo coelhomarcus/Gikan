@@ -35,8 +35,8 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                         <div className="border-b border-secondary p-3">
                             <Input
                                 autoFocus
-                                aria-label="Buscar projetos"
-                                placeholder="Buscar projetos..."
+                                aria-label="Search projects"
+                                placeholder="Search projects..."
                                 icon={SearchLg}
                                 value={query}
                                 onChange={setQuery}
@@ -51,7 +51,7 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                         <div className="flex flex-col overflow-y-auto p-2">
                             {filtered.length === 0 ? (
                                 <p className="p-4 text-center text-sm text-tertiary">
-                                    {projects && projects.length === 0 ? "Você ainda não tem projetos" : "Nenhum projeto encontrado"}
+                                    {projects && projects.length === 0 ? "You don't have any projects yet" : "No projects found"}
                                 </p>
                             ) : (
                                 filtered.map((project) => (

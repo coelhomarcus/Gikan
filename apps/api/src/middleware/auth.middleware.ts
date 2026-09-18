@@ -6,7 +6,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
     const token = req.cookies?.[SESSION_COOKIE_NAME] as string | undefined;
 
     if (!token) {
-        res.status(401).json({ error: "Não autenticado" });
+        res.status(401).json({ error: "Not authenticated" });
         return;
     }
 
@@ -14,6 +14,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
         req.user = verifyToken(token);
         next();
     } catch {
-        res.status(401).json({ error: "Sessão inválida ou expirada" });
+        res.status(401).json({ error: "Invalid or expired session" });
     }
 }

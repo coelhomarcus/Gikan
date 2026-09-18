@@ -9,16 +9,16 @@ export const ProjectsPage = () => {
 
     return (
         <>
-            <Topbar title="Projetos" actions={<CreateProjectModal />} />
+            <Topbar title="Projects" actions={<CreateProjectModal />} />
             <div className="p-4 lg:p-6">
-                {isLoading && <p className="text-tertiary">Carregando...</p>}
+                {isLoading && <p className="text-tertiary">Loading...</p>}
 
-                {isError && <ErrorMessage message="Não foi possível carregar seus projetos. Tente recarregar a página." />}
+                {isError && <ErrorMessage message="Could not load your projects. Try refreshing the page." />}
 
                 {!isLoading && !isError && projects?.length === 0 && (
                     <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-secondary py-16 text-center">
-                        <p className="font-semibold text-primary">Nenhum projeto ainda</p>
-                        <p className="text-sm text-tertiary">Crie o primeiro projeto para começar a organizar suas tarefas.</p>
+                        <p className="font-semibold text-primary">No projects yet</p>
+                        <p className="text-sm text-tertiary">Create your first project to start organizing your tasks.</p>
                     </div>
                 )}
 

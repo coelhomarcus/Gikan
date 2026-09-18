@@ -1,5 +1,5 @@
-import { Plus } from "@untitledui/icons";
 import { useState } from "react";
+import { Plus } from "@untitledui/icons";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 import { useCreateColumn } from "../hooks/use-board";
@@ -22,7 +22,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
         return (
             <div className="w-80 shrink-0">
                 <Button color="secondary" size="sm" iconLeading={Plus} onClick={() => setIsAdding(true)} className="w-full justify-start">
-                    Nova coluna
+                    New column
                 </Button>
             </div>
         );
@@ -38,16 +38,16 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
                 mutation.mutate({ name: trimmed, color }, { onSuccess: reset });
             }}
         >
-            <Input size="sm" aria-label="Nome da coluna" placeholder="Nome da coluna" value={name} onChange={setName} autoFocus />
+            <Input size="sm" aria-label="Column name" placeholder="Column name" value={name} onChange={setName} autoFocus />
 
             <ColumnColorPicker value={color} onChange={setColor} />
 
             <div className="flex gap-2">
                 <Button type="submit" size="sm" isLoading={mutation.isPending}>
-                    Adicionar
+                    Add
                 </Button>
                 <Button type="button" size="sm" color="secondary" onClick={reset}>
-                    Cancelar
+                    Cancel
                 </Button>
             </div>
         </form>

@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import {
     type CollisionDetection,
     DndContext,
@@ -13,7 +14,6 @@ import {
     useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useMemo, useState } from "react";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
@@ -22,21 +22,21 @@ import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
 import { CardItemContent } from "./card-item";
-import { columnTint } from "./column-color";
 import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
+import { columnTint } from "./column-color";
 
 /**
- * Num board, o que importa é o que está literalmente sob o cursor (`pointerWithin`) — bem mais
- * previsível que distância entre centros, que num card pequeno dentro de uma coluna alta escolhe
- * o alvo errado. `rectIntersection` cobre o caso do cursor cair num vão entre colunas.
+ * On a board, what matters is literally beneath the cursor (`pointerWithin`) — much more
+ * predictable than center distance, which can choose the wrong target for a small card inside a
+ * tall column. `rectIntersection` covers the case where the cursor falls in a gap between columns.
  */
 const collisionDetection: CollisionDetection = (args) => {
     const pointerCollisions = pointerWithin(args);
     return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
 };
 
-/** As colunas mudam de tamanho enquanto os cards entram e saem durante o arrasto, então os retângulos precisam ser remedidos continuamente. */
+/** Columns change size as cards enter and leave during a drag, so their rectangles must be measured continuously. */
 const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
 export const Board = ({ projectId }: { projectId: string }) => {
@@ -57,13 +57,13 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const membersById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
 
     /**
-     * Lista achatada de todos os cards, já em ordem visual (as colunas só filtram, não ordenam).
-     * Durante o arrasto `dragCards` assume: ele é reordenado em `onDragOver` para que as colunas
-     * reflitam ao vivo onde o card vai cair, em vez do usuário arrastar às cegas.
+     * Flat list of all cards, already in visual order (columns only filter; they do not sort).
+     * During a drag, `dragCards` is reordered in `onDragOver` so columns live-preview where the
+     * card will land instead of making the user drag blindly.
      */
     const board = useMemo(() => dragCards ?? [...(cards ?? [])].sort((a, b) => a.position - b.position), [dragCards, cards]);
 
-    /** Resolve a coluna alvo: o `over` é a própria coluna (área de cards) ou um card dentro dela. */
+    /** Resolves the target column: `over` is the column itself (card area) or a card inside it. */
     function resolveColumnId(overId: string, list: BoardCard[]): string | undefined {
         if (columns?.some((column) => column.id === overId)) return overId;
         return list.find((card) => card.id === overId)?.columnId;
@@ -74,17 +74,17 @@ export const Board = ({ projectId }: { projectId: string }) => {
         setActiveCard(board.find((card) => card.id === activeId) ?? null);
         setDragCards(board);
 
-        // `active.rect.current.initial` às vezes ainda não foi medido neste frame; ler a largura
-        // direto do elemento (que ainda está no DOM aqui) é mais confiável pro clone do overlay.
+        // `active.rect.current.initial` is sometimes not measured in this frame yet; reading the
+        // width directly from the element (still in the DOM here) is more reliable for the overlay clone.
         const node = document.querySelector<HTMLElement>(`[data-card-id="${activeId}"]`);
         setActiveCardWidth(node?.getBoundingClientRect().width ?? event.active.rect.current.initial?.width);
     }
 
     /**
-     * Só trata TROCA DE COLUNA: move o card pra lista da coluna sobrevoada enquanto o arrasto
-     * acontece, o que faz a coluna de origem fechar o buraco e a de destino abrir espaço ao vivo.
-     * Reordenação dentro da mesma coluna fica por conta do `SortableContext` (transform visual),
-     * e é resolvida de fato no drop — mexer no estado aqui também causaria movimento em dobro.
+     * Handles only COLUMN CHANGES: moves the card to the hovered column's list while dragging,
+     * making the source column close the gap and the destination open space live. Reordering
+     * within the same column is handled by `SortableContext` (visual transform) and is finalized
+     * on drop — changing state here would cause a double movement.
      */
     function handleDragOver(event: DragOverEvent) {
         const { active, over } = event;
@@ -104,11 +104,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
             const overIndex = withoutDragged.findIndex((card) => card.id === overId);
             const insertAt = overIndex === -1 ? withoutDragged.length : overIndex;
 
-            return [
-                ...withoutDragged.slice(0, insertAt),
-                { ...dragged, columnId: targetColumnId },
-                ...withoutDragged.slice(insertAt),
-            ];
+            return [...withoutDragged.slice(0, insertAt), { ...dragged, columnId: targetColumnId }, ...withoutDragged.slice(insertAt)];
         });
     }
 
@@ -132,12 +128,12 @@ export const Board = ({ projectId }: { projectId: string }) => {
             return;
         }
 
-        // `arrayMove` é a mesma operação que o SortableContext usa pra calcular a prévia visual,
-        // então o resultado do drop bate exatamente com o buraco que o usuário estava vendo.
+        // `arrayMove` is the same operation SortableContext uses for the visual preview, so the
+        // drop result matches exactly the gap the user was seeing.
         const columnCards = list.filter((card) => card.columnId === targetColumnId);
         const fromIndex = columnCards.findIndex((card) => card.id === activeId);
 
-        // Só quando o alvo é outro card existe um índice específico; soltar sobre a coluna significa "no fim".
+        // Only another card provides a specific index; dropping on the column means "at the end".
         const overCardIndex = columnCards.findIndex((card) => card.id === overId);
         const toIndex = overCardIndex === -1 ? columnCards.length - 1 : overCardIndex;
         if (fromIndex === -1 || toIndex === -1) {
@@ -158,14 +154,12 @@ export const Board = ({ projectId }: { projectId: string }) => {
             return;
         }
 
-        // Mantém a prévia do arrasto (`dragCards`) até a mutação assentar, em vez de zerar aqui:
-        // o `onMutate` do `useUpdateCard` escreve no cache de forma assíncrona, então limpar antes
-        // deixaria o board cair pro `cards` antigo por um frame — o card "volta" e só depois "vai"
-        // pro lugar certo. Congelando a prévia, o board já nasce otimista e só reverte em erro.
-        updateCard.mutate(
-            { cardId: activeId, input: { columnId: targetColumnId, position } },
-            { onSettled: () => setDragCards(null) },
-        );
+        // Keep the drag preview (`dragCards`) until the mutation settles instead of clearing it:
+        // `useUpdateCard`'s `onMutate` writes to the cache asynchronously, so clearing it first
+        // would make the board fall back to old `cards` for one frame — the card would "return"
+        // and only then move to the right place. Freezing the preview makes the board optimistic
+        // immediately and only reverts on error.
+        updateCard.mutate({ cardId: activeId, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragCards(null) });
     }
 
     function handleDragCancel() {
@@ -174,18 +168,18 @@ export const Board = ({ projectId }: { projectId: string }) => {
     }
 
     if (columnsLoading || cardsLoading) {
-        return <p className="text-tertiary">Carregando...</p>;
+        return <p className="text-tertiary">Loading...</p>;
     }
 
     if (columnsError || cardsError) {
-        return <ErrorMessage message="Não foi possível carregar o board. Você pode não ter acesso a este projeto, ou ele pode não existir." />;
+        return <ErrorMessage message="Could not load the board. You may not have access to this project, or it may not exist." />;
     }
 
     const activeCategory = activeCard?.categoryId ? categoriesById.get(activeCard.categoryId) : undefined;
     const activeAssignee = activeCard?.assigneeId ? membersById.get(activeCard.assigneeId) : undefined;
 
-    // A coluna vem da lista viva (não do `activeCard`, congelado no início do arrasto), então o
-    // clone troca de cor ao cruzar pra outra coluna, prevendo como o card vai ficar no destino.
+    // The column comes from the live list (not `activeCard`, frozen at drag start), so the clone
+    // changes color when crossing into another column and previews its appearance at the destination.
     const activeColumnId = activeCard ? board.find((card) => card.id === activeCard.id)?.columnId : undefined;
     const activeColumnColor = columns?.find((column) => column.id === activeColumnId)?.color;
 

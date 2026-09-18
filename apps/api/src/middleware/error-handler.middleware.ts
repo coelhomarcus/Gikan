@@ -4,7 +4,7 @@ import { HttpError } from "../lib/http-error";
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction): void {
     if (err instanceof ZodError) {
-        res.status(400).json({ error: "Dados inválidos", fields: err.flatten().fieldErrors });
+        res.status(400).json({ error: "Invalid data", fields: err.flatten().fieldErrors });
         return;
     }
 
@@ -14,5 +14,5 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
     }
 
     console.error(err);
-    res.status(500).json({ error: "Erro interno" });
+    res.status(500).json({ error: "Internal error" });
 }

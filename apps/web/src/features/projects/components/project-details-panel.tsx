@@ -21,9 +21,9 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
     const { data: project, isLoading, isError } = useProject(projectId);
     const mutation = useUpdateProject(projectId);
 
-    // Sem generic explícito no useForm: updateProjectSchema tem `.transform()` em `repositoryUrl`
-    // (mesmo padrão de updateProfileSchema.avatarUrl), o que cria um input/output type diferente
-    // no zod — deixar o TS inferir a partir do resolver evita o erro de tipo já visto antes.
+    // No explicit generic on useForm: updateProjectSchema has `.transform()` on `repositoryUrl`
+    // (same pattern as updateProfileSchema.avatarUrl), which creates different input/output types
+    // in Zod — letting TypeScript infer from the resolver avoids the type error seen previously.
     const { control, handleSubmit, setError, formState } = useForm({
         resolver: zodResolver(updateProjectSchema),
         values: project
@@ -36,25 +36,25 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             : undefined,
     });
 
-    if (isLoading) return <p className="text-tertiary">Carregando...</p>;
-    if (isError || !project) return <ErrorMessage message="Não foi possível carregar o projeto." />;
+    if (isLoading) return <p className="text-tertiary">Loading...</p>;
+    if (isError || !project) return <ErrorMessage message="Could not load the project." />;
 
     if (!isProjectOwner) {
         return (
             <div className="flex w-full flex-col gap-5">
                 <div>
-                    <p className="text-sm font-medium text-secondary">Nome</p>
+                    <p className="text-sm font-medium text-secondary">Name</p>
                     <p className="mt-1.5 flex items-center gap-2 text-sm text-tertiary">
                         <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
                         {project.name}
                     </p>
                 </div>
                 <div>
-                    <p className="text-sm font-medium text-secondary">Descrição</p>
+                    <p className="text-sm font-medium text-secondary">Description</p>
                     <p className="mt-1.5 text-sm text-tertiary">{project.description || "—"}</p>
                 </div>
                 <div>
-                    <p className="text-sm font-medium text-secondary">Link do repositório</p>
+                    <p className="text-sm font-medium text-secondary">Repository URL</p>
                     {project.repositoryUrl ? (
                         <a
                             href={project.repositoryUrl}
@@ -80,23 +80,23 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             onSubmit={handleSubmit((data) =>
                 mutation.mutate(data, {
                     onError: (error) => {
-                        setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível salvar" });
+                        setError("root", { message: error instanceof ApiError ? error.message : "Could not save" });
                     },
                 }),
             )}
         >
-            <ControlledInput control={control} name="name" label="Nome" isRequired />
-            <ControlledTextarea control={control} name="description" label="Descrição" rows={3} />
-            <ControlledInput control={control} name="repositoryUrl" label="Link do repositório" placeholder="https://github.com/..." />
+            <ControlledInput control={control} name="name" label="Name" isRequired />
+            <ControlledTextarea control={control} name="description" label="Description" rows={3} />
+            <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 
             <Controller control={control} name="icon" render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />} />
 
             {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
-            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Salvo!</p>}
+            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
 
             <div>
                 <Button type="submit" isLoading={mutation.isPending}>
-                    Salvar
+                    Save
                 </Button>
             </div>
         </form>

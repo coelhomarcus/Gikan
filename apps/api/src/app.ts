@@ -11,13 +11,13 @@ import { errorHandler } from "./middleware/error-handler.middleware";
 
 export const app = express();
 
-// Roda atrás do reverse proxy do Dokploy — sem isso, o rate limiter (baseado em IP)
-// enxergaria o IP interno do proxy em vez do IP real do cliente pra todo mundo.
+// Runs behind Dokploy's reverse proxy — without this, the IP-based rate limiter
+// would see the proxy's internal IP instead of each client's real IP.
 app.set("trust proxy", 1);
 
-// CSP desligada de propósito: a default do helmet pode bloquear o bundle da SPA (Vite)
-// sem termos testado cada diretiva a fundo. As outras proteções (X-Content-Type-Options,
-// X-Frame-Options, Referrer-Policy, HSTS, etc.) já valem a pena sem esse risco.
+// CSP is intentionally disabled: Helmet's default may block the SPA bundle (Vite)
+// before each directive has been thoroughly tested. The other protections
+// (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, HSTS, etc.) are still worthwhile.
 app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(express.json());
@@ -33,14 +33,14 @@ app.use("/api/cards", cardsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/admin", adminRouter);
 
-// Qualquer rota /api/* não mapeada acima -> 404 JSON, antes do fallback estático abaixo
-// (senão o catch-all da SPA engoliria chamadas de API com typo/rota inexistente).
+// Any /api/* route not mapped above -> JSON 404, before the static fallback below
+// (otherwise the SPA catch-all would swallow misspelled or unknown API calls).
 app.use("/api", (_req, res) => {
-    res.status(404).json({ error: "Rota de API não encontrada" });
+    res.status(404).json({ error: "API route not found" });
 });
 
-// Resolvido a partir do cwd, não de __dirname (ver nota em db/migrate.ts) — o Dockerfile
-// seta WORKDIR=/app/apps/api, então isso aponta pra apps/web/dist tanto em dev quanto prod.
+// Resolved from cwd, not __dirname (see the note in db/migrate.ts) — the Dockerfile
+// sets WORKDIR=/app/apps/api, so this points to apps/web/dist in both development and production.
 const webDist = path.resolve(process.cwd(), "../web/dist");
 app.use(express.static(webDist));
 app.get("*", (_req, res) => {

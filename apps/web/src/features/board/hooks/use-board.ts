@@ -1,17 +1,6 @@
 import type { CreateCardInput, CreateColumnInput, UpdateCardInput, UpdateColumnInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-    type BoardCard,
-    type BoardColumn,
-    createCard,
-    createColumn,
-    deleteCard,
-    deleteColumn,
-    listCards,
-    listColumns,
-    updateCard,
-    updateColumn,
-} from "../api";
+import { type BoardCard, type BoardColumn, createCard, createColumn, deleteCard, deleteColumn, listCards, listColumns, updateCard, updateColumn } from "../api";
 
 function columnsKey(projectId: string) {
     return ["projects", projectId, "columns"] as const;
@@ -42,17 +31,15 @@ export function useUpdateColumn(projectId: string) {
 
     return useMutation({
         mutationFn: ({ columnId, input }: { columnId: string; input: UpdateColumnInput }) => updateColumn(projectId, columnId, input),
-        // Atualização otimista (mesmo padrão de `useUpdateCard`): sem isso, ao reordenar a coluna
-        // ela volta pro lugar antigo até o refetch chegar. O `sort` é necessário porque o board
-        // renderiza as colunas na ordem do array — mudar só a `position` não reordenaria nada.
+        // Optimistic update (same pattern as `useUpdateCard`): without it, a reordered column
+        // returns to its old position until the refetch completes. The `sort` is needed because
+        // the board renders columns in array order — changing only `position` would not reorder them.
         onMutate: async ({ columnId, input }) => {
             await queryClient.cancelQueries({ queryKey: columnsKey(projectId) });
             const previous = queryClient.getQueryData<BoardColumn[]>(columnsKey(projectId));
 
             queryClient.setQueryData<BoardColumn[]>(columnsKey(projectId), (old) =>
-                old
-                    ?.map((column) => (column.id === columnId ? { ...column, ...input } : column))
-                    .sort((a, b) => a.position - b.position),
+                old?.map((column) => (column.id === columnId ? { ...column, ...input } : column)).sort((a, b) => a.position - b.position),
             );
 
             return { previous };
@@ -91,9 +78,7 @@ export function useUpdateCard(projectId: string) {
             await queryClient.cancelQueries({ queryKey: cardsKey(projectId) });
             const previous = queryClient.getQueryData<BoardCard[]>(cardsKey(projectId));
 
-            queryClient.setQueryData<BoardCard[]>(cardsKey(projectId), (old) =>
-                old?.map((card) => (card.id === cardId ? { ...card, ...input } : card)),
-            );
+            queryClient.setQueryData<BoardCard[]>(cardsKey(projectId), (old) => old?.map((card) => (card.id === cardId ? { ...card, ...input } : card)));
 
             return { previous };
         },

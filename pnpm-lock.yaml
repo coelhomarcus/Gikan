@@ -89,6 +89,9 @@ importers:
       '@codemirror/lang-markdown':
         specifier: ^6.5.2
         version: 6.5.2
+      '@codemirror/language':
+        specifier: ^6.12.4
+        version: 6.12.4
       '@codemirror/state':
         specifier: ^6.7.5
         version: 6.7.5
@@ -119,6 +122,9 @@ importers:
       '@internationalized/date':
         specifier: ^3.12.4
         version: 3.12.4
+      '@lezer/highlight':
+        specifier: ^1.2.3
+        version: 1.2.3
       '@react-aria/utils':
         specifier: ^3.34.1
         version: 3.34.1(react-dom@19.2.8(react@19.2.8))(react@19.2.8)

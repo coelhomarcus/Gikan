@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 /**
- * Cor da coluna em hex (mesmo formato já validado em `categories.ts`). Aceita `""` como
- * equivalente a "sem cor" pelo mesmo motivo de `repositoryUrl`/`avatarUrl`: é o valor natural
- * que um campo limpo manda, e sem o `.transform()` o regex rejeitaria.
+ * Column color in hex (the same format validated in `categories.ts`). Accepts `""` as
+ * equivalent to "no color" for the same reason as `repositoryUrl`/`avatarUrl`: it is the natural
+ * value sent by a cleared field, and without `.transform()` the regex would reject it.
  */
 const colorSchema = z
-    .union([z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Cor deve ser um hex válido, ex: #7a5af8"), z.literal("")])
+    .union([z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex value, e.g. #7a5af8"), z.literal("")])
     .nullable()
     .optional()
     .transform((value) => (value === "" ? null : value));

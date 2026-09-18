@@ -11,7 +11,7 @@ async function ensureProjectExists(projectId: string): Promise<void> {
     });
 
     if (!project) {
-        throw new HttpError(404, "Projeto não encontrado");
+        throw new HttpError(404, "Project not found");
     }
 }
 
@@ -21,7 +21,7 @@ function findMembership(projectId: string, userId: string) {
     });
 }
 
-/** Checagem ad-hoc de membership pra rotas sem `:projectId` na URL (ex: /api/cards/:cardId), onde o projeto é descoberto a partir do próprio recurso. */
+/** Ad hoc membership check for routes without `:projectId` in the URL (e.g. /api/cards/:cardId), where the project is discovered from the resource itself. */
 export async function assertProjectMembership(projectId: string, userId: string, isAdmin: boolean): Promise<void> {
     if (isAdmin) {
         return;
@@ -29,7 +29,7 @@ export async function assertProjectMembership(projectId: string, userId: string,
 
     const membership = await findMembership(projectId, userId);
     if (!membership) {
-        throw new HttpError(403, "Você não é membro deste projeto");
+        throw new HttpError(403, "You are not a member of this project");
     }
 }
 
@@ -44,7 +44,7 @@ export const requireProjectMember = asyncHandler<{ projectId: string }>(async (r
 
     const membership = await findMembership(projectId, req.user!.sub);
     if (!membership) {
-        res.status(403).json({ error: "Você não é membro deste projeto" });
+        res.status(403).json({ error: "You are not a member of this project" });
         return;
     }
 
@@ -63,7 +63,7 @@ export const requireProjectOwner = asyncHandler<{ projectId: string }>(async (re
 
     const membership = await findMembership(projectId, req.user!.sub);
     if (!membership || membership.role !== "owner") {
-        res.status(403).json({ error: "Apenas o owner do projeto pode fazer isso" });
+        res.status(403).json({ error: "Only the project owner can do this" });
         return;
     }
 

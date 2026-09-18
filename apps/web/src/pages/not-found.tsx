@@ -11,18 +11,18 @@ export function NotFound() {
                 <div className="flex w-full max-w-3xl flex-col gap-8 md:gap-12">
                     <div className="flex flex-col gap-4 md:gap-6">
                         <div className="flex flex-col gap-3">
-                            <span className="text-md font-semibold text-brand-secondary">Erro 404</span>
-                            <h1 className="text-display-md font-semibold text-primary md:text-display-lg lg:text-display-xl">Não encontramos essa página</h1>
+                            <span className="text-md font-semibold text-brand-secondary">404 Error</span>
+                            <h1 className="text-display-md font-semibold text-primary md:text-display-lg lg:text-display-xl">We couldn't find this page</h1>
                         </div>
-                        <p className="text-lg text-tertiary md:text-xl">A página que você procura não existe ou foi movida.</p>
+                        <p className="text-lg text-tertiary md:text-xl">The page you're looking for doesn't exist or has been moved.</p>
                     </div>
 
                     <div className="flex flex-col-reverse gap-3 sm:flex-row">
                         <Button color="secondary" size="xl" iconLeading={ArrowLeft} onClick={() => router(-1)}>
-                            Voltar
+                            Go back
                         </Button>
                         <Button size="xl" onClick={() => router("/")}>
-                            Ir para o início
+                            Go home
                         </Button>
                     </div>
                 </div>

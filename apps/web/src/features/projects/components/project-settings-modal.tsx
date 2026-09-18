@@ -4,10 +4,10 @@ import { CloseButton } from "@/components/base/buttons/close-button";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ColumnsPanel } from "@/features/board/components/columns-panel";
 import { CategoriesPanel } from "@/features/categories/components/categories-panel";
-import { useProject } from "@/features/projects/hooks/use-project";
-import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { MembersPanel } from "@/features/projects/components/members-panel";
 import { ProjectDetailsPanel } from "@/features/projects/components/project-details-panel";
+import { useProject } from "@/features/projects/hooks/use-project";
+import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 
 interface ProjectSettingsModalProps {
     projectId: string;
@@ -28,7 +28,7 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                 <Dialog>
                     <div className="flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
                         <div className="flex items-start justify-between gap-4 p-6 pb-0">
-                            <h2 className="text-lg font-semibold text-primary">{project ? `${project.name} · Configurações` : "Configurações do projeto"}</h2>
+                            <h2 className="text-lg font-semibold text-primary">{project ? `${project.name} · Settings` : "Project settings"}</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
                         <div className="p-6">
@@ -36,10 +36,10 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                                 <Tabs.List
                                     type="button-border"
                                     items={[
-                                        { id: "general", label: "Geral" },
-                                        { id: "columns", label: "Colunas" },
-                                        { id: "members", label: "Membros" },
-                                        { id: "categories", label: "Categorias" },
+                                        { id: "general", label: "General" },
+                                        { id: "columns", label: "Columns" },
+                                        { id: "members", label: "Members" },
+                                        { id: "categories", label: "Categories" },
                                     ]}
                                 />
                                 <Tabs.Panel id="general" className="pt-5">

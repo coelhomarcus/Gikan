@@ -1,6 +1,6 @@
 import { Badge } from "@/components/base/badges/badges";
 
-const LABELS = { low: "Baixa", medium: "Média", high: "Alta" } as const;
+const LABELS = { low: "Low", medium: "Medium", high: "High" } as const;
 const COLORS = { low: "success", medium: "warning", high: "error" } as const;
 const DOT_CLASSES = { low: "bg-fg-success-secondary", medium: "bg-fg-warning-secondary", high: "bg-fg-error-secondary" } as const;
 

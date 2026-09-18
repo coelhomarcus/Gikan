@@ -1,6 +1,6 @@
+import { updateProfileSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateProfileSchema } from "@gikan/shared";
 import { Download01 } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
@@ -40,7 +40,7 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
             queryClient.setQueryData(AUTH_QUERY_KEY, updatedUser);
         },
         onError: (error) => {
-            setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível salvar" });
+            setError("root", { message: error instanceof ApiError ? error.message : "Could not save" });
         },
     });
 
@@ -56,22 +56,22 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                 <Dialog>
                     <div className="flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-xl bg-primary p-6 shadow-xl ring-1 ring-secondary">
                         <div className="mb-5 flex items-start justify-between gap-4">
-                            <h2 className="text-lg font-semibold text-primary">Configurações</h2>
+                            <h2 className="text-lg font-semibold text-primary">Settings</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
                         <form className="flex flex-col gap-5" noValidate onSubmit={handleSubmit((data) => mutation.mutate(data))}>
                             <div className="flex items-center gap-4">
                                 <Avatar src={previewUrl || undefined} initials={initialsOf(user.name)} size="xl" />
                                 <div className="flex-1">
-                                    <ControlledInput control={control} name="avatarUrl" label="URL da foto de perfil" placeholder="https://..." />
+                                    <ControlledInput control={control} name="avatarUrl" label="Profile photo URL" placeholder="https://..." />
                                 </div>
                             </div>
 
-                            <ControlledInput control={control} name="name" label="Nome" isRequired />
+                            <ControlledInput control={control} name="name" label="Name" isRequired />
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <p className="text-sm font-medium text-secondary">Usuário</p>
+                                    <p className="text-sm font-medium text-secondary">Username</p>
                                     <p className="mt-1.5 text-sm text-tertiary">@{user.username}</p>
                                 </div>
                                 <div>
@@ -81,11 +81,11 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                             </div>
 
                             {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
-                            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Salvo!</p>}
+                            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
 
                             <div className="flex justify-end">
                                 <Button type="submit" isLoading={mutation.isPending}>
-                                    Salvar
+                                    Save
                                 </Button>
                             </div>
                         </form>
@@ -93,14 +93,14 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                         {user.isAdmin && (
                             <div className="mt-6 flex flex-col gap-3 border-t border-secondary pt-5">
                                 <div>
-                                    <p className="text-sm font-medium text-secondary">Administração</p>
+                                    <p className="text-sm font-medium text-secondary">Administration</p>
                                     <p className="mt-1 text-sm text-tertiary">
-                                        Baixa um arquivo com todos os dados do banco (projetos, cards, colunas, categorias, membros e usuários),
-                                        útil pra restaurar a plataforma caso o banco precise ser recriado do zero.
+                                        Download a file with all database data (projects, cards, columns, categories, members, and users), useful for restoring
+                                        the platform if the database needs to be recreated from scratch.
                                     </p>
                                 </div>
                                 <Button href="/api/admin/backup" download color="secondary" size="sm" iconLeading={Download01} className="w-fit">
-                                    Baixar backup do banco
+                                    Download database backup
                                 </Button>
                             </div>
                         )}

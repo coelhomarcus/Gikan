@@ -11,7 +11,7 @@ async function ensureColumnInProject(columnId: string, projectId: string): Promi
     });
 
     if (!column) {
-        throw new HttpError(400, "Coluna não pertence a este projeto");
+        throw new HttpError(400, "Column does not belong to this project");
     }
 }
 
@@ -22,7 +22,7 @@ async function ensureCategoryInProject(categoryId: string, projectId: string): P
     });
 
     if (!category) {
-        throw new HttpError(400, "Categoria não pertence a este projeto");
+        throw new HttpError(400, "Category does not belong to this project");
     }
 }
 
@@ -33,7 +33,7 @@ async function ensureAssigneeIsMember(assigneeId: string, projectId: string): Pr
     });
 
     if (!membership) {
-        throw new HttpError(400, "Usuário não é membro do projeto");
+        throw new HttpError(400, "User is not a member of this project");
     }
 }
 
@@ -87,7 +87,7 @@ export async function createCard(projectId: string, input: CreateCardInput, crea
 export async function getCardOrThrow(cardId: string) {
     const card = await db.query.cards.findFirst({ where: eq(cards.id, cardId) });
     if (!card) {
-        throw new HttpError(404, "Card não encontrado");
+        throw new HttpError(404, "Card not found");
     }
     return card;
 }
@@ -104,7 +104,7 @@ export async function getCardDetail(cardId: string) {
     });
 
     if (!card) {
-        throw new HttpError(404, "Card não encontrado");
+        throw new HttpError(404, "Card not found");
     }
 
     return card;

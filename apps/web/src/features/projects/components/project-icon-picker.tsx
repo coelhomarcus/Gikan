@@ -8,8 +8,8 @@ interface ProjectIconPickerProps {
     label?: string;
 }
 
-/** Grade de ícones no mesmo padrão do seletor de cores das categorias (`categories-panel.tsx`). */
-export const ProjectIconPicker = ({ value, onChange, label = "Ícone" }: ProjectIconPickerProps) => {
+/** Icon grid following the same pattern as the category color selector (`categories-panel.tsx`). */
+export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIconPickerProps) => {
     const selected = value ?? DEFAULT_PROJECT_ICON;
 
     return (
@@ -24,12 +24,12 @@ export const ProjectIconPicker = ({ value, onChange, label = "Ícone" }: Project
                         <button
                             key={key}
                             type="button"
-                            aria-label={`Ícone ${key}`}
+                            aria-label={`Icon ${key}`}
                             aria-pressed={isSelected}
                             onClick={() => onChange(key)}
                             className={cx(
-                                // Os ícones da lib usam `currentColor`, então sem uma cor explícita aqui
-                                // eles herdam o texto do ancestral e somem no fundo escuro.
+                                // The library icons use `currentColor`, so without an explicit color
+                                // they inherit the ancestor text color and disappear on dark backgrounds.
                                 "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-fg-secondary ring-1 ring-secondary transition duration-100 ease-linear ring-inset hover:bg-primary_hover hover:text-fg-primary",
                                 isSelected && "bg-brand-primary_alt text-fg-brand-primary ring-2 ring-brand hover:text-fg-brand-primary",
                             )}

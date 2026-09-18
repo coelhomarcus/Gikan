@@ -5,7 +5,7 @@ export const createCategorySchema = z.object({
     color: z
         .string()
         .trim()
-        .regex(/^#[0-9a-fA-F]{6}$/, "Cor deve ser um hex válido, ex: #7f56d9")
+        .regex(/^#[0-9a-fA-F]{6}$/, "Color must be a valid hex value, e.g. #7f56d9")
         .optional(),
 });
 export type CreateCategoryInput = z.infer<typeof createCategorySchema>;

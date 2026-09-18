@@ -1,22 +1,23 @@
-import { AlertTriangle } from "@untitledui/icons";
 import type { ReactNode } from "react";
+import { AlertTriangle } from "@untitledui/icons";
 import { Dialog, DialogTrigger, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Button } from "@/components/base/buttons/button";
 
 interface ConfirmDialogProps {
-    /** Elemento que abre o diálogo (normalmente o próprio botão da ação destrutiva). */
+    /** Element that opens the dialog (usually the destructive action's button). */
     trigger: ReactNode;
     title: string;
     description: string;
-    /** Texto do botão que confirma. Deve nomear a ação ("Excluir", "Remover"), não um "OK" genérico. */
+    /** Text for the confirmation button. It should name the action instead of using a generic "OK". */
     confirmLabel: string;
     isPending?: boolean;
     onConfirm: () => void;
 }
 
 /**
- * Confirmação para ações destrutivas. O gatilho vem por prop (padrão do `ModalDialog`) pra que o
- * call site seja só trocar o `onClick` do botão por este wrapper, sem precisar controlar estado.
+ * Confirmation for destructive actions. The trigger is passed as a prop (the `ModalDialog`
+ * pattern), so callers only need to replace the button's `onClick` with this wrapper without
+ * managing state.
  */
 export const ConfirmDialog = ({ trigger, title, description, confirmLabel, isPending, onConfirm }: ConfirmDialogProps) => {
     return (
@@ -39,7 +40,7 @@ export const ConfirmDialog = ({ trigger, title, description, confirmLabel, isPen
 
                                 <div className="mt-6 flex justify-end gap-3">
                                     <Button type="button" color="secondary" onClick={close}>
-                                        Cancelar
+                                        Cancel
                                     </Button>
                                     <Button
                                         type="button"

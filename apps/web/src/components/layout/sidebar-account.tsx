@@ -42,8 +42,8 @@ export const SidebarAccount = () => {
                 <p className="truncate text-sm font-semibold text-primary">{user.name}</p>
                 <p className="truncate text-xs text-tertiary">@{user.username}</p>
             </div>
-            <ButtonUtility icon={Settings01} size="sm" color="tertiary" tooltip="Configurações" onClick={() => setIsSettingsOpen(true)} />
-            <ButtonUtility icon={LogOut01} size="sm" color="tertiary" tooltip="Sair" onClick={() => mutation.mutate()} />
+            <ButtonUtility icon={Settings01} size="sm" color="tertiary" tooltip="Settings" onClick={() => setIsSettingsOpen(true)} />
+            <ButtonUtility icon={LogOut01} size="sm" color="tertiary" tooltip="Sign out" onClick={() => mutation.mutate()} />
             {isSettingsOpen && <UserSettingsModal onClose={() => setIsSettingsOpen(false)} />}
         </div>
     );

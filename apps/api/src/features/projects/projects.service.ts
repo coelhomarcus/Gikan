@@ -4,11 +4,11 @@ import { db } from "../../db";
 import { boardColumns, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
-/** Cores iniciais das colunas padrão. Os mesmos hexes estão no backfill da migration 0005, que pintou os projetos criados antes desse campo existir. */
+/** Initial colors for the default columns. The same hexes are used by migration 0005, which backfilled projects created before this field existed. */
 const DEFAULT_COLUMNS = [
-    { name: "A Fazer", color: "#eaaa08" },
-    { name: "Em Progresso", color: "#7a5af8" },
-    { name: "Concluído", color: "#17b26a" },
+    { name: "To Do", color: "#eaaa08" },
+    { name: "In Progress", color: "#7a5af8" },
+    { name: "Done", color: "#17b26a" },
 ];
 
 const PROJECT_LIST_COLUMNS = {
@@ -60,7 +60,7 @@ export async function listProjectsForUser(userId: string, isAdmin: boolean) {
 export async function getProjectById(projectId: string) {
     const project = await db.query.projects.findFirst({ where: eq(projects.id, projectId) });
     if (!project) {
-        throw new HttpError(404, "Projeto não encontrado");
+        throw new HttpError(404, "Project not found");
     }
     return project;
 }
@@ -73,7 +73,7 @@ export async function updateProject(projectId: string, input: UpdateProjectInput
         .returning();
 
     if (!project) {
-        throw new HttpError(404, "Projeto não encontrado");
+        throw new HttpError(404, "Project not found");
     }
     return project;
 }
@@ -86,7 +86,7 @@ export async function updateProjectPage(projectId: string, input: UpdateProjectP
         .returning();
 
     if (!project) {
-        throw new HttpError(404, "Projeto não encontrado");
+        throw new HttpError(404, "Project not found");
     }
     return project;
 }
@@ -94,7 +94,7 @@ export async function updateProjectPage(projectId: string, input: UpdateProjectP
 export async function deleteProject(projectId: string) {
     const [deleted] = await db.delete(projects).where(eq(projects.id, projectId)).returning({ id: projects.id });
     if (!deleted) {
-        throw new HttpError(404, "Projeto não encontrado");
+        throw new HttpError(404, "Project not found");
     }
 }
 
@@ -114,7 +114,7 @@ export async function addProjectMember(projectId: string, username: string) {
     });
 
     if (!user) {
-        throw new HttpError(404, "Usuário não encontrado");
+        throw new HttpError(404, "User not found");
     }
 
     const existing = await db.query.projectMembers.findFirst({
@@ -122,7 +122,7 @@ export async function addProjectMember(projectId: string, username: string) {
     });
 
     if (existing) {
-        throw new HttpError(409, "Usuário já é membro deste projeto");
+        throw new HttpError(409, "User is already a member of this project");
     }
 
     const [member] = await db
@@ -139,10 +139,10 @@ export async function removeProjectMember(projectId: string, userId: string) {
     });
 
     if (!target) {
-        throw new HttpError(404, "Membro não encontrado");
+        throw new HttpError(404, "Member not found");
     }
     if (target.role === "owner") {
-        throw new HttpError(400, "Não é possível remover o owner do projeto");
+        throw new HttpError(400, "The project owner cannot be removed");
     }
 
     await db.delete(projectMembers).where(and(eq(projectMembers.projectId, projectId), eq(projectMembers.userId, userId)));

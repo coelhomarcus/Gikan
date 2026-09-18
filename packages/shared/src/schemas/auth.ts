@@ -6,7 +6,7 @@ export const registerSchema = z.object({
         .string()
         .trim()
         .toLowerCase()
-        .regex(/^[a-z0-9_]{3,32}$/, "Usuário deve ter 3-32 caracteres: letras minúsculas, números e _"),
+        .regex(/^[a-z0-9_]{3,32}$/, "Username must be 3-32 characters: lowercase letters, numbers, and _"),
     email: z.string().trim().toLowerCase().email(),
     password: z.string().min(8).max(72),
     specialCode: z.string().min(1),

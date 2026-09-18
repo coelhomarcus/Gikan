@@ -47,10 +47,10 @@ interface CardModalProps {
 }
 
 /**
- * Um único form (mesmo layout de campos) serve os dois modos, mas create/edit usam schemas Zod
- * diferentes (createCardSchema exige columnId+title, updateCardSchema tem tudo opcional). Em vez
- * de lutar com generics de useForm<T> pra unir dois schemas com shapes diferentes, escrevemos um
- * resolver manual que escolhe o schema certo em runtime e traduz ZodError pro formato do RHF.
+ * One form (same field layout) serves both modes, but create/edit use different Zod schemas
+ * (createCardSchema requires columnId+title, while updateCardSchema makes everything optional).
+ * Rather than forcing useForm<T> generics to combine two schemas with different shapes, a manual
+ * resolver selects the correct schema at runtime and translates ZodError into RHF's format.
  */
 function buildResolver(mode: CardModalTarget["type"]): Resolver<CardFormValues> {
     const schema = mode === "create" ? createCardSchema : updateCardSchema;
@@ -106,7 +106,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
             createCard.mutate(data, {
                 onSuccess: onClose,
                 onError: (error) => {
-                    setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível criar o card" });
+                    setError("root", { message: error instanceof ApiError ? error.message : "Could not create the card" });
                 },
             });
             return;
@@ -117,7 +117,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
             {
                 onSuccess: onClose,
                 onError: (error) => {
-                    setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível salvar" });
+                    setError("root", { message: error instanceof ApiError ? error.message : "Could not save" });
                 },
             },
         );
@@ -132,12 +132,12 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                 <Dialog>
                     <div className="flex max-h-[85vh] w-full flex-col overflow-y-auto rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
                         {isLoadingDetail ? (
-                            <p className="p-6 text-tertiary">Carregando...</p>
+                            <p className="p-6 text-tertiary">Loading...</p>
                         ) : (
                             <form className="flex flex-col gap-5 p-6" noValidate onSubmit={handleSubmit(onSubmit)}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1">
-                                        <ControlledInput control={control} name="title" label="Título" icon={Type01} isRequired autoFocus />
+                                        <ControlledInput control={control} name="title" label="Title" icon={Type01} isRequired autoFocus />
                                     </div>
                                     <CloseButton size="sm" onPress={onClose} className="mt-6" />
                                 </div>
@@ -148,7 +148,7 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                     label={
                                         <span className="inline-flex items-center gap-1.5">
                                             <AlignLeft className="size-4" />
-                                            Descrição
+                                            Description
                                         </span>
                                     }
                                     rows={4}
@@ -158,16 +158,16 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                     <ControlledSelect
                                         control={control}
                                         name="columnId"
-                                        label="Coluna"
+                                        label="Column"
                                         icon={Columns03}
                                         items={(columns ?? []).map((column) => ({ id: column.id, label: column.name }))}
                                     />
-                                    <ControlledSelect control={control} name="importance" label="Importância" items={IMPORTANCE_ITEMS} />
+                                    <ControlledSelect control={control} name="importance" label="Importance" items={IMPORTANCE_ITEMS} />
                                     <ControlledSelect
                                         control={control}
                                         name="assigneeId"
-                                        label="Responsável"
-                                        nullOption={{ id: NONE, label: "Ninguém", icon: User01 }}
+                                        label="Assignee"
+                                        nullOption={{ id: NONE, label: "Nobody", icon: User01 }}
                                         items={(members ?? []).map((member) => ({
                                             id: member.id,
                                             label: member.name,
@@ -178,8 +178,8 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                     <ControlledSelect
                                         control={control}
                                         name="categoryId"
-                                        label="Categoria"
-                                        nullOption={{ id: NONE, label: "Nenhuma", icon: <span className="size-2 rounded-full bg-fg-quaternary" /> }}
+                                        label="Category"
+                                        nullOption={{ id: NONE, label: "None", icon: <span className="size-2 rounded-full bg-fg-quaternary" /> }}
                                         items={(categories ?? []).map((category) => ({
                                             id: category.id,
                                             label: category.name,
@@ -192,10 +192,10 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                     <div className="flex items-center gap-2 border-t border-secondary pt-4 text-xs text-tertiary">
                                         <Avatar size="xs" src={card.createdBy.avatarUrl ?? undefined} initials={initialsOf(card.createdBy.name)} />
                                         <p>
-                                            Criado por <span className="font-medium text-tertiary">{card.createdBy.name}</span> em{" "}
+                                            Created by <span className="font-medium text-tertiary">{card.createdBy.name}</span> on{" "}
                                             <span className="inline-flex items-center gap-1">
                                                 <Calendar className="size-3.5" />
-                                                {new Date(card.createdAt).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}
+                                                {new Date(card.createdAt).toLocaleDateString("en-US", { day: "2-digit", month: "2-digit", year: "numeric" })}
                                             </span>
                                         </p>
                                     </div>
@@ -215,12 +215,12 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
                                         <ConfirmDialog
                                             trigger={
                                                 <Button type="button" color="secondary-destructive" size="sm" iconLeading={Trash01}>
-                                                    Excluir
+                                                    Delete
                                                 </Button>
                                             }
-                                            title="Excluir card"
-                                            description={`O card "${card?.title ?? ""}" será excluído. Essa ação não pode ser desfeita.`}
-                                            confirmLabel="Excluir card"
+                                            title="Delete card"
+                                            description={`The card "${card?.title ?? ""}" will be deleted. This action cannot be undone.`}
+                                            confirmLabel="Delete card"
                                             isPending={deleteCard.isPending}
                                             onConfirm={() => deleteCard.mutate(target.cardId, { onSuccess: onClose })}
                                         />
@@ -228,10 +228,10 @@ export const CardModal = ({ projectId, target, onClose }: CardModalProps) => {
 
                                     <div className="flex gap-3">
                                         <Button type="button" color="secondary" onClick={onClose}>
-                                            Fechar
+                                            Close
                                         </Button>
                                         <Button type="submit" isLoading={isPending}>
-                                            {isCreate ? "Criar card" : "Salvar"}
+                                            {isCreate ? "Create card" : "Save"}
                                         </Button>
                                     </div>
                                 </div>

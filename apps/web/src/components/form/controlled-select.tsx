@@ -12,13 +12,13 @@ interface ControlledSelectProps<TFieldValues extends FieldValues> {
     placeholder?: string;
     isRequired?: boolean;
     size?: "sm" | "md" | "lg";
-    /** Ícone fixo do campo, mostrado quando o item selecionado não tem um `icon` próprio. */
+    /** Fixed field icon, shown when the selected item has no `icon` of its own. */
     icon?: FC | ReactNode;
     /**
-     * Pra campos opcionais (relação nullable, ex: assigneeId/categoryId). O Select do React
-     * Aria não tem uma opção nativa de "limpar seleção", então usamos um item sentinela só
-     * na UI — a tradução de/para `null` acontece bem aqui, antes do valor chegar no schema
-     * Zod (que valida `.uuid()` e rejeitaria a string sentinela com "invalid uuid").
+     * For optional fields (nullable relation, e.g. assigneeId/categoryId). React Aria's Select
+     * has no native "clear selection" option, so the UI uses a sentinel item — translation to
+     * and from `null` happens here, before the value reaches the Zod schema (which validates
+     * `.uuid()` and would reject the sentinel string as an invalid UUID).
      */
     nullOption?: { id: string; label: string; icon?: FC | ReactNode };
 }

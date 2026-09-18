@@ -22,7 +22,7 @@ interface CardContentProps {
     assignee?: CardPerson;
 }
 
-/** Conteúdo visual puro do card, sem hooks de drag — reaproveitado pelo `CardItem` (na coluna) e pelo `DragOverlay` (clone flutuante durante o arrasto, ver `board.tsx`). */
+/** Pure visual card content without drag hooks — reused by `CardItem` (in the column) and `DragOverlay` (the floating drag clone; see `board.tsx`). */
 export const CardItemContent = ({ card, category, assignee }: CardContentProps) => (
     <>
         <p className="text-sm font-medium text-primary">{card.title}</p>
@@ -44,7 +44,7 @@ export const CardItemContent = ({ card, category, assignee }: CardContentProps) 
 );
 
 interface CardItemProps extends CardContentProps {
-    /** Cor da coluna em que o card está; tinge o card pra dar leitura rápida do estágio. */
+    /** Color of the card's column; tints the card for quick stage recognition. */
     columnColor?: string | null;
     onClick: () => void;
 }
@@ -65,8 +65,8 @@ export const CardItem = ({ card, category, assignee, columnColor, onClick }: Car
             data-card-title={card.title}
             data-card-description={card.description ?? ""}
             className={cx(
-                // `border` em vez de `ring` porque ring é box-shadow e não aceita cor por style inline,
-                // que é como o tingimento da coluna chega aqui.
+                // Use `border` instead of `ring` because ring is a box-shadow and cannot receive an
+                // inline style color, which is how the column tint reaches this component.
                 "flex cursor-pointer touch-none flex-col gap-2 rounded-lg border border-secondary bg-primary p-3 shadow-xs transition duration-100 ease-linear hover:border-brand",
                 isDragging && "z-10 opacity-50",
             )}

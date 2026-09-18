@@ -21,7 +21,7 @@ export const Sidebar = () => {
         <ul className="flex flex-col px-4 pt-5">
             <li className="py-px">
                 <NavItemBase type="link" href="/" icon={Home02} current={location.pathname === "/"}>
-                    Projetos
+                    Projects
                 </NavItemBase>
             </li>
             {(projects ?? []).length > 0 && (
@@ -29,8 +29,8 @@ export const Sidebar = () => {
                     <ul className="pb-1">
                         {(projects ?? []).map((project) => (
                             <li key={project.id} className="py-0.25">
-                                {/* `collapsible-child` não renderiza a prop `icon` (só `link` renderiza), então o ícone
-                                    vai junto do texto e o truncate fica por conta do span interno. */}
+                                {/* `collapsible-child` does not render the `icon` prop (`link` does), so the icon
+                                    stays next to the text and truncation is handled by the inner span. */}
                                 <NavItemBase
                                     type="collapsible-child"
                                     href={`/projects/${project.id}`}

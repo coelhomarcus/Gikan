@@ -1,5 +1,5 @@
-import { Clipboard, Copy01, Scissors01 } from "@untitledui/icons";
 import { type FC, type ReactNode, useEffect, useRef, useState } from "react";
+import { Clipboard, Copy01, Scissors01 } from "@untitledui/icons";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { asEditableElement, cutFromElement, getSelectionText, pasteIntoElement } from "@/lib/dom-clipboard";
 import { cx } from "@/utils/cx";
@@ -22,13 +22,13 @@ const MENU_WIDTH_ESTIMATE = 200;
 const MENU_ITEM_HEIGHT_ESTIMATE = 40;
 
 /**
- * Menu de contexto customizado pro site inteiro: botão direito normal abre este menu; Shift +
- * botão direito deixa o menu nativo do navegador abrir (event.shiftKey checado antes do
- * preventDefault). Sobre um elemento com `data-card-id`, adiciona "Copiar card" no topo.
+ * Custom context menu for the entire site: a regular right click opens this menu; Shift +
+ * right click keeps the browser's native menu (event.shiftKey is checked before preventDefault).
+ * On an element with `data-card-id`, it adds "Copy card" at the top.
  *
- * Não usa o `Menu`/`Popover` do React Aria porque eles posicionam relativo a um elemento DOM real
- * (`triggerRef`), não a coordenadas de mouse cruas — pra um context menu, um `<div>` customizado
- * com `position: fixed` nas coordenadas do clique é mais direto e previsível.
+ * It does not use React Aria's `Menu`/`Popover` because they position relative to a real DOM
+ * element (`triggerRef`), not raw mouse coordinates. For a context menu, a custom `<div>` with
+ * `position: fixed` at the click coordinates is more direct and predictable.
  */
 export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
     const [state, setState] = useState<ContextMenuState | null>(null);
@@ -42,8 +42,8 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
 
             const target = event.target as HTMLElement | null;
             const cardEl = target?.closest<HTMLElement>("[data-card-id]");
-            // Captura o campo editável focado AGORA — no clique do item do menu o foco já vai ter
-            // saído daqui pro próprio botão clicado, então isso não pode ser relido depois.
+            // Capture the editable field focused NOW — clicking a menu item moves focus to the
+            // clicked button, so the field cannot be reread later.
             const editableTarget = asEditableElement(document.activeElement);
             const selection = getSelectionText(editableTarget);
             const editable = !!editableTarget;
@@ -53,7 +53,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             if (cardEl) {
                 items.push({
                     key: "copy-card",
-                    label: "Copiar card",
+                    label: "Copy card",
                     icon: Copy01,
                     onSelect: () => {
                         const title = cardEl.dataset.cardTitle ?? "";
@@ -64,10 +64,10 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             }
 
             items.push(
-                { key: "copy", label: "Copiar", icon: Copy01, disabled: !selection, onSelect: () => copy(selection) },
+                { key: "copy", label: "Copy", icon: Copy01, disabled: !selection, onSelect: () => copy(selection) },
                 {
                     key: "cut",
-                    label: "Recortar",
+                    label: "Cut",
                     icon: Scissors01,
                     disabled: !editable || !selection,
                     onSelect: () => {
@@ -78,7 +78,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                 },
                 {
                     key: "paste",
-                    label: "Colar",
+                    label: "Paste",
                     icon: Clipboard,
                     disabled: !editable,
                     onSelect: () => {
@@ -87,7 +87,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                             .readText()
                             .then((text) => pasteIntoElement(editableTarget, text))
                             .catch(() => {
-                                // navegador negou a leitura da área de transferência (permissão/contexto inseguro) — sem fallback possível aqui.
+                                // The browser denied clipboard access (permission/insecure context) — no fallback is possible here.
                             });
                     },
                 },

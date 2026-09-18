@@ -6,7 +6,7 @@ export const loginRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) => {
-        res.status(429).json({ error: "Muitas tentativas de login. Tente novamente em alguns minutos." });
+        res.status(429).json({ error: "Too many login attempts. Try again in a few minutes." });
     },
 });
 
@@ -16,6 +16,6 @@ export const registerRateLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) => {
-        res.status(429).json({ error: "Muitas tentativas de registro. Tente novamente mais tarde." });
+        res.status(429).json({ error: "Too many registration attempts. Try again later." });
     },
 });

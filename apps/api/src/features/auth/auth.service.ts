@@ -14,7 +14,7 @@ export function toPublicUser(user: typeof users.$inferSelect) {
 
 export async function registerUser(input: RegisterInput) {
     if (input.specialCode !== env.SPECIAL_REGISTRATION_CODE) {
-        throw new HttpError(403, "Código especial inválido");
+        throw new HttpError(403, "Invalid special code");
     }
 
     const existing = await db.query.users.findFirst({
@@ -22,8 +22,8 @@ export async function registerUser(input: RegisterInput) {
     });
 
     if (existing) {
-        const conflictField = existing.username === input.username ? "usuário" : "email";
-        throw new HttpError(409, `Este ${conflictField} já está em uso`);
+        const conflictField = existing.username === input.username ? "username" : "email";
+        throw new HttpError(409, `This ${conflictField} is already in use`);
     }
 
     const passwordHash = await hashPassword(input.password);
@@ -52,7 +52,7 @@ export async function loginUser(input: LoginInput) {
     });
 
     if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
-        throw new HttpError(401, "Usuário ou senha incorretos");
+        throw new HttpError(401, "Incorrect username or password");
     }
 
     const token = signToken({ sub: user.id, username: user.username, isAdmin: user.isAdmin });
@@ -63,7 +63,7 @@ export async function getUserById(id: string) {
     const user = await db.query.users.findFirst({ where: eq(users.id, id) });
 
     if (!user) {
-        throw new HttpError(401, "Usuário não encontrado");
+        throw new HttpError(401, "User not found");
     }
 
     return toPublicUser(user);

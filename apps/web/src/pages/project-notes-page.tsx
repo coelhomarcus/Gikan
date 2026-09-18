@@ -1,8 +1,10 @@
 import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
 import { markdown, markdownLanguage } from "@codemirror/lang-markdown";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { EditorView, placeholder } from "@codemirror/view";
+import { tags } from "@lezer/highlight";
 import { Annotation, CheckCircle, CheckSquare, Code01, Heading01, List as ListIcon, Save01, Type01 } from "@untitledui/icons";
 import { basicSetup } from "codemirror";
 import ReactMarkdown from "react-markdown";
@@ -27,45 +29,73 @@ interface BlockCommand {
 }
 
 const BLOCK_COMMANDS: BlockCommand[] = [
-    { label: "Título", icon: Heading01, snippet: "# Novo título\n\n" },
-    { label: "Texto", icon: Type01, snippet: "Novo bloco de texto\n\n" },
-    { label: "Lista", icon: ListIcon, snippet: "- Item\n- Item\n\n" },
-    { label: "Tarefa", icon: CheckSquare, snippet: "- [ ] Tarefa\n\n" },
-    { label: "Código", icon: Code01, snippet: "```\n\n```\n\n", cursorOffset: 4 },
-    { label: "Citação", icon: Annotation, snippet: "> Nota\n\n" },
+    { label: "Heading", icon: Heading01, snippet: "# New heading\n\n" },
+    { label: "Text", icon: Type01, snippet: "New text block\n\n" },
+    { label: "List", icon: ListIcon, snippet: "- Item\n- Item\n\n" },
+    { label: "Task", icon: CheckSquare, snippet: "- [ ] Task\n\n" },
+    { label: "Code", icon: Code01, snippet: "```\n\n```\n\n", cursorOffset: 4 },
+    { label: "Quote", icon: Annotation, snippet: "> Note\n\n" },
 ];
+
+// Tokyo Night-inspired palette tuned for the app's nearly black surfaces.
+const editorHighlightStyle = HighlightStyle.define([
+    { tag: tags.heading, color: "#7dcfff", fontWeight: "700" },
+    { tag: tags.heading1, color: "#bb9af7", fontSize: "1.2em" },
+    { tag: tags.heading2, color: "#7dcfff", fontSize: "1.1em" },
+    { tag: [tags.heading3, tags.heading4, tags.heading5, tags.heading6], color: "#73daca" },
+    { tag: tags.strong, color: "#ff9e64", fontWeight: "700" },
+    { tag: tags.emphasis, color: "#f7768e", fontStyle: "italic" },
+    { tag: [tags.link, tags.url], color: "#7aa2f7", textDecoration: "underline" },
+    { tag: tags.quote, color: "#9ece6a", fontStyle: "italic" },
+    { tag: tags.list, color: "#bb9af7" },
+    { tag: tags.monospace, color: "#e0af68", backgroundColor: "#1a1b26" },
+    { tag: tags.comment, color: "#565f89" },
+    { tag: tags.contentSeparator, color: "#565f89" },
+    { tag: tags.invalid, color: "#f7768e", textDecoration: "underline wavy" },
+]);
 
 const editorTheme = EditorView.theme({
     "&": {
         height: "100%",
-        backgroundColor: "transparent",
-        color: "var(--color-text-secondary)",
+        backgroundColor: "#0f111a",
+        color: "#c0caf5",
         fontSize: "0.875rem",
     },
     ".cm-scroller": {
         overflow: "auto",
         fontFamily: "var(--font-mono)",
         lineHeight: "1.5",
-        padding: "1.25rem",
+        padding: "1.5rem",
     },
     ".cm-content": {
         minHeight: "100%",
         padding: "0",
     },
     ".cm-line": {
-        padding: "0",
+        padding: "0.08rem 0",
     },
     ".cm-gutters": {
         display: "none",
     },
+    ".cm-activeLine": {
+        backgroundColor: "#161a2b",
+    },
     ".cm-cursor, .cm-dropCursor": {
-        borderLeftColor: "var(--color-fg-brand-primary)",
+        borderLeftColor: "#7dcfff",
     },
     "&.cm-focused": {
         outline: "none",
     },
-    ".cm-selectionBackground, ::selection": {
-        backgroundColor: "var(--color-bg-brand-primary_alt)",
+    ".cm-selectionBackground, &.cm-focused .cm-selectionBackground, ::selection": {
+        backgroundColor: "#33467c",
+    },
+    ".cm-matchingBracket": {
+        backgroundColor: "#33467c",
+        outline: "1px solid #7dcfff",
+    },
+    ".cm-placeholder": {
+        color: "#565f89",
+        fontStyle: "italic",
     },
 });
 
@@ -93,9 +123,10 @@ const MarkdownEditor: FC<MarkdownEditorProps> = ({ content, onChange, editorView
                 extensions: [
                     basicSetup,
                     markdown({ base: markdownLanguage }),
+                    syntaxHighlighting(editorHighlightStyle),
                     EditorView.lineWrapping,
-                    placeholder("Escreva ideias, decisões, links, tarefas..."),
-                    EditorView.contentAttributes.of({ "aria-label": "Conteúdo da página" }),
+                    placeholder("Write ideas, decisions, links, tasks..."),
+                    EditorView.contentAttributes.of({ "aria-label": "Page content" }),
                     editorTheme,
                     EditorView.updateListener.of((update) => {
                         if (update.docChanged) {
@@ -128,7 +159,7 @@ const MarkdownEditor: FC<MarkdownEditorProps> = ({ content, onChange, editorView
         });
     }, [content, editorViewRef]);
 
-    return <div ref={containerRef} className="min-h-0 flex-1 overflow-hidden" aria-label="Conteúdo da página em Markdown" />;
+    return <div ref={containerRef} className="min-h-0 flex-1 overflow-hidden" aria-label="Page content in Markdown" />;
 };
 
 interface RenderedPageProps {
@@ -137,7 +168,7 @@ interface RenderedPageProps {
 
 const RenderedPage: FC<RenderedPageProps> = ({ content }) => {
     return (
-        <article aria-label="Conteúdo da página renderizado" className="prose min-h-0 max-w-none flex-1 overflow-y-auto px-5 py-5 text-sm">
+        <article aria-label="Rendered page content" className="prose min-h-0 max-w-none flex-1 overflow-y-auto px-5 py-5 text-sm">
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 skipHtml
@@ -205,7 +236,7 @@ export const ProjectNotesPage = () => {
                 },
                 onError: (error) => {
                     setSaveState("error");
-                    setErrorMessage(error instanceof ApiError ? error.message : "Não foi possível salvar a página.");
+                    setErrorMessage(error instanceof ApiError ? error.message : "Could not save the page.");
                 },
             },
         );
@@ -254,23 +285,22 @@ export const ProjectNotesPage = () => {
         }
     }
 
-    const statusLabel =
-        saveState === "saving" ? "Salvando..." : saveState === "error" ? "Erro ao salvar" : hasUnsavedChanges ? "Alterações pendentes" : "Salvo";
+    const statusLabel = saveState === "saving" ? "Saving..." : saveState === "error" ? "Save failed" : hasUnsavedChanges ? "Unsaved changes" : "Saved";
 
     return (
         <div className="flex h-dvh min-h-0 flex-col overflow-hidden">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="page" />
 
             <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
-                {isLoading && <p className="text-tertiary">Carregando...</p>}
+                {isLoading && <p className="text-tertiary">Loading...</p>}
 
-                {isError && <ErrorMessage message="Não foi possível carregar a página do projeto." />}
+                {isError && <ErrorMessage message="Could not load the project page." />}
 
                 {!isLoading && !isError && project && (
                     <div className="mx-auto flex h-full min-h-0 max-w-7xl flex-col gap-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="min-w-0">
-                                <p className="text-sm font-medium text-tertiary">Página do projeto</p>
+                                <p className="text-sm font-medium text-tertiary">Project page</p>
                                 <h1 className="truncate text-display-xs font-semibold text-primary">{project.name}</h1>
                             </div>
 
@@ -291,7 +321,7 @@ export const ProjectNotesPage = () => {
                                     isDisabled={!hasUnsavedChanges || mutation.isPending}
                                     onClick={() => commitContent()}
                                 >
-                                    Salvar
+                                    Save
                                 </Button>
                             </div>
                         </div>
@@ -324,7 +354,7 @@ export const ProjectNotesPage = () => {
                                             viewMode === "raw" ? "bg-primary text-primary shadow-xs" : "text-tertiary hover:text-secondary",
                                         )}
                                     >
-                                        Cru
+                                        Raw
                                     </button>
                                     <button
                                         type="button"
@@ -334,7 +364,7 @@ export const ProjectNotesPage = () => {
                                             viewMode === "rendered" ? "bg-primary text-primary shadow-xs" : "text-tertiary hover:text-secondary",
                                         )}
                                     >
-                                        Renderizado
+                                        Rendered
                                     </button>
                                 </div>
                             </div>

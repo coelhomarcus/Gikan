@@ -1,10 +1,11 @@
+import type { FC } from "react";
 import type { ProjectIconKey } from "@gikan/shared";
 import {
     BarChartSquare01,
     BookOpen01,
     Briefcase01,
-    CodeBrowser,
     Code02,
+    CodeBrowser,
     Cube01,
     Database01,
     Flag01,
@@ -25,12 +26,11 @@ import {
     Users01,
     Zap,
 } from "@untitledui/icons";
-import type { FC } from "react";
 
 /**
- * Mapa das chaves compartilhadas (validadas no backend, ver `projectIconKeys` em @gikan/shared)
- * pros componentes concretos da lib. Importar cada ícone nominalmente mantém o tree-shaking —
- * um acesso dinâmico tipo `icons[nome]` arrastaria as 1100+ ícones da biblioteca pro bundle.
+ * Maps shared keys (validated by the backend; see `projectIconKeys` in @gikan/shared) to the
+ * library's concrete components. Importing each icon by name preserves tree-shaking — dynamic
+ * access such as `icons[name]` would pull 1,100+ library icons into the bundle.
  */
 const PROJECT_ICONS: Record<ProjectIconKey, FC<{ className?: string }>> = {
     cube: Cube01,
@@ -61,7 +61,7 @@ const PROJECT_ICONS: Record<ProjectIconKey, FC<{ className?: string }>> = {
 
 export const DEFAULT_PROJECT_ICON: ProjectIconKey = "cube";
 
-/** Resolve a chave salva no banco. Cai no padrão se vier `null` (projeto antigo) ou uma chave desconhecida (ícone tirado da paleta depois). */
+/** Resolves the key saved in the database. Falls back when it is `null` (legacy project) or an unknown key (an icon later removed from the palette). */
 export function resolveProjectIcon(key: string | null | undefined): FC<{ className?: string }> {
     return PROJECT_ICONS[key as ProjectIconKey] ?? PROJECT_ICONS[DEFAULT_PROJECT_ICON];
 }

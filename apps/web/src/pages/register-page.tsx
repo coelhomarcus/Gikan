@@ -1,6 +1,6 @@
+import { type RegisterInput, registerSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type RegisterInput, registerSchema } from "@gikan/shared";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
@@ -26,7 +26,7 @@ export const RegisterPage = () => {
             navigate("/", { replace: true });
         },
         onError: (error) => {
-            setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível criar a conta" });
+            setError("root", { message: error instanceof ApiError ? error.message : "Unable to create the account" });
         },
     });
 
@@ -37,26 +37,29 @@ export const RegisterPage = () => {
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2 text-center">
-                <h1 className="text-display-xs font-semibold text-primary">Criar conta</h1>
-                <p className="text-sm text-tertiary">O registro exige um código especial de convite</p>
+                <h1 className="text-display-xs font-semibold text-primary">Create an account</h1>
+                <p className="text-sm text-tertiary">Registration requires a special invitation code</p>
             </div>
 
             <form className="flex flex-col gap-4" onSubmit={handleSubmit((data) => mutation.mutate(data))} noValidate>
-                <ControlledInput control={control} name="name" label="Nome" isRequired autoFocus />
-                <ControlledInput control={control} name="username" label="Usuário" isRequired hint="Só letras minúsculas, números e _" />
+                <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
+                <ControlledInput control={control} name="username" label="Username" isRequired hint="Lowercase letters, numbers, and _ only" />
                 <ControlledInput control={control} name="email" label="Email" type="email" isRequired />
-                <ControlledInput control={control} name="password" label="Senha" type="password" isRequired hint="Mínimo de 8 caracteres" />
-                <ControlledInput control={control} name="specialCode" label="Código especial" isRequired />
+                <ControlledInput control={control} name="password" label="Password" type="password" isRequired hint="At least 8 characters" />
+                <ControlledInput control={control} name="specialCode" label="Special code" isRequired />
 
                 {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
 
                 <Button type="submit" size="lg" isLoading={mutation.isPending}>
-                    Criar conta
+                    Create account
                 </Button>
             </form>
 
             <p className="text-center text-sm text-tertiary">
-                Já tem conta? <Link to="/login" className="font-semibold text-brand-secondary hover:underline">Entrar</Link>
+                Already have an account?{" "}
+                <Link to="/login" className="font-semibold text-brand-secondary hover:underline">
+                    Sign in
+                </Link>
             </p>
         </div>
     );

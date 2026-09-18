@@ -13,7 +13,7 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
         .returning();
 
     if (!user) {
-        throw new HttpError(404, "Usuário não encontrado");
+        throw new HttpError(404, "User not found");
     }
 
     return toPublicUser(user);

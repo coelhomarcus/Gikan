@@ -1,16 +1,16 @@
 import { z } from "zod";
 
 const repositoryUrlSchema = z
-    .union([z.string().trim().url("URL inválida"), z.literal("")])
+    .union([z.string().trim().url("Invalid URL"), z.literal("")])
     .nullable()
     .optional()
     .transform((value) => (value === "" ? null : value));
 
 /**
- * Vocabulário de ícones de projeto. São chaves semânticas próprias (não os nomes dos componentes
- * da lib de ícones) justamente pra desacoplar o que fica salvo no banco da biblioteca: trocar o
- * ícone concreto usado pra "rocket" depois não invalida os dados já gravados. O mapa chave →
- * componente vive no frontend (`features/projects/components/project-icon.tsx`).
+ * Project icon vocabulary. These are semantic keys, not component names from the icon library,
+ * so stored data is decoupled from the library: changing the concrete icon used for "rocket"
+ * later will not invalidate existing data. The key → component map lives in the frontend
+ * (`features/projects/components/project-icon.tsx`).
  */
 export const projectIconKeys = [
     "cube",
@@ -41,7 +41,7 @@ export const projectIconKeys = [
 export type ProjectIconKey = (typeof projectIconKeys)[number];
 
 const iconSchema = z.enum(projectIconKeys).nullable().optional();
-const projectPageContentSchema = z.string().max(100_000, "A página pode ter no máximo 100.000 caracteres");
+const projectPageContentSchema = z.string().max(100_000, "The page can contain at most 100,000 characters");
 
 export const createProjectSchema = z.object({
     name: z.string().trim().min(2).max(120),

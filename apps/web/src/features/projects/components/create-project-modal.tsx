@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { createProjectSchema } from "@gikan/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
@@ -19,7 +19,7 @@ export const CreateProjectModal = () => {
     });
 
     return (
-        <ModalDialog trigger={<Button iconLeading={Plus}>Novo projeto</Button>} title="Novo projeto">
+        <ModalDialog trigger={<Button iconLeading={Plus}>New project</Button>} title="New project">
             {({ close }) => (
                 <form
                     className="flex flex-col gap-4"
@@ -31,29 +31,25 @@ export const CreateProjectModal = () => {
                                 close();
                             },
                             onError: (error) => {
-                                setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível criar o projeto" });
+                                setError("root", { message: error instanceof ApiError ? error.message : "Could not create the project" });
                             },
                         });
                     })}
                 >
-                    <ControlledInput control={control} name="name" label="Nome" isRequired autoFocus />
-                    <ControlledTextarea control={control} name="description" label="Descrição" rows={3} />
-                    <ControlledInput control={control} name="repositoryUrl" label="Link do repositório" placeholder="https://github.com/..." />
+                    <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
+                    <ControlledTextarea control={control} name="description" label="Description" rows={3} />
+                    <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 
-                    <Controller
-                        control={control}
-                        name="icon"
-                        render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />}
-                    />
+                    <Controller control={control} name="icon" render={({ field }) => <ProjectIconPicker value={field.value} onChange={field.onChange} />} />
 
                     {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
 
                     <div className="mt-2 flex justify-end gap-3">
                         <Button type="button" color="secondary" onClick={close}>
-                            Cancelar
+                            Cancel
                         </Button>
                         <Button type="submit" isLoading={mutation.isPending}>
-                            Criar projeto
+                            Create project
                         </Button>
                     </div>
                 </form>

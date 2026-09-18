@@ -12,18 +12,18 @@ interface ColumnsPanelProps {
 }
 
 /**
- * Ordem e cor das colunas. Renomear e excluir continuam no próprio board (clicando no nome da
- * coluna / na lixeira); aqui ficam as duas coisas que não tinham lugar nenhum antes.
+ * Column order and color. Renaming and deletion remain on the board itself (by clicking the
+ * column name / trash icon); this panel contains the two settings that had no home before.
  */
 export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) => {
     const { data: columns, isLoading, isError } = useColumns(projectId);
     const updateColumn = useUpdateColumn(projectId);
 
-    if (isLoading) return <p className="text-tertiary">Carregando...</p>;
-    if (isError) return <ErrorMessage message="Não foi possível carregar as colunas do projeto." />;
-    if (!columns || columns.length === 0) return <p className="text-sm text-tertiary">Este projeto ainda não tem colunas.</p>;
+    if (isLoading) return <p className="text-tertiary">Loading...</p>;
+    if (isError) return <ErrorMessage message="Could not load the project columns." />;
+    if (!columns || columns.length === 0) return <p className="text-sm text-tertiary">This project has no columns yet.</p>;
 
-    /** Move a coluna uma casa pro lado, recalculando a `position` entre os novos vizinhos. */
+    /** Moves a column one position and recalculates `position` between its new neighbors. */
     function moveColumn(columnId: string, direction: -1 | 1) {
         if (!columns) return;
 
@@ -43,9 +43,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="text-sm text-tertiary">
-                A ordem abaixo é a ordem das colunas no board, da esquerda pra direita. A cor da coluna tinge os cards que estão nela.
-            </p>
+            <p className="text-sm text-tertiary">The columns below are ordered from left to right on the board. Each column color tints its cards.</p>
 
             <ul className="flex flex-col gap-3">
                 {columns.map((column, index) => (
@@ -61,7 +59,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
                                         icon={ArrowLeft}
                                         size="sm"
                                         color="tertiary"
-                                        tooltip="Mover para a esquerda"
+                                        tooltip="Move left"
                                         isDisabled={index === 0}
                                         onClick={() => moveColumn(column.id, -1)}
                                     />
@@ -69,7 +67,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
                                         icon={ArrowRight}
                                         size="sm"
                                         color="tertiary"
-                                        tooltip="Mover para a direita"
+                                        tooltip="Move right"
                                         isDisabled={index === columns.length - 1}
                                         onClick={() => moveColumn(column.id, 1)}
                                     />
@@ -86,7 +84,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
                         ) : (
                             <p className="flex items-center gap-2 text-sm text-tertiary">
                                 <span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: column.color ?? "#87888c" }} />
-                                {column.color ?? "Sem cor"}
+                                {column.color ?? "No color"}
                             </p>
                         )}
                     </li>

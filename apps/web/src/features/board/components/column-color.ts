@@ -1,21 +1,21 @@
 import type { CSSProperties } from "react";
 
-/** Presets oferecidos no seletor. Mesmos hexes da paleta de categorias, redefinidos aqui pra não acoplar board ↔ categorias. */
+/** Presets offered by the selector. The same hex values as the category palette are redefined here to avoid coupling board ↔ categories. */
 export const COLUMN_COLORS = ["#f04438", "#f79009", "#eaaa08", "#17b26a", "#15b79e", "#2e90fa", "#0070f3", "#7a5af8"];
 
-/** Cor mostrada no ponto do cabeçalho quando a coluna não tem cor definida (mesmo cinza que o `CategoryBadge` usa como fallback). */
+/** Color shown in the header dot when the column has no defined color (the same gray used as the `CategoryBadge` fallback). */
 export const COLUMN_FALLBACK_COLOR = "#87888c";
 
 /**
- * Tingimento do card na cor da coluna.
+ * Tints the card with the column color.
  *
- * O card fica sobre `bg-primary`, que é branco puro no tema claro e quase-preto no escuro — pintar
- * o hex direto quebraria a legibilidade num dos dois. Misturar com a própria superfície resolve:
- * como `--color-bg-primary` já troca de valor entre os temas, a mesma expressão rende um tom
- * escuro no tema escuro e um pastel no claro, sem precisar detectar o tema em JS. O texto continua
- * nos tokens semânticos de sempre, então segue legível com qualquer cor escolhida.
+ * The card sits on `bg-primary`, which is pure white in the light theme and nearly black in the
+ * dark theme — painting the hex directly would harm readability in one of them. Mixing with the
+ * surface solves this: because `--color-bg-primary` already changes between themes, the same
+ * expression produces a dark tone in the dark theme and a pastel in the light theme without
+ * detecting the theme in JS. Text continues to use the usual semantic tokens and remains legible.
  *
- * Sem cor definida devolve `undefined`, e o card mantém exatamente a aparência neutra de antes.
+ * Without a defined color, returns `undefined` and the card keeps its previous neutral appearance.
  */
 export function columnTint(color: string | null | undefined): CSSProperties | undefined {
     if (!color) return undefined;

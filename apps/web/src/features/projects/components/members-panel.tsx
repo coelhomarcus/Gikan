@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { type AddProjectMemberInput, addProjectMemberSchema } from "@gikan/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { UserMinus01 } from "@untitledui/icons";
 import { useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -46,23 +46,23 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                         addMutation.mutate(data.username, {
                             onSuccess: () => reset(),
                             onError: (error) => {
-                                setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível convidar" });
+                                setError("root", { message: error instanceof ApiError ? error.message : "Could not invite the member" });
                             },
                         });
                     })}
                 >
                     <div className="flex-1">
-                        <ControlledInput control={control} name="username" label="Convidar por usuário" placeholder="username" isRequired />
+                        <ControlledInput control={control} name="username" label="Invite by username" placeholder="username" isRequired />
                         {formState.errors.root && <p className="mt-1 text-sm text-error-primary">{formState.errors.root.message}</p>}
                     </div>
                     <Button type="submit" isLoading={addMutation.isPending}>
-                        Convidar
+                        Invite
                     </Button>
                 </form>
             )}
 
-            {isLoading && <p className="text-tertiary">Carregando...</p>}
-            {isError && <ErrorMessage message="Não foi possível carregar os membros do projeto." />}
+            {isLoading && <p className="text-tertiary">Loading...</p>}
+            {isError && <ErrorMessage message="Could not load the project members." />}
 
             {members && (
                 <ul className="flex flex-col gap-2">
@@ -74,14 +74,14 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                                 <p className="truncate text-xs text-tertiary">@{member.username}</p>
                             </div>
                             <Badge color={member.role === "owner" ? "brand" : "gray"} size="sm" type="pill-color">
-                                {member.role === "owner" ? "Owner" : "Membro"}
+                                {member.role === "owner" ? "Owner" : "Member"}
                             </Badge>
                             {isProjectOwner && member.role !== "owner" && (
                                 <ConfirmDialog
-                                    trigger={<ButtonUtility icon={UserMinus01} size="sm" color="tertiary" tooltip="Remover" />}
-                                    title="Remover membro"
-                                    description={`${member.name} (@${member.username}) perderá o acesso a este projeto. Você pode convidar de novo depois.`}
-                                    confirmLabel="Remover membro"
+                                    trigger={<ButtonUtility icon={UserMinus01} size="sm" color="tertiary" tooltip="Remove" />}
+                                    title="Remove member"
+                                    description={`${member.name} (@${member.username}) will lose access to this project. You can invite them again later.`}
+                                    confirmLabel="Remove member"
                                     isPending={removeMutation.isPending}
                                     onConfirm={() => removeMutation.mutate(member.id)}
                                 />

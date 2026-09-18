@@ -1,7 +1,7 @@
+import { useEffect, useRef, useState } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { Plus, Trash01 } from "@untitledui/icons";
-import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
@@ -58,7 +58,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
     function handleDelete() {
         setError(null);
         deleteColumn.mutate(column.id, {
-            onError: (err) => setError(err instanceof ApiError ? err.message : "Não foi possível excluir a coluna"),
+            onError: (err) => setError(err instanceof ApiError ? err.message : "Could not delete the column"),
         });
     }
 
@@ -68,7 +68,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                 {isEditingName ? (
                     <Input
                         size="sm"
-                        aria-label="Nome da coluna"
+                        aria-label="Column name"
                         value={name}
                         onChange={setName}
                         onBlur={saveName}
@@ -96,10 +96,10 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                 <div className="flex shrink-0 items-center gap-1">
                     <span className="text-xs text-tertiary">{cards.length}</span>
                     <ConfirmDialog
-                        trigger={<ButtonUtility icon={Trash01} size="xs" color="tertiary" tooltip="Excluir coluna" />}
-                        title="Excluir coluna"
-                        description={`A coluna "${column.name}" será excluída. Essa ação não pode ser desfeita.`}
-                        confirmLabel="Excluir coluna"
+                        trigger={<ButtonUtility icon={Trash01} size="xs" color="tertiary" tooltip="Delete column" />}
+                        title="Delete column"
+                        description={`The column "${column.name}" will be deleted. This action cannot be undone.`}
+                        confirmLabel="Delete column"
                         isPending={deleteColumn.isPending}
                         onConfirm={handleDelete}
                     />
@@ -125,7 +125,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
 
             <div className="p-2">
                 <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateCard(column.id)} className="w-full justify-start">
-                    Adicionar card
+                    Add card
                 </Button>
             </div>
         </div>

@@ -1,5 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
 import { type CreateCategoryInput, createCategorySchema } from "@gikan/shared";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Trash01 } from "@untitledui/icons";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
@@ -38,17 +38,17 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                     createMutation.mutate(data, {
                         onSuccess: () => reset({ name: "", color: CATEGORY_COLORS[0] }),
                         onError: (error) => {
-                            setError("root", { message: error instanceof ApiError ? error.message : "Não foi possível criar a categoria" });
+                            setError("root", { message: error instanceof ApiError ? error.message : "Could not create the category" });
                         },
                     });
                 })}
             >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
                     <div className="flex-1">
-                        <ControlledInput control={control} name="name" label="Nova categoria" placeholder="Ex: Bug" isRequired />
+                        <ControlledInput control={control} name="name" label="New category" placeholder="e.g. Bug" isRequired />
                     </div>
                     <Button type="submit" isLoading={createMutation.isPending}>
-                        Adicionar
+                        Add
                     </Button>
                 </div>
 
@@ -61,7 +61,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                                 <button
                                     key={color}
                                     type="button"
-                                    aria-label={`Cor ${color}`}
+                                    aria-label={`Color ${color}`}
                                     onClick={() => field.onChange(color)}
                                     className={cx(
                                         "size-6 shrink-0 rounded-full outline-offset-2 transition duration-100 ease-linear",
@@ -77,10 +77,10 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                 {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
             </form>
 
-            {isLoading && <p className="text-tertiary">Carregando...</p>}
-            {isError && <ErrorMessage message="Não foi possível carregar as categorias do projeto." />}
+            {isLoading && <p className="text-tertiary">Loading...</p>}
+            {isError && <ErrorMessage message="Could not load the project categories." />}
 
-            {categories && categories.length === 0 && <p className="text-sm text-tertiary">Nenhuma categoria criada ainda.</p>}
+            {categories && categories.length === 0 && <p className="text-sm text-tertiary">No categories created yet.</p>}
 
             {categories && categories.length > 0 && (
                 <ul className="flex flex-col gap-2">
@@ -92,10 +92,10 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                                 <CategoryBadge category={category} />
                                 {canDelete && (
                                     <ConfirmDialog
-                                        trigger={<ButtonUtility icon={Trash01} size="sm" color="tertiary" tooltip="Excluir" />}
-                                        title="Excluir categoria"
-                                        description={`A categoria "${category.name}" será excluída e removida dos cards que a usam. Essa ação não pode ser desfeita.`}
-                                        confirmLabel="Excluir categoria"
+                                        trigger={<ButtonUtility icon={Trash01} size="sm" color="tertiary" tooltip="Delete" />}
+                                        title="Delete category"
+                                        description={`The category "${category.name}" will be deleted and removed from the cards that use it. This action cannot be undone.`}
+                                        confirmLabel="Delete category"
                                         isPending={deleteMutation.isPending}
                                         onConfirm={() => deleteMutation.mutate(category.id)}
                                     />

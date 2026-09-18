@@ -17,7 +17,7 @@ export async function createCategory(projectId: string, input: CreateCategoryInp
     });
 
     if (existing) {
-        throw new HttpError(409, "Já existe uma categoria com esse nome neste projeto");
+        throw new HttpError(409, "A category with this name already exists in this project");
     }
 
     const [category] = await db
@@ -40,12 +40,12 @@ export async function deleteCategory(projectId: string, categoryId: string, requ
     });
 
     if (!category) {
-        throw new HttpError(404, "Categoria não encontrada");
+        throw new HttpError(404, "Category not found");
     }
 
     const canDelete = requester.isAdmin || requester.isProjectOwner || category.createdBy === requester.userId;
     if (!canDelete) {
-        throw new HttpError(403, "Você não tem permissão para excluir esta categoria");
+        throw new HttpError(403, "You do not have permission to delete this category");
     }
 
     await db.delete(categories).where(eq(categories.id, categoryId));

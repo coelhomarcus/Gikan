@@ -38,7 +38,7 @@ export async function updateColumn(projectId: string, columnId: string, input: U
         .returning();
 
     if (!column) {
-        throw new HttpError(404, "Coluna não encontrada");
+        throw new HttpError(404, "Column not found");
     }
 
     return column;
@@ -51,13 +51,13 @@ export async function deleteColumn(projectId: string, columnId: string) {
     });
 
     if (!column) {
-        throw new HttpError(404, "Coluna não encontrada");
+        throw new HttpError(404, "Column not found");
     }
 
     const [{ value: cardCount }] = await db.select({ value: count() }).from(cards).where(eq(cards.columnId, columnId));
 
     if (cardCount > 0) {
-        throw new HttpError(409, "Mova os cards antes de excluir a coluna");
+        throw new HttpError(409, "Move the cards before deleting the column");
     }
 
     await db.delete(boardColumns).where(eq(boardColumns.id, columnId));
