@@ -43,7 +43,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
 
     return (
         <div className="flex flex-col gap-4">
-            <p className="text-sm text-tertiary">The columns below are ordered from left to right on the board. Each column color tints its cards.</p>
+            <p className="text-sm text-tertiary">The statuses below are ordered from left to right on the board. Colors identify the status marker.</p>
 
             <ul className="flex flex-col gap-3">
                 {columns.map((column, index) => (

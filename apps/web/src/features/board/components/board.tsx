@@ -18,14 +18,15 @@ import { useLocation, useNavigate } from "react-router";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { useCategories } from "@/features/categories/hooks/use-categories";
-import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import type { Issue } from "@/features/issues/api";
-import { useCards, useColumns, useUpdateCard } from "../hooks/use-board";
+import { useIssues, useUpdateIssue } from "@/features/issues/hooks/use-issues";
+import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
+import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
+import { useColumns } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
-import { CardItemContent } from "./card-item";
-import { CardModal, type CardModalTarget } from "./card-modal";
 import { Column } from "./column";
+import { IssueCardContent } from "./issue-card";
 
 /**
  * On a board, what matters is literally beneath the cursor (`pointerWithin`) — much more
@@ -37,22 +38,22 @@ const collisionDetection: CollisionDetection = (args) => {
     return pointerCollisions.length > 0 ? pointerCollisions : rectIntersection(args);
 };
 
-/** Columns change size as cards enter and leave during a drag, so their rectangles must be measured continuously. */
+/** Columns change size as issues enter and leave during a drag, so their rectangles must be measured continuously. */
 const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
 export const Board = ({ projectId }: { projectId: string }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
-    const { data: cards, isLoading: cardsLoading, isError: cardsError } = useCards(projectId);
+    const { data: issues, isLoading: issuesLoading, isError: issuesError } = useIssues(projectId, { orderBy: "position" });
     const { data: categories } = useCategories(projectId);
     const { data: members } = useProjectMembers(projectId);
-    const updateCard = useUpdateCard(projectId);
+    const updateIssue = useUpdateIssue(projectId);
 
-    const [modalTarget, setModalTarget] = useState<CardModalTarget | null>(null);
-    const [activeCard, setActiveCard] = useState<Issue | null>(null);
-    const [activeCardWidth, setActiveCardWidth] = useState<number>();
-    const [dragCards, setDragCards] = useState<Issue[] | null>(null);
+    const [createColumnId, setCreateColumnId] = useState<string | null>(null);
+    const [activeIssue, setActiveIssue] = useState<Issue | null>(null);
+    const [activeIssueWidth, setActiveIssueWidth] = useState<number>();
+    const [dragIssues, setDragIssues] = useState<Issue[] | null>(null);
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
 
@@ -60,31 +61,31 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const membersById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
 
     /**
-     * Flat list of all cards, already in visual order (columns only filter; they do not sort).
-     * During a drag, `dragCards` is reordered in `onDragOver` so columns live-preview where the
-     * card will land instead of making the user drag blindly.
+     * Flat list of all issues, already in visual order (columns only filter; they do not sort).
+     * During a drag, `dragIssues` is reordered in `onDragOver` so columns live-preview where the
+     * issue will land instead of making the user drag blindly.
      */
-    const board = useMemo(() => dragCards ?? [...(cards ?? [])].sort((a, b) => a.position - b.position), [dragCards, cards]);
+    const board = useMemo(() => dragIssues ?? [...(issues ?? [])].sort((a, b) => a.position - b.position), [dragIssues, issues]);
 
     /** Resolves the target column: `over` is the column itself (card area) or a card inside it. */
     function resolveColumnId(overId: string, list: Issue[]): string | undefined {
         if (columns?.some((column) => column.id === overId)) return overId;
-        return list.find((card) => card.id === overId)?.columnId;
+        return list.find((issue) => issue.id === overId)?.columnId;
     }
 
     function handleDragStart(event: DragStartEvent) {
         const activeId = String(event.active.id);
-        setActiveCard(board.find((card) => card.id === activeId) ?? null);
-        setDragCards(board);
+        setActiveIssue(board.find((issue) => issue.id === activeId) ?? null);
+        setDragIssues(board);
 
         // `active.rect.current.initial` is sometimes not measured in this frame yet; reading the
         // width directly from the element (still in the DOM here) is more reliable for the overlay clone.
-        const node = document.querySelector<HTMLElement>(`[data-card-id="${activeId}"]`);
-        setActiveCardWidth(node?.getBoundingClientRect().width ?? event.active.rect.current.initial?.width);
+        const node = document.querySelector<HTMLElement>(`[data-issue-id="${activeId}"]`);
+        setActiveIssueWidth(node?.getBoundingClientRect().width ?? event.active.rect.current.initial?.width);
     }
 
     /**
-     * Handles only COLUMN CHANGES: moves the card to the hovered column's list while dragging,
+     * Handles only COLUMN CHANGES: moves the issue to the hovered column's list while dragging,
      * making the source column close the gap and the destination open space live. Reordering
      * within the same column is handled by `SortableContext` (visual transform) and is finalized
      * on drop — changing state here would cause a double movement.
@@ -96,15 +97,15 @@ export const Board = ({ projectId }: { projectId: string }) => {
         const activeId = String(active.id);
         const overId = String(over.id);
 
-        setDragCards((current) => {
+        setDragIssues((current) => {
             const list = current ?? board;
-            const dragged = list.find((card) => card.id === activeId);
+            const dragged = list.find((issue) => issue.id === activeId);
             const targetColumnId = resolveColumnId(overId, list);
 
             if (!dragged || !targetColumnId || dragged.columnId === targetColumnId) return current;
 
-            const withoutDragged = list.filter((card) => card.id !== activeId);
-            const overIndex = withoutDragged.findIndex((card) => card.id === overId);
+            const withoutDragged = list.filter((issue) => issue.id !== activeId);
+            const overIndex = withoutDragged.findIndex((issue) => issue.id === overId);
             const insertAt = overIndex === -1 ? withoutDragged.length : overIndex;
 
             return [...withoutDragged.slice(0, insertAt), { ...dragged, columnId: targetColumnId }, ...withoutDragged.slice(insertAt)];
@@ -113,12 +114,12 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, over } = event;
-        const list = dragCards ?? board;
+        const list = dragIssues ?? board;
 
-        setActiveCard(null);
+        setActiveIssue(null);
 
         if (!over) {
-            setDragCards(null);
+            setDragIssues(null);
             return;
         }
 
@@ -127,65 +128,65 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
         const targetColumnId = resolveColumnId(overId, list);
         if (!targetColumnId) {
-            setDragCards(null);
+            setDragIssues(null);
             return;
         }
 
         // `arrayMove` is the same operation SortableContext uses for the visual preview, so the
         // drop result matches exactly the gap the user was seeing.
-        const columnCards = list.filter((card) => card.columnId === targetColumnId);
-        const fromIndex = columnCards.findIndex((card) => card.id === activeId);
+        const columnIssues = list.filter((issue) => issue.columnId === targetColumnId);
+        const fromIndex = columnIssues.findIndex((issue) => issue.id === activeId);
 
-        // Only another card provides a specific index; dropping on the column means "at the end".
-        const overCardIndex = columnCards.findIndex((card) => card.id === overId);
-        const toIndex = overCardIndex === -1 ? columnCards.length - 1 : overCardIndex;
+        // Only another issue provides a specific index; dropping on the column means "at the end".
+        const overIssueIndex = columnIssues.findIndex((issue) => issue.id === overId);
+        const toIndex = overIssueIndex === -1 ? columnIssues.length - 1 : overIssueIndex;
         if (fromIndex === -1 || toIndex === -1) {
-            setDragCards(null);
+            setDragIssues(null);
             return;
         }
 
-        const ordered = arrayMove(columnCards, fromIndex, toIndex);
-        const finalIndex = ordered.findIndex((card) => card.id === activeId);
+        const ordered = arrayMove(columnIssues, fromIndex, toIndex);
+        const finalIndex = ordered.findIndex((issue) => issue.id === activeId);
         const position = positionAtIndex(
-            ordered.filter((card) => card.id !== activeId),
+            ordered.filter((issue) => issue.id !== activeId),
             finalIndex,
         );
 
-        const original = cards?.find((card) => card.id === activeId);
+        const original = issues?.find((issue) => issue.id === activeId);
         if (original && original.columnId === targetColumnId && original.position === position) {
-            setDragCards(null);
+            setDragIssues(null);
             return;
         }
 
-        // Keep the drag preview (`dragCards`) until the mutation settles instead of clearing it:
-        // `useUpdateCard`'s `onMutate` writes to the cache asynchronously, so clearing it first
-        // would make the board fall back to old `cards` for one frame — the card would "return"
+        // Keep the drag preview (`dragIssues`) until the mutation settles instead of clearing it:
+        // `useUpdateIssue` updates the canonical issue cache optimistically, so clearing it first
+        // would make the board fall back to old issues for one frame — the issue would "return"
         // and only then move to the right place. Freezing the preview makes the board optimistic
         // immediately and only reverts on error.
         const activeIssue = list.find((issue) => issue.id === activeId);
         if (!activeIssue) {
-            setDragCards(null);
+            setDragIssues(null);
             return;
         }
 
-        updateCard.mutate({ identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragCards(null) });
+        updateIssue.mutate({ identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } }, { onSettled: () => setDragIssues(null) });
     }
 
     function handleDragCancel() {
-        setActiveCard(null);
-        setDragCards(null);
+        setActiveIssue(null);
+        setDragIssues(null);
     }
 
-    if (columnsLoading || cardsLoading) {
+    if (columnsLoading || issuesLoading) {
         return <LoadingState label="Loading board..." className="p-4" />;
     }
 
-    if (columnsError || cardsError) {
+    if (columnsError || issuesError) {
         return <ErrorMessage message="Could not load the board. You may not have access to this project, or it may not exist." />;
     }
 
-    const activeCategory = activeCard?.categoryId ? categoriesById.get(activeCard.categoryId) : undefined;
-    const activeAssignee = activeCard?.assigneeId ? membersById.get(activeCard.assigneeId) : undefined;
+    const activeCategory = activeIssue?.categoryId ? categoriesById.get(activeIssue.categoryId) : undefined;
+    const activeAssignee = activeIssue?.assigneeId ? membersById.get(activeIssue.assigneeId) : undefined;
 
     return (
         <>
@@ -203,30 +204,30 @@ export const Board = ({ projectId }: { projectId: string }) => {
                         <Column
                             key={column.id}
                             column={column}
-                            cards={board.filter((card) => card.columnId === column.id)}
+                            issues={board.filter((issue) => issue.columnId === column.id)}
                             projectId={projectId}
                             categoriesById={categoriesById}
                             membersById={membersById}
-                            onOpenCard={(identifier) => navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } })}
-                            onCreateCard={(columnId) => setModalTarget({ type: "create", columnId })}
+                            onOpenIssue={(identifier) => navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } })}
+                            onCreateIssue={(columnId) => setCreateColumnId(columnId)}
                         />
                     ))}
                     <AddColumnForm projectId={projectId} />
                 </div>
 
                 <DragOverlay>
-                    {activeCard && (
+                    {activeIssue && (
                         <div
-                            style={{ width: activeCardWidth }}
+                            style={{ width: activeIssueWidth }}
                             className="flex cursor-grabbing flex-col gap-2 rounded-md border border-brand bg-primary p-3 shadow-lg"
                         >
-                            <CardItemContent card={activeCard} category={activeCategory} assignee={activeAssignee} />
+                            <IssueCardContent issue={activeIssue} category={activeCategory} assignee={activeAssignee} />
                         </div>
                     )}
                 </DragOverlay>
             </DndContext>
 
-            {modalTarget && <CardModal projectId={projectId} target={modalTarget} onClose={() => setModalTarget(null)} />}
+            {createColumnId && <IssueQuickCreateModal projectId={projectId} columnId={createColumnId} onClose={() => setCreateColumnId(null)} />}
         </>
     );
 };

@@ -6,25 +6,25 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Input } from "@/components/base/input/input";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
+import type { Issue, IssuePerson } from "@/features/issues/api";
 import { ApiError } from "@/lib/api-client";
 import { cx } from "@/utils/cx";
-import type { Issue } from "@/features/issues/api";
-import type { BoardColumn, CardPerson } from "../api";
+import type { BoardColumn } from "../api";
 import { useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
-import { CardItem } from "./card-item";
 import { COLUMN_FALLBACK_COLOR } from "./column-color";
+import { IssueCard } from "./issue-card";
 
 interface ColumnProps {
     column: BoardColumn;
-    cards: Issue[];
+    issues: Issue[];
     projectId: string;
     categoriesById: Map<string, { name: string; color: string | null }>;
-    membersById: Map<string, CardPerson>;
-    onOpenCard: (identifier: string) => void;
-    onCreateCard: (columnId: string) => void;
+    membersById: Map<string, IssuePerson>;
+    onOpenIssue: (identifier: string) => void;
+    onCreateIssue: (columnId: string) => void;
 }
 
-export const Column = ({ column, cards, projectId, categoriesById, membersById, onOpenCard, onCreateCard }: ColumnProps) => {
+export const Column = ({ column, issues, projectId, categoriesById, membersById, onOpenIssue, onCreateIssue }: ColumnProps) => {
     const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column.id });
 
     const updateColumn = useUpdateColumn(projectId);
@@ -95,7 +95,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
                 )}
 
                 <div className="flex shrink-0 items-center gap-1">
-                    <span className="text-xs text-tertiary">{cards.length}</span>
+                    <span className="text-xs text-tertiary">{issues.length}</span>
                     <ConfirmDialog
                         trigger={<ButtonUtility icon={Trash2} size="xs" color="tertiary" tooltip="Delete column" />}
                         title="Delete column"
@@ -110,17 +110,17 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
             {error && <p className="px-3 pb-2 text-xs text-error-primary">{error}</p>}
 
             <div ref={setDropRef} className={cx("min-h-20 min-h-0 flex-1 overflow-y-auto rounded-lg p-2", isOver && "bg-brand-primary_alt/60")}>
-                <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
-                    {cards.map((card) => (
-                        <CardItem
-                            key={card.id}
-                            card={card}
-                            category={card.categoryId ? categoriesById.get(card.categoryId) : undefined}
-                            assignee={card.assigneeId ? membersById.get(card.assigneeId) : undefined}
-                            onClick={() => onOpenCard(card.identifier)}
+                <SortableContext items={issues.map((issue) => issue.id)} strategy={verticalListSortingStrategy}>
+                    {issues.map((issue) => (
+                        <IssueCard
+                            key={issue.id}
+                            issue={issue}
+                            category={issue.categoryId ? categoriesById.get(issue.categoryId) : undefined}
+                            assignee={issue.assigneeId ? membersById.get(issue.assigneeId) : undefined}
+                            onClick={() => onOpenIssue(issue.identifier)}
                         />
                     ))}
-                    {cards.length === 0 && (
+                    {issues.length === 0 && (
                         <div className="flex min-h-24 flex-col items-center justify-center gap-1 px-3 text-center">
                             <CircleDashed className="size-4 text-fg-quaternary" aria-hidden="true" />
                             <p className="text-xs text-tertiary">No issues here</p>
@@ -130,7 +130,7 @@ export const Column = ({ column, cards, projectId, categoriesById, membersById, 
             </div>
 
             <div className="p-2">
-                <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateCard(column.id)} className="w-full justify-start">
+                <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateIssue(column.id)} className="w-full justify-start">
                     Add issue
                 </Button>
             </div>

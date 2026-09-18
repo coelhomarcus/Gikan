@@ -7,6 +7,7 @@ import type {
     UpdateIssueInput,
 } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Issue } from "../api";
 import {
     createIssue,
     createIssueComment,
@@ -47,10 +48,26 @@ export function useUpdateIssue(projectId: string) {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ identifier, input }: { identifier: string; input: UpdateIssueInput }) => updateIssue(identifier, input),
+        onMutate: async ({ identifier, input }) => {
+            await queryClient.cancelQueries({ queryKey: ["projects", projectId, "issues"] });
+            const previous = queryClient.getQueriesData<Issue[]>({ queryKey: ["projects", projectId, "issues"] });
+
+            for (const [queryKey] of previous) {
+                queryClient.setQueryData<Issue[]>(queryKey, (current) =>
+                    current?.map((issue) => (issue.identifier === identifier ? { ...issue, ...input } : issue)),
+                );
+            }
+
+            return { previous };
+        },
+        onError: (_error, _variables, context) => {
+            context?.previous.forEach(([queryKey, previousIssues]) => queryClient.setQueryData(queryKey, previousIssues));
+        },
         onSuccess: (issue) => {
             queryClient.invalidateQueries({ queryKey: ["projects", projectId, "issues"] });
             queryClient.invalidateQueries({ queryKey: issueKey(issue.identifier) });
         },
+        onSettled: (_data, _error, variables) => queryClient.invalidateQueries({ queryKey: issueKey(variables.identifier) }),
     });
 }
 
