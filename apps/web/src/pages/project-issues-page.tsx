@@ -50,6 +50,7 @@ export const ProjectIssuesPage = () => {
     const [title, setTitle] = useState("");
     const [createError, setCreateError] = useState<string | null>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const [filterQuery, setFilterQuery] = useState("");
     const [isDisplayOpen, setIsDisplayOpen] = useState(false);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
@@ -150,6 +151,14 @@ export const ProjectIssuesPage = () => {
         );
     }
 
+    function filterOptions(options: Array<{ value: string; label: string }>, selectedValue: string) {
+        const normalized = filterQuery.trim().toLowerCase();
+        if (!normalized) return options;
+        const matching = options.filter((option) => option.label.toLowerCase().includes(normalized));
+        const selected = options.find((option) => option.value === selectedValue);
+        return selected && !matching.some((option) => option.value === selected.value) ? [selected, ...matching] : matching;
+    }
+
     function openIssue(identifier: string) {
         navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } });
     }
@@ -241,16 +250,24 @@ export const ProjectIssuesPage = () => {
                             </ToolbarButton>
                             {isFilterOpen && (
                                 <div className="absolute top-10 left-0 z-20 grid w-[min(20rem,calc(100vw-2rem))] gap-3 rounded-lg border border-secondary bg-primary p-3 shadow-xl sm:grid-cols-2">
-                                    <FilterSelect label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={(columns ?? []).map((item) => ({ value: item.id, label: item.name }))} />
+                                    <input
+                                        autoFocus
+                                        value={filterQuery}
+                                        onChange={(event) => setFilterQuery(event.target.value)}
+                                        placeholder="Search filter values"
+                                        aria-label="Search filter values"
+                                        className="col-span-full h-8 rounded-md border border-secondary bg-secondary_alt px-2.5 text-xs text-primary outline-none placeholder:text-tertiary focus:border-brand"
+                                    />
+                                    <FilterSelect label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={filterOptions((columns ?? []).map((item) => ({ value: item.id, label: item.name })), status)} />
                                     <FilterSelect
                                         label="Priority"
                                         value={priority}
                                         onChange={(value) => updateQuery("priority", value)}
-                                        options={["high", "medium", "low"].map((value) => ({ value, label: capitalize(value) }))}
+                                        options={filterOptions(["high", "medium", "low"].map((value) => ({ value, label: capitalize(value) })), priority)}
                                     />
-                                    <FilterSelect label="Assignee" value={assignee} onChange={(value) => updateQuery("assignee", value)} options={(members ?? []).map((item) => ({ value: item.id, label: item.name }))} />
-                                    <FilterSelect label="Label" value={category} onChange={(value) => updateQuery("label", value)} options={(categories ?? []).map((item) => ({ value: item.id, label: item.name }))} />
-                                    <FilterSelect label="Cycle" value={cycle} onChange={(value) => updateQuery("cycle", value)} options={(cycles ?? []).map((item) => ({ value: item.id, label: item.name }))} />
+                                    <FilterSelect label="Assignee" value={assignee} onChange={(value) => updateQuery("assignee", value)} options={filterOptions((members ?? []).map((item) => ({ value: item.id, label: item.name })), assignee)} />
+                                    <FilterSelect label="Label" value={category} onChange={(value) => updateQuery("label", value)} options={filterOptions((categories ?? []).map((item) => ({ value: item.id, label: item.name })), category)} />
+                                    <FilterSelect label="Cycle" value={cycle} onChange={(value) => updateQuery("cycle", value)} options={filterOptions((cycles ?? []).map((item) => ({ value: item.id, label: item.name })), cycle)} />
                                     <button type="button" onClick={clearFilters} className="self-end text-left text-xs text-tertiary hover:text-primary">
                                         Clear filters
                                     </button>
