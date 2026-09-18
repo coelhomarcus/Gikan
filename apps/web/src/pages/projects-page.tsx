@@ -22,10 +22,18 @@ export const ProjectsPage = () => {
                 )}
 
                 {projects && projects.length > 0 && (
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {projects.map((project) => (
-                            <ProjectCard key={project.id} project={project} />
-                        ))}
+                    <div className="overflow-hidden rounded-lg border border-secondary">
+                        <div className="hidden items-center gap-3 border-b border-secondary bg-secondary px-3 py-2 text-xs font-medium text-tertiary sm:flex">
+                            <span className="w-8 shrink-0" />
+                            <span className="flex-1">Project</span>
+                            <span className="w-28 text-right">Updated</span>
+                            <span className="w-4 shrink-0" />
+                        </div>
+                        <div className="divide-y divide-secondary">
+                            {projects.map((project) => (
+                                <ProjectCard key={project.id} project={project} />
+                            ))}
+                        </div>
                     </div>
                 )}
             </div>
