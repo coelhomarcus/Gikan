@@ -22,7 +22,7 @@ export const Tooltip = ({ title, description, arrow = false, delay = 300, offset
                 <BaseTooltip.Trigger render={children as ReactElement} />
                 <BaseTooltip.Portal>
                     <BaseTooltip.Positioner side={side} sideOffset={offset}>
-                        <BaseTooltip.Popup className={cx("z-50 flex max-w-xs flex-col items-start gap-1 rounded-lg bg-primary-solid px-3 shadow-lg", description ? "py-3" : "py-2")}>
+                        <BaseTooltip.Popup className={cx("z-50 flex max-w-xs flex-col items-start gap-2 rounded-md bg-primary-solid px-3 shadow-lg", description ? "py-3" : "py-2")}>
                             {arrow && <BaseTooltip.Arrow className="fill-bg-primary-solid" />}
                             <span className="text-xs font-semibold text-white">{title}</span>
                             {description && <span className="text-xs font-medium text-tooltip-supporting-text">{description}</span>}

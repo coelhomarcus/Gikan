@@ -138,7 +138,7 @@ function CategoryEditor({ category, isPending, onSave }: { category: { name: str
     return (
         <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
             <input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} aria-label={`Label ${category.name}`} className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-1 text-sm font-medium text-primary outline-none focus:border-secondary focus:bg-primary disabled:opacity-60" />
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
                 {CATEGORY_COLORS.map((item) => (
                     <button key={item} type="button" aria-label={`Use color ${item}`} aria-pressed={color === item} disabled={isPending} onClick={() => setColor(item)} className={cx("size-5 rounded-full disabled:opacity-50", color === item && "outline-2 outline-fg-primary outline-offset-1")} style={{ backgroundColor: item }} />
                 ))}

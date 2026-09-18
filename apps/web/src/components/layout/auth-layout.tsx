@@ -4,7 +4,7 @@ import { GikanLogo } from "@/components/foundations/logo/gikan-logo";
 export const AuthLayout = () => {
     return (
         <div className="min-h-dvh bg-primary text-primary">
-            <div className="mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-12 px-5 py-10 sm:px-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-24 lg:px-12">
+            <div className="mx-auto grid min-h-dvh w-full max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-16 lg:px-8">
                 <div className="hidden lg:block">
                     <GikanLogo />
                     <div className="mt-16 max-w-md">
@@ -18,7 +18,7 @@ export const AuthLayout = () => {
                     <div className="mb-8 lg:hidden">
                         <GikanLogo />
                     </div>
-                    <div className="rounded-2xl border border-secondary bg-secondary_alt/40 p-5 shadow-2xl sm:p-8">
+                    <div className="rounded-xl border border-secondary bg-secondary_alt/40 p-6 shadow-2xl sm:p-8">
                         <Outlet />
                     </div>
                 </main>

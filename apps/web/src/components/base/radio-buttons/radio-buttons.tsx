@@ -19,7 +19,7 @@ interface RadioButtonProps {
     isDisabled?: boolean;
 }
 
-export const RadioButton = ({ label, hint, className, size = "sm", isDisabled, disabled, value, ...props }: RadioButtonProps) => <BaseRadio.Root {...props} value={value ?? ""} disabled={isDisabled ?? disabled} className={cx("flex items-start gap-2", size === "md" && "gap-3", className)}><BaseRadio.Indicator render={<RadioButtonBase size={size} isDisabled={isDisabled ?? disabled} />} />{(label || hint) && <span className="flex flex-col gap-0.5"><span className={cx("text-secondary select-none", size === "md" ? "text-md" : "text-sm")}>{label}</span>{hint && <span className={cx("text-tertiary", size === "md" ? "text-md" : "text-sm")}>{hint}</span>}</span>}</BaseRadio.Root>;
+export const RadioButton = ({ label, hint, className, size = "sm", isDisabled, disabled, value, ...props }: RadioButtonProps) => <BaseRadio.Root {...props} value={value ?? ""} disabled={isDisabled ?? disabled} className={cx("flex items-start gap-2", className)}><BaseRadio.Indicator render={<RadioButtonBase size={size} isDisabled={isDisabled ?? disabled} />} />{(label || hint) && <span className="flex flex-col gap-1"><span className={cx("text-secondary select-none", size === "md" ? "text-md" : "text-sm")}>{label}</span>{hint && <span className={cx("text-tertiary", size === "md" ? "text-md" : "text-sm")}>{hint}</span>}</span>}</BaseRadio.Root>;
 
 interface RadioGroupProps extends RadioGroupContextType { children: ReactNode; className?: string; value?: string; defaultValue?: string; onValueChange?: (value: string) => void; name?: string }
 export const RadioGroup = ({ children, className, size = "sm", ...props }: RadioGroupProps) => <BaseRadioGroup {...props} className={cx("flex flex-col gap-4", className)} />;

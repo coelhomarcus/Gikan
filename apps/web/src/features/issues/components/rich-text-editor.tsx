@@ -200,7 +200,7 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
             <ButtonUtility icon={Code2} size="xs" color="tertiary" tooltip="Code block" onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
             <ButtonUtility icon={Link2} size="xs" color="tertiary" tooltip="Link" onClick={toggleLink} />
             {isLinkEditorOpen && (
-                <form className="ml-1 flex items-center gap-1.5" onSubmit={saveLink}>
+                <form className="ml-1 flex items-center gap-2" onSubmit={saveLink}>
                     <input
                         autoFocus
                         type="url"

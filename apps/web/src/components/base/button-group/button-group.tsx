@@ -1,10 +1,15 @@
 import { createContext, isValidElement, useContext, type ButtonHTMLAttributes, type FC, type ReactNode } from "react";
 import { cx, sortCx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
+import { controlScale } from "@/components/base/control-scale";
 
 export const styles = sortCx({
     common: { root: "group/button-group inline-flex h-max cursor-pointer items-center bg-primary font-semibold whitespace-nowrap text-secondary shadow-skeuomorphic ring-1 ring-primary outline-brand ring-inset hover:bg-primary_hover hover:text-secondary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-secondary/50 data-selected:bg-primary_hover data-selected:text-secondary_hover", icon: "pointer-events-none text-fg-quaternary" },
-    sizes: { sm: { root: "gap-1.5 px-3.5 py-2 text-sm first:rounded-l-lg last:rounded-r-lg data-icon-leading:pl-3 data-icon-only:px-2.5", icon: "size-5" }, md: { root: "gap-1.5 px-4 py-2.5 text-sm first:rounded-l-lg last:rounded-r-lg data-icon-leading:pl-3.5 data-icon-only:px-3", icon: "size-5" }, lg: { root: "gap-2 px-4.5 py-2.5 text-md first:rounded-l-lg last:rounded-r-lg data-icon-leading:pl-4 data-icon-only:px-3.5", icon: "size-5" } },
+    sizes: {
+        sm: { root: `${controlScale.button.sm} gap-2 first:rounded-l-md last:rounded-r-md data-icon-leading:pl-3 data-icon-only:size-8 data-icon-only:px-0`, icon: "size-4" },
+        md: { root: `${controlScale.button.md} gap-2 first:rounded-l-md last:rounded-r-md data-icon-leading:pl-4 data-icon-only:size-9 data-icon-only:px-0`, icon: "size-4" },
+        lg: { root: `${controlScale.button.lg} gap-2 first:rounded-l-md last:rounded-r-md data-icon-leading:pl-5 data-icon-only:size-10 data-icon-only:px-0`, icon: "size-4" },
+    },
 });
 
 type ButtonSize = keyof typeof styles.sizes;
@@ -19,4 +24,4 @@ export const ButtonGroupItem = ({ iconLeading: IconLeading, iconTrailing: IconTr
 };
 
 interface ButtonGroupProps { size?: ButtonSize; className?: string; children: ReactNode; }
-export const ButtonGroup = ({ children, size = "md", className }: ButtonGroupProps) => <context.Provider value={{ size }}><div className={cx("relative z-0 inline-flex w-max -space-x-px rounded-lg shadow-xs", className)}>{children}</div></context.Provider>;
+export const ButtonGroup = ({ children, size = "md", className }: ButtonGroupProps) => <context.Provider value={{ size }}><div className={cx("relative z-0 inline-flex w-max -space-x-px rounded-md shadow-xs", className)}>{children}</div></context.Provider>;

@@ -3,6 +3,7 @@ import React, { isValidElement } from "react";
 import { Button as BaseButton } from "@base-ui/react/button";
 import { cx, sortCx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
+import { controlScale } from "@/components/base/control-scale";
 
 export const styles = sortCx({
     common: {
@@ -15,38 +16,41 @@ export const styles = sortCx({
             // Same as `icon` but for SSR icons that cannot be passed to the client as functions.
             "*:data-icon:pointer-events-none *:data-icon:size-4 *:data-icon:shrink-0 *:data-icon:transition-inherit-all",
         ].join(" "),
-        icon: "pointer-events-none size-5 shrink-0 transition-inherit-all",
+        icon: "pointer-events-none size-4 shrink-0 transition-inherit-all",
     },
     sizes: {
         xs: {
             root: [
-                "gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium before:rounded-[5px] data-icon-only:p-1.5",
-                "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 in-data-input-wrapper:data-icon-only:p-2.5",
+                controlScale.button.xs,
+                "gap-2 rounded-md font-medium data-icon-only:size-7 data-icon-only:p-0",
+                "in-data-input-wrapper:px-3 in-data-input-wrapper:data-icon-only:size-7",
                 "*:data-icon:size-4 *:data-icon:stroke-[2.25px]",
             ].join(" "),
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         sm: {
             root: [
-                "gap-1 rounded-md px-3 py-2 text-sm font-medium before:rounded-[5px] data-icon-only:p-2",
-                "in-data-input-wrapper:px-3.5 in-data-input-wrapper:py-2.5 in-data-input-wrapper:data-icon-only:p-2.5",
+                controlScale.button.sm,
+                "gap-2 rounded-md font-medium data-icon-only:size-8 data-icon-only:p-0",
+                "in-data-input-wrapper:px-3 in-data-input-wrapper:data-icon-only:size-8",
             ].join(" "),
             linkRoot: "gap-1 *:data-text:underline-offset-3",
         },
         md: {
             root: [
-                "gap-1 rounded-md px-3.5 py-2.5 text-sm font-medium before:rounded-[5px] data-icon-only:p-2.5",
-                "in-data-input-wrapper:gap-1.5 in-data-input-wrapper:px-4 in-data-input-wrapper:text-md in-data-input-wrapper:data-icon-only:p-3",
+                controlScale.button.md,
+                "gap-2 rounded-md font-medium data-icon-only:size-9 data-icon-only:p-0",
+                "in-data-input-wrapper:px-4 in-data-input-wrapper:data-icon-only:size-9",
             ].join(" "),
             linkRoot: "gap-1 *:data-text:underline-offset-4",
         },
         lg: {
-            root: "gap-1.5 rounded-md px-4 py-2.5 text-md font-medium before:rounded-[5px] data-icon-only:p-3",
-            linkRoot: "gap-1.5 *:data-text:underline-offset-4",
+            root: `${controlScale.button.lg} gap-2 rounded-md font-medium data-icon-only:size-10 data-icon-only:p-0`,
+            linkRoot: "gap-2 *:data-text:underline-offset-4",
         },
         xl: {
-            root: "gap-1.5 rounded-md px-4.5 py-3 text-md font-medium before:rounded-[5px] data-icon-only:p-3.5",
-            linkRoot: "gap-1.5 *:data-text:underline-offset-4",
+            root: `${controlScale.button.xl} gap-2 rounded-md font-medium data-icon-only:size-11 data-icon-only:p-0`,
+            linkRoot: "gap-2 *:data-text:underline-offset-4",
         },
     },
 

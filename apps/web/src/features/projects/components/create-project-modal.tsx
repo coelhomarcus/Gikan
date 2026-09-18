@@ -44,7 +44,7 @@ export const CreateProjectModal = () => {
                     })}
                 >
                     <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
-                    <div className="rounded-md border border-secondary bg-secondary_alt px-3 py-2.5">
+                    <div className="rounded-md border border-secondary bg-secondary_alt px-3 py-2">
                         <div className="flex items-center justify-between gap-3">
                             <span className="text-xs font-medium text-tertiary">Generated issue key</span>
                             <span className="font-mono text-sm font-semibold text-fg-brand-primary">{projectName.trim() ? generatedIssueKey : "PRJ"}</span>

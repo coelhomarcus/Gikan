@@ -6,6 +6,7 @@ import { HintText } from "@/components/base/input/hint-text";
 import { Label } from "@/components/base/input/label";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
 import { cx, sortCx } from "@/utils/cx";
+import { controlScale } from "@/components/base/control-scale";
 
 type InputState = { isRequired?: boolean; isInvalid?: boolean; isDisabled?: boolean };
 
@@ -35,13 +36,13 @@ export const InputBase = ({ ref, tooltip, shortcut, groupRef, size = "md", isInv
     const hasTrailingIcon = Boolean(tooltip || isInvalid);
     const hasLeadingIcon = Boolean(Icon);
     const sizes = sortCx({
-        sm: { root: cx("px-3 py-2 text-sm", hasLeadingIcon && "pl-9", hasTrailingIcon && "pr-9"), iconLeading: "left-3 size-4", iconTrailing: "right-3", shortcut: "pr-1.5" },
-        md: { root: cx("px-3 py-2 text-md", hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9"), iconLeading: "left-3 size-5", iconTrailing: "right-3", shortcut: "pr-2" },
-        lg: { root: cx("px-3.5 py-2.5 text-md", hasLeadingIcon && "pl-10.5", hasTrailingIcon && "pr-9.5"), iconLeading: "left-3.5 size-5", iconTrailing: "right-3.5", shortcut: "pr-2.5" },
+        sm: { root: cx(controlScale.field.sm, hasLeadingIcon && "pl-9", hasTrailingIcon && "pr-9"), iconLeading: "left-3 size-4", iconTrailing: "right-3", shortcut: "pr-1.5" },
+        md: { root: cx(controlScale.field.md, hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9"), iconLeading: "left-3 size-4", iconTrailing: "right-3", shortcut: "pr-2" },
+        lg: { root: cx(controlScale.field.lg, hasLeadingIcon && "pl-10", hasTrailingIcon && "pr-9"), iconLeading: "left-3 size-4", iconTrailing: "right-3", shortcut: "pr-2.5" },
     });
 
     return (
-        <div ref={groupRef} data-disabled={isDisabled || undefined} data-invalid={isInvalid || undefined} className={cx("group/input relative flex w-full flex-row place-content-center place-items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary ring-inset transition-shadow duration-100 ease-linear", "focus-within:ring-2 focus-within:ring-brand", isDisabled && "cursor-not-allowed opacity-50", isInvalid && "ring-error_subtle", context.wrapperClassName, wrapperClassName)}>
+        <div ref={groupRef} data-disabled={isDisabled || undefined} data-invalid={isInvalid || undefined} className={cx("group/input relative flex w-full flex-row place-content-center place-items-center rounded-md bg-primary shadow-xs ring-1 ring-primary ring-inset transition-shadow duration-100 ease-linear", "focus-within:ring-2 focus-within:ring-brand", isDisabled && "cursor-not-allowed opacity-50", isInvalid && "ring-error_subtle", context.wrapperClassName, wrapperClassName)}>
             {Icon && <Icon className={cx("pointer-events-none absolute text-fg-quaternary", sizes[inputSize].iconLeading, context.iconClassName, iconClassName)} />}
             <BaseInput
                 {...inputProps}
@@ -50,7 +51,7 @@ export const InputBase = ({ ref, tooltip, shortcut, groupRef, size = "md", isInv
                 required={isRequired}
                 type={type === "password" && isPasswordVisible ? "text" : type}
                 placeholder={placeholder}
-                className={cx("m-0 w-full bg-transparent text-primary ring-0 outline-hidden placeholder:text-placeholder autofill:rounded-lg autofill:text-primary disabled:cursor-not-allowed", sizes[inputSize].root, context.inputClassName, inputClassName)}
+                className={cx("m-0 w-full bg-transparent text-primary ring-0 outline-hidden placeholder:text-placeholder autofill:rounded-md autofill:text-primary disabled:cursor-not-allowed", sizes[inputSize].root, context.inputClassName, inputClassName)}
             />
             {tooltip && type !== "password" && (
                 <Tooltip title={tooltip} placement="top">
@@ -79,7 +80,7 @@ export interface TextFieldProps extends Omit<InputBaseProps, "onChange" | "child
 
 export const TextField = ({ className, size = "md", inputClassName, wrapperClassName, iconClassName, tooltipClassName, children, isRequired, isInvalid, isDisabled, onChange, ...props }: TextFieldProps) => (
     <TextFieldContext.Provider value={{ inputClassName, wrapperClassName, iconClassName, tooltipClassName, size }}>
-        <div data-input-wrapper data-input-size={size} className={cx("group flex h-max w-full flex-col items-start justify-start gap-1.5", className)}>
+        <div data-input-wrapper data-input-size={size} className={cx("group flex h-max w-full flex-col items-start justify-start gap-2", className)}>
             {typeof children === "function" ? children({ isRequired, isInvalid, isDisabled }) : children}
             {!children && <InputBase {...props} size={size} isRequired={isRequired} isInvalid={isInvalid} isDisabled={isDisabled} onChange={(event) => onChange?.(event.currentTarget.value)} />}
         </div>

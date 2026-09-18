@@ -31,14 +31,14 @@ export const IssueCardContent = ({ issue, category, assignee }: IssueCardContent
         <p className="text-sm font-medium text-primary">{issue.title}</p>
 
         {(category || issue.priority) && (
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
                 {category && <CategoryBadge category={category} />}
                 <ImportanceBadge importance={issue.priority} />
             </div>
         )}
 
         {assignee && (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
                 <Avatar src={assignee.avatarUrl ?? undefined} initials={initialsOf(assignee.name)} size="xs" />
                 <span className="text-xs text-tertiary">{assignee.name}</span>
             </div>

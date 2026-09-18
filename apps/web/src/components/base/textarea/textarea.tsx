@@ -18,7 +18,7 @@ export const TextAreaBase = ({ className, size = "md", isInvalid, isDisabled, st
         {...props}
         disabled={isDisabled}
         style={{ ...style, "--resize-handle-bg": getResizeHandleBg("#D5D7DA"), "--resize-handle-bg-dark": getResizeHandleBg("#373A41") } as CSSProperties}
-        className={cx("w-full scroll-py-3 rounded-lg bg-primary text-primary shadow-xs ring-1 ring-primary ring-inset transition duration-100 ease-linear placeholder:text-placeholder focus:outline-hidden", size === "sm" ? "p-3 text-sm" : "px-3.5 py-3 text-md", "[&::-webkit-resizer]:bg-(image:--resize-handle-bg) [&::-webkit-resizer]:bg-contain dark:[&::-webkit-resizer]:bg-(image:--resize-handle-bg-dark)", "focus:ring-2 focus:ring-brand", isDisabled && "cursor-not-allowed opacity-50", isInvalid && "ring-error_subtle", className)}
+        className={cx("min-h-24 w-full scroll-py-3 rounded-md bg-primary px-3 py-2.5 text-primary shadow-xs ring-1 ring-primary ring-inset transition duration-100 ease-linear placeholder:text-placeholder focus:outline-hidden", size === "sm" && "text-sm", size === "md" && "text-md", "[&::-webkit-resizer]:bg-(image:--resize-handle-bg) [&::-webkit-resizer]:bg-contain dark:[&::-webkit-resizer]:bg-(image:--resize-handle-bg-dark)", "focus:ring-2 focus:ring-brand", isDisabled && "cursor-not-allowed opacity-50", isInvalid && "ring-error_subtle", className)}
     />
 );
 TextAreaBase.displayName = "TextAreaBase";
@@ -43,7 +43,7 @@ interface TextFieldProps extends Omit<TextareaHTMLAttributes<HTMLTextAreaElement
 }
 
 export const TextArea = ({ label, hint, tooltip, textAreaRef, hideRequiredIndicator, textAreaClassName, placeholder, className, rows, cols, size = "md", isInvalid, isDisabled, isRequired, onChange, ...props }: TextFieldProps) => (
-    <div className={cx("group flex h-max w-full flex-col items-start justify-start gap-1.5", className)}>
+    <div className={cx("group flex h-max w-full flex-col items-start justify-start gap-2", className)}>
         {label && <Label isRequired={hideRequiredIndicator ? false : isRequired} tooltip={tooltip}>{label}</Label>}
         <TextAreaBase {...props} placeholder={placeholder} className={textAreaClassName} ref={textAreaRef} rows={rows} cols={cols} size={size} isInvalid={isInvalid} isDisabled={isDisabled} required={isRequired} onChange={(event) => onChange?.(event.currentTarget.value)} />
         {hint && <HintText isInvalid={isInvalid} size={size}>{hint}</HintText>}

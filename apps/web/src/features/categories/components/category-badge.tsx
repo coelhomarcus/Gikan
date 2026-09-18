@@ -6,7 +6,7 @@ export const CategoryBadge = ({ category }: { category: Pick<Category, "name" | 
     const color = category.color ?? "#87888c";
 
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: color, color }}>
+        <span className="inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-xs font-medium" style={{ borderColor: color, color }}>
             <span className="size-1.5 shrink-0 rounded-full" style={{ backgroundColor: color }} />
             {category.name}
         </span>

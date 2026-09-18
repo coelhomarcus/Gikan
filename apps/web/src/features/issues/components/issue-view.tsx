@@ -168,7 +168,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     };
     const content = (
         <div className="flex h-full min-h-0 flex-col">
-            <div className="flex items-center justify-between gap-3 border-b border-secondary px-5 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-secondary px-4 py-3">
                 <div className="flex min-w-0 items-center gap-2 text-sm text-tertiary">
                     {onClose && <ButtonUtility icon={ArrowLeft} size="sm" color="tertiary" tooltip="Close issue" onClick={onClose} />}
                     <Link to={`/projects/${issue.projectId}`} className="truncate hover:text-primary">
@@ -199,7 +199,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-5 py-8 lg:flex-row lg:items-start lg:gap-10 lg:px-10">
+                <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-6 lg:flex-row lg:items-start lg:gap-6 lg:px-8">
                     <div className="min-w-0 flex-1">
                         <textarea
                             ref={titleRef}
@@ -532,7 +532,7 @@ function IssueSubIssues({ issue, columns }: { issue: NonNullable<ReturnType<type
     return (
         <section className="border-t border-secondary pt-5">
             <SectionTitle title={`Sub-issues · ${issue.children.length}`} icon={CheckCircle} />
-            <div className="mb-3 flex flex-wrap gap-1.5">
+            <div className="mb-3 flex flex-wrap gap-2">
                 {[...statusCounts.entries()].map(([status, count]) => (
                     <span key={status} className="rounded-full border border-secondary bg-secondary_alt px-2 py-1 text-[11px] text-tertiary">
                         {status} · {count}

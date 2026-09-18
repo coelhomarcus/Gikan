@@ -51,7 +51,7 @@ export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspa
                 }
             />
 
-            <nav aria-label="Project views" className="flex h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-secondary px-3 lg:px-4">
+            <nav aria-label="Project views" className="flex h-9 shrink-0 items-center gap-2 overflow-x-auto border-b border-secondary px-3 lg:px-4">
                 <ProjectViewLink href={overviewPath} active={activeView === "overview"} icon={AppIcons.Overview}>
                     Overview
                 </ProjectViewLink>
@@ -76,7 +76,7 @@ function ProjectViewLink({ href, active, icon: Icon, children }: { href: string;
         <Button
             href={href}
             color={active ? "secondary" : "tertiary"}
-            size="xs"
+            size="sm"
             iconLeading={Icon}
             aria-current={active ? "page" : undefined}
             className="shrink-0"

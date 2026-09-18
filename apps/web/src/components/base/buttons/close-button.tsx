@@ -2,12 +2,13 @@ import type { ButtonHTMLAttributes } from "react";
 import { Button as BaseButton } from "@base-ui/react/button";
 import { AppIcons } from "@/components/foundations/icons";
 import { cx } from "@/utils/cx";
+import { controlScale } from "@/components/base/control-scale";
 
 const sizes = {
-    xs: { root: "size-7", icon: "size-4" },
-    sm: { root: "size-9", icon: "size-5" },
-    md: { root: "size-10", icon: "size-5" },
-    lg: { root: "size-11", icon: "size-6" },
+    xs: { root: controlScale.iconButton.xs, icon: "size-4" },
+    sm: { root: controlScale.iconButton.sm, icon: "size-4" },
+    md: { root: controlScale.iconButton.md, icon: "size-4" },
+    lg: { root: controlScale.iconButton.lg, icon: "size-4" },
 };
 
 const themes = {
@@ -29,7 +30,7 @@ export const CloseButton = ({ label, className, size = "sm", theme = "light", on
             onClick={onPress || otherProps.onClick}
             aria-label={label || "Close"}
             className={cx(
-                    "flex cursor-pointer items-center justify-center rounded-lg p-2 transition duration-100 ease-linear focus:outline-hidden",
+                    "flex cursor-pointer items-center justify-center rounded-md transition duration-100 ease-linear focus:outline-hidden",
                     sizes[size].root,
                     themes[theme],
                     className,

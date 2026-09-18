@@ -217,7 +217,7 @@ export const ProjectIssuesPage = () => {
         <div className="flex h-full min-h-0 flex-col bg-primary">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="issues" />
             <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-5 lg:px-8">
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-6">
                     <div className="flex flex-wrap items-end justify-between gap-3">
                         <div>
                             <p className="font-mono text-xs text-fg-brand-primary">{project?.issueKey ?? "Project"}</p>
@@ -330,7 +330,7 @@ export const ProjectIssuesPage = () => {
                     </div>
 
                     {activeFilterCount > 0 && (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-2">
                             {priority && <FilterChip label={`Priority: ${capitalize(priority)}`} onClear={() => updateQuery("priority", "")} />}
                             {status && <FilterChip label={`Status: ${columnById.get(status)?.name ?? "Selected"}`} onClear={() => updateQuery("status", "")} />}
                             {assignee && <FilterChip label={`Assignee: ${memberById.get(assignee)?.name ?? "Selected"}`} onClear={() => updateQuery("assignee", "")} />}
@@ -430,7 +430,7 @@ function ToolbarButton({ active, icon: Icon, children, ...props }: { active?: bo
     return (
         <button
             type="button"
-            className={`inline-flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-xs font-medium transition-colors ${active ? "border-brand/60 bg-secondary_alt text-primary" : "border-secondary text-secondary hover:bg-primary_hover"}`}
+            className={`inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors ${active ? "border-brand/60 bg-secondary_alt text-primary" : "border-secondary text-secondary hover:bg-primary_hover"}`}
             {...props}
         >
             <Icon aria-hidden="true" className="size-3.5" />
@@ -498,7 +498,7 @@ function IssueRow({
             data-issue-identifier={issue.identifier}
             data-issue-title={issue.title}
             onFocus={onSelect}
-            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2.5 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-1.5 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
+            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-2 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
                 selected ? "bg-secondary" : ""
             }`}
         >

@@ -31,11 +31,11 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
             <Modal className="max-w-5xl">
                 <Dialog>
                     <div className="flex max-h-[min(88vh,760px)] w-full min-w-0 flex-col overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="flex shrink-0 items-start justify-between gap-4 p-5 pb-0 sm:p-6 sm:pb-0">
+                        <div className="flex shrink-0 items-start justify-between gap-4 p-6 pb-0">
                             <h2 className="text-lg font-semibold text-primary">{project ? `${project.name} · Settings` : "Project settings"}</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
-                        <div className="flex min-h-0 min-w-0 flex-1 p-5 pt-4 sm:p-6 sm:pt-5">
+                        <div className="flex min-h-0 min-w-0 flex-1 p-6 pt-4">
                             <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(String(key))} className="min-h-0 min-w-0 flex-1 md:flex-row">
                                 <Select
                                     className="mb-4 md:hidden"

@@ -67,7 +67,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
 
     return (
         <div className="flex h-full max-h-full w-80 shrink-0 flex-col rounded-lg bg-secondary">
-            <div className="flex items-center justify-between gap-2 px-3 py-2.5">
+            <div className="flex h-10 items-center justify-between gap-2 px-3">
                 {isEditingName ? (
                     <Input
                         size="sm"

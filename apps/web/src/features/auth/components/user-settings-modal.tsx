@@ -59,7 +59,7 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                             <h2 className="text-lg font-semibold text-primary">Settings</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
-                        <form className="flex flex-col gap-5" noValidate onSubmit={handleSubmit((data) => mutation.mutate(data))}>
+                        <form className="flex flex-col gap-6" noValidate onSubmit={handleSubmit((data) => mutation.mutate(data))}>
                             <div className="flex items-center gap-4">
                                 <Avatar src={previewUrl || undefined} initials={initialsOf(user.name)} size="xl" />
                                 <div className="flex-1">

@@ -73,11 +73,11 @@ export const ComboBox = ({
                     onValueChange?.(nextValue);
                 }}
             >
-                <div className={cx("flex min-w-0 flex-col gap-1.5", className)}>
+                <div className={cx("flex min-w-0 flex-col gap-2", className)}>
                     {label && <Label isRequired={isRequired} isInvalid={isInvalid} tooltip={tooltip}>{label}</Label>}
                     <BaseCombobox.InputGroup
                     className={cx(
-                        "relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset",
+                        "relative flex w-full items-center gap-2 rounded-md bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset",
                         "focus-within:ring-2 focus-within:ring-brand",
                         "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
                         sizes[size].root,
@@ -93,9 +93,9 @@ export const ComboBox = ({
                     </BaseCombobox.InputGroup>
                     <BaseCombobox.Portal>
                     <BaseCombobox.Positioner className="z-50 outline-none" sideOffset={4}>
-                        <BaseCombobox.Popup className={cx("min-w-(--anchor-width) overflow-hidden rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none", popoverClassName)}>
+                        <BaseCombobox.Popup className={cx("min-w-(--anchor-width) overflow-hidden rounded-md bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none", popoverClassName)}>
                             <BaseCombobox.List className="max-h-72 overflow-y-auto outline-none">{renderedItems}</BaseCombobox.List>
-                            <BaseCombobox.Empty className="px-3 py-6 text-center text-sm text-tertiary">No results found.</BaseCombobox.Empty>
+                            <BaseCombobox.Empty className="px-3 py-4 text-center text-sm text-tertiary">No results found.</BaseCombobox.Empty>
                         </BaseCombobox.Popup>
                     </BaseCombobox.Positioner>
                     </BaseCombobox.Portal>

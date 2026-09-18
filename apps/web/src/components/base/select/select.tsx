@@ -31,7 +31,7 @@ export interface SelectProps extends RefAttributes<HTMLDivElement>, CommonProps 
 }
 
 const SelectValue = ({ icon, size, placeholder, items }: { icon?: FC | ReactNode; size: "sm" | "md" | "lg"; placeholder?: string; items: SelectItemType[] }) => (
-    <BaseSelect.Value className={cx("flex min-w-0 flex-1 items-center truncate text-left", sizes[size].root)} placeholder={placeholder}>
+    <BaseSelect.Value className={cx("flex min-w-0 flex-1 items-center gap-2 truncate text-left", "*:data-icon:size-4", sizes[size].text)} placeholder={placeholder}>
         {(value) => {
             const selected = value as SelectItemType | string | number | null;
             const selectedItem = (typeof selected === "object" && selected ? selected : items.find((item) => item.id === selected)) ?? null;
@@ -93,7 +93,7 @@ const Select = ({
                 }}
                 aria-label={ariaLabel}
             >
-                <div className={cx("flex flex-col gap-1.5", className)} data-invalid={isInvalid || undefined}>
+                <div className={cx("flex flex-col gap-2", className)} data-invalid={isInvalid || undefined}>
                     {label && (
                         <Label isRequired={hideRequiredIndicator ? false : isRequired} isInvalid={isInvalid} tooltip={tooltip}>
                             {label}
@@ -101,7 +101,7 @@ const Select = ({
                     )}
                     <BaseSelect.Trigger
                         className={cx(
-                            "relative flex w-full cursor-pointer items-center rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
+                            "relative flex w-full cursor-pointer items-center rounded-md bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
                             "focus-visible:ring-2 focus-visible:ring-brand",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                             sizes[size].root,
@@ -117,7 +117,7 @@ const Select = ({
                         <BaseSelect.Positioner className="z-50 outline-none" sideOffset={4}>
                             <BaseSelect.Popup
                                 className={cx(
-                                    "min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none",
+                                    "min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-md bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none",
                                     "data-[side=bottom]:animate-in data-[side=bottom]:fade-in data-[side=bottom]:slide-in-from-top-1",
                                     "data-[side=top]:animate-in data-[side=top]:fade-in data-[side=top]:slide-in-from-bottom-1",
                                     popoverClassName,

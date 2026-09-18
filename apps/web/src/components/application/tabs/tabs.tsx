@@ -9,8 +9,8 @@ type Orientation = "horizontal" | "vertical";
 type TabType = "button-brand" | "button-gray" | "button-border" | "button-minimal" | "underline" | "line";
 
 const sizes = {
-    sm: { base: "text-sm font-semibold gap-1 *:data-icon:size-4", button: "py-2 px-2.5", underline: "px-0.5 pb-2.5 pt-0", line: "pl-2.5 pr-3 py-0.5" },
-    md: { base: "text-md font-semibold gap-1.5 *:data-icon:size-5", button: "py-2.5 px-2.5", underline: "px-0.5 pb-2.5 pt-0", line: "pr-3.5 pl-3 py-1" },
+    sm: { base: "h-8 gap-2 text-sm font-semibold *:data-icon:size-4", button: "px-3", underline: "h-9 px-3", line: "h-8 px-3" },
+    md: { base: "h-9 gap-2 text-md font-semibold *:data-icon:size-4", button: "px-3", underline: "h-10 px-3", line: "h-9 px-3" },
 };
 
 const tabStyle = (type: TabType, active: boolean) => cx(
@@ -39,7 +39,7 @@ let TabConfigContext = (() => ({ size: "sm" as "sm" | "md", type: "button-brand"
 export const TabList = ({ size = "sm", type = "button-brand", orientation = "horizontal", fullWidth, items, children, className, ...props }: TabListProps) => {
     TabConfigContext = { size, type, fullWidth: Boolean(fullWidth), orientation };
     return (
-        <BaseTabs.List {...props} className={(state) => cx("group flex", orientation === "vertical" && "w-max flex-col", type === "button-border" && "gap-1 rounded-[10px] bg-secondary_alt p-1 ring-1 ring-secondary ring-inset", type === "button-minimal" && "gap-0.5 rounded-lg bg-secondary_alt ring-1 ring-secondary ring-inset", type === "underline" && "relative gap-3 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary", fullWidth && "w-full", typeof className === "function" ? className(state) : className)}>
+        <BaseTabs.List {...props} className={(state) => cx("group flex", orientation === "vertical" && "w-max flex-col", type === "button-border" && "gap-1 rounded-lg bg-secondary_alt p-1 ring-1 ring-secondary ring-inset", type === "button-minimal" && "gap-1 rounded-lg bg-secondary_alt ring-1 ring-secondary ring-inset", type === "underline" && "relative gap-4 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary", fullWidth && "w-full", typeof className === "function" ? className(state) : className)}>
             {children ?? items?.map((item) => <Tab key={item.id} value={item.id} label={item.label ?? item.children}>{item.children ?? item.label}</Tab>)}
         </BaseTabs.List>
     );
@@ -63,8 +63,8 @@ export const Tab = ({ id, value, label, children, badge, icon: Icon, className, 
     return (
         <BaseTabs.Tab {...props} value={value ?? id} className={(state) => cx("z-10 flex h-max cursor-pointer items-center justify-center gap-2 rounded-md whitespace-nowrap text-quaternary transition duration-100 ease-linear", fullWidth && "w-full flex-1", sizes[size].base, type === "underline" ? sizes[size].underline : type === "line" ? sizes[size].line : sizes[size].button, tabStyle(type, state.active), typeof className === "function" ? className(state) : className)}>
             {isValidElement(Icon) && Icon}
-            {isReactComponent(Icon) && <Icon data-icon className="transition-inherit-all" />}
-            <span className={cx("flex items-center gap-1.5", type !== "line" && "px-0.5")}>{children || label}{badge !== undefined && <Badge size="sm" type={type === "underline" || type === "line" || type === "button-brand" ? "pill-color" : "modern"} color={type === "underline" || type === "line" || type === "button-brand" ? "brand" : "gray"}>{badge}</Badge>}</span>
+            {isReactComponent(Icon) && <Icon data-icon className="size-4 transition-inherit-all" />}
+            <span className={cx("flex items-center gap-2", type !== "line" && "px-0.5")}>{children || label}{badge !== undefined && <Badge size="sm" type={type === "underline" || type === "line" || type === "button-brand" ? "pill-color" : "modern"} color={type === "underline" || type === "line" || type === "button-brand" ? "brand" : "gray"}>{badge}</Badge>}</span>
         </BaseTabs.Tab>
     );
 };

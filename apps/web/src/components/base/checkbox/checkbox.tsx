@@ -50,7 +50,7 @@ interface CheckboxProps extends Omit<ComponentProps<typeof BaseCheckbox.Root>, "
 }
 
 export const Checkbox = ({ label, hint, size = "sm", className, isSelected, defaultSelected, isDisabled, isIndeterminate, isInvalid, isFocusVisible, onChange, ref, ...props }: CheckboxProps) => {
-    const sizes = size === "md" ? { root: "gap-3", text: "text-md", hint: "text-md" } : { root: "gap-2", text: "text-sm", hint: "text-sm" };
+    const sizes = size === "md" ? { root: "gap-2", text: "text-md", hint: "text-md" } : { root: "gap-2", text: "text-sm", hint: "text-sm" };
 
     return (
         <BaseCheckbox.Root
@@ -66,7 +66,7 @@ export const Checkbox = ({ label, hint, size = "sm", className, isSelected, defa
         >
             <CheckboxBase size={size} isSelected={isSelected} isIndeterminate={isIndeterminate} isDisabled={isDisabled} isFocusVisible={isFocusVisible} className={label || hint ? "mt-0.5" : ""} />
             {(label || hint) && (
-                <span className="inline-flex flex-col gap-0.5">
+                <span className="inline-flex flex-col gap-1">
                     {label && <span className={cx("text-secondary select-none", sizes.text)}>{label}</span>}
                     {hint && <span className={cx("text-tertiary", sizes.hint)}>{hint}</span>}
                 </span>

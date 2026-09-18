@@ -15,7 +15,7 @@ const baseClasses: Record<Theme, { root?: string; addon?: string; icon?: string 
         addon: "rounded-full ring-1 ring-inset",
     },
     modern: {
-        root: "rounded-[10px] bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary hover:bg-secondary",
+        root: "rounded-lg bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary hover:bg-secondary",
         addon: "flex items-center rounded-md bg-primary shadow-xs ring-1 ring-inset ring-primary",
         icon: "text-utility-neutral-500",
     },
@@ -34,7 +34,7 @@ const getSizeClasses = (
         },
         lg: {
             root: cx("py-1 pr-2 pl-1 text-sm font-medium", !text && !icon && "pr-1"),
-            addon: cx("px-2.5 py-0.5", theme === "modern" && "gap-1.5 px-2", text && "mr-2"),
+            addon: cx("px-2.5 py-0.5", theme === "modern" && "gap-2 px-2", text && "mr-2"),
             icon: "ml-1 size-4",
         },
     },

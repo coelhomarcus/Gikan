@@ -7,7 +7,8 @@
         "dev": "vite",
         "build": "tsc -b && vite build",
         "preview": "vite preview",
-        "typecheck": "tsc -b --noEmit"
+        "typecheck": "tsc -b --noEmit",
+        "check:ui-scale": "node scripts/check-ui-scale.mjs"
     },
     "dependencies": {
         "@base-ui/react": "^1.8.0",

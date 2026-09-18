@@ -18,14 +18,14 @@ export const InputPrefix = ({ children, ...props }: InputPrefixProps) => (
         className={cx(
             "flex text-tertiary shadow-xs ring-1 ring-border-primary ring-inset",
             // Styles when the prefix is within an `InputGroup`
-            "in-data-input-wrapper:in-data-leading:-mr-px in-data-input-wrapper:in-data-leading:rounded-l-lg",
-            "in-data-input-wrapper:in-data-trailing:-ml-px in-data-input-wrapper:in-data-trailing:rounded-r-lg",
+            "in-data-input-wrapper:in-data-leading:-mr-px in-data-input-wrapper:in-data-leading:rounded-l-md",
+            "in-data-input-wrapper:in-data-trailing:-ml-px in-data-input-wrapper:in-data-trailing:rounded-r-md",
             // Default size styles
             "px-3 py-2 text-md",
             // Small size styles
             "in-data-input-wrapper:in-data-[input-size=sm]:px-3 in-data-input-wrapper:in-data-[input-size=sm]:py-2 in-data-input-wrapper:in-data-[input-size=sm]:text-sm",
             // Large size styles
-            "in-data-input-wrapper:in-data-[input-size=lg]:py-2.5 in-data-input-wrapper:in-data-[input-size=lg]:pr-3 in-data-input-wrapper:in-data-[input-size=lg]:pl-3.5",
+            "in-data-input-wrapper:in-data-[input-size=lg]:py-2 in-data-input-wrapper:in-data-[input-size=lg]:px-3",
 
             props.className,
         )}
@@ -61,25 +61,22 @@ export const InputGroup = ({ size = "md", prefix, leadingAddon, trailingAddon, l
     const paddings = sortCx({
         sm: {
             input: cx(
-                // Apply padding styles when select element is passed as a child
-                hasLeading && "group-has-[&>select]:pr-9 group-has-[&>select]:pl-2",
-                hasTrailing && (prefix ? "group-has-[&>select]:pr-6 group-has-[&>select]:pl-0" : "group-has-[&>select]:pr-6 group-has-[&>select]:pl-3"),
+                hasLeading && "pr-9 pl-2",
+                hasTrailing && (prefix ? "pr-6 pl-0" : "pr-6 pl-3"),
             ),
             leadingText: "pr-1.5 pl-3",
         },
         md: {
             input: cx(
-                // Apply padding styles when select element is passed as a child
-                hasLeading && "group-has-[&>select]:pr-9 group-has-[&>select]:pl-2.5",
-                hasTrailing && (prefix ? "group-has-[&>select]:pr-6 group-has-[&>select]:pl-0" : "group-has-[&>select]:pr-6 group-has-[&>select]:pl-3"),
+                hasLeading && "pr-9 pl-2.5",
+                hasTrailing && (prefix ? "pr-6 pl-0" : "pr-6 pl-3"),
             ),
             leadingText: "pr-2 pl-3",
         },
         lg: {
             input: cx(
-                // Apply padding styles when select element is passed as a child
-                hasLeading && "group-has-[&>select]:pr-9.5 group-has-[&>select]:pl-3",
-                hasTrailing && (prefix ? "group-has-[&>select]:pr-6 group-has-[&>select]:pl-0" : "group-has-[&>select]:pr-6 group-has-[&>select]:pl-3"),
+                hasLeading && "pr-9 pl-3",
+                hasTrailing && (prefix ? "pr-6 pl-0" : "pr-6 pl-3"),
             ),
             leadingText: "pr-2 pl-3.5",
         },
@@ -90,14 +87,13 @@ export const InputGroup = ({ size = "md", prefix, leadingAddon, trailingAddon, l
             size={size}
             aria-label={label || undefined}
             inputClassName={cx(paddings[size].input)}
-            tooltipClassName={cx(hasTrailing && !hasLeading && "group-has-[&>select]:right-0")}
+            tooltipClassName={cx(hasTrailing && !hasLeading && "right-0")}
             wrapperClassName={cx(
                 "z-10",
                 // Apply styles based on the presence of leading or trailing elements
                 hasLeading && "rounded-l-none",
                 hasTrailing && "rounded-r-none",
-                // When select element is passed as a child
-                "group-has-[&>select]:bg-transparent group-has-[&>select]:shadow-none group-has-[&>select]:ring-0 group-has-[&>select]:focus-within:ring-0",
+                "bg-transparent",
             )}
             {...props}
         >
@@ -109,13 +105,12 @@ export const InputGroup = ({ size = "md", prefix, leadingAddon, trailingAddon, l
                         // Used to apply styles based on the size of the input group within children
                         data-input-size={size}
                         className={cx(
-                            "group relative flex h-max w-full flex-row justify-center rounded-lg bg-primary transition-all duration-100 ease-linear",
+                            "group relative flex h-max w-full flex-row justify-center rounded-md bg-primary transition-all duration-100 ease-linear",
 
-                            // Only apply focus ring when child is select and input is focused
-                            "has-[&>select]:shadow-xs has-[&>select]:ring-1 has-[&>select]:ring-border-primary has-[&>select]:ring-inset has-[&>select]:has-[input:focus]:ring-2 has-[&>select]:has-[input:focus]:ring-border-brand",
+                            "shadow-xs ring-1 ring-border-primary ring-inset focus-within:ring-2 focus-within:ring-border-brand",
 
                             isDisabled && "cursor-not-allowed",
-                            isInvalid && "has-[&>select]:ring-border-error_subtle has-[&>select]:has-[input:focus]:ring-border-error",
+                            isInvalid && "ring-border-error_subtle focus-within:ring-border-error",
                         )}
                     >
                         {leadingAddon && (

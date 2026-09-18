@@ -45,7 +45,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
 
     if (!isProjectOwner) {
         return (
-            <div className="flex w-full flex-col gap-5">
+            <div className="flex w-full flex-col gap-6">
                 <div>
                     <p className="text-sm font-medium text-secondary">Issue key</p>
                     <p className="mt-1.5 font-mono text-sm text-fg-brand-primary">{project.issueKey}</p>
@@ -68,7 +68,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
                             href={project.repositoryUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-brand-secondary hover:underline"
+                            className="mt-2 inline-flex items-center gap-2 text-sm text-brand-secondary hover:underline"
                         >
                             {project.repositoryUrl}
                             <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
@@ -83,7 +83,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
 
     return (
         <form
-            className="flex w-full flex-col gap-5"
+            className="flex w-full flex-col gap-6"
             noValidate
             onSubmit={handleSubmit((data) =>
                 mutation.mutate(data, {

@@ -11,7 +11,7 @@ export const ProjectCard = ({ project }: { project: ProjectSummary }) => {
             to={`/projects/${project.id}`}
             data-project-context="true"
             data-project-id={project.id}
-            className="group flex min-w-0 items-center gap-3 px-3 py-3.5 transition duration-100 ease-linear hover:bg-secondary"
+            className="group flex min-h-16 min-w-0 items-center gap-4 px-3 py-3 transition duration-100 ease-linear hover:bg-secondary"
         >
             <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-brand-primary_alt text-fg-brand-primary">
                 <ProjectIcon icon={project.icon} className="size-4" />

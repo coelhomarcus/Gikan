@@ -136,7 +136,7 @@ function ResultGroup({ label, results, selectedIndex, offset, onOpen }: { label:
                             role="option"
                             aria-selected={isSelected}
                             onClick={() => onOpen(result)}
-                            className={`flex items-center gap-2.5 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover ${isSelected ? "bg-secondary" : ""}`}
+                            className={`flex items-center gap-2 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover ${isSelected ? "bg-secondary" : ""}`}
                         >
                             {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-fg-quaternary" /> : result.type === "command" ? <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-fg-quaternary" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-secondary text-[9px] text-fg-quaternary">#</span>}
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">

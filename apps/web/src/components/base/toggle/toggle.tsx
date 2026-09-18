@@ -23,8 +23,8 @@ interface ToggleProps extends Omit<ComponentProps<typeof BaseSwitch.Root>, "chil
 }
 
 export const Toggle = ({ label, hint, className, size = "sm", slim, isSelected, defaultSelected, isDisabled, onChange, ...props }: ToggleProps) => (
-    <BaseSwitch.Root {...props} checked={isSelected} defaultChecked={defaultSelected} disabled={isDisabled} onCheckedChange={(checked) => onChange?.(checked)} className={cx("flex w-max items-start gap-2", size === "md" && "gap-3", isDisabled && "cursor-not-allowed", className)}>
+    <BaseSwitch.Root {...props} checked={isSelected} defaultChecked={defaultSelected} disabled={isDisabled} onCheckedChange={(checked) => onChange?.(checked)} className={cx("flex w-max items-start gap-2", isDisabled && "cursor-not-allowed", className)}>
         <ToggleBase slim={slim} size={size} isDisabled={isDisabled} isSelected={isSelected} className={slim ? "mt-0.5" : ""} />
-        {(label || hint) && <span className="flex flex-col gap-0.5"><span className={cx("text-secondary select-none", size === "md" ? "text-md" : "text-sm")}>{label}</span>{hint && <span className={cx("text-tertiary", size === "md" ? "text-md" : "text-sm")}>{hint}</span>}</span>}
+        {(label || hint) && <span className="flex flex-col gap-1"><span className={cx("text-secondary select-none", size === "md" ? "text-md" : "text-sm")}>{label}</span>{hint && <span className={cx("text-tertiary", size === "md" ? "text-md" : "text-sm")}>{hint}</span>}</span>}
     </BaseSwitch.Root>
 );

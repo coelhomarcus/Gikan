@@ -6,8 +6,8 @@ export function NotFound() {
     const router = useNavigate();
 
     return (
-        <section className="flex min-h-dvh items-center justify-center bg-primary px-5 py-12 sm:px-8">
-            <div className="w-full max-w-md rounded-2xl border border-secondary bg-secondary_alt/40 p-6 shadow-2xl sm:p-8">
+        <section className="flex min-h-dvh items-center justify-center bg-primary px-4 py-12 sm:px-6">
+            <div className="w-full max-w-md rounded-xl border border-secondary bg-secondary_alt/40 p-6 shadow-2xl sm:p-8">
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-3">
                         <span className="font-mono text-xs uppercase tracking-[0.16em] text-fg-brand-primary">404 · Not found</span>
