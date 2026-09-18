@@ -1,4 +1,5 @@
 import { Outlet } from "react-router";
+import { NetworkStatus } from "@/components/feedback/network-status";
 import { Sidebar } from "./sidebar";
 
 export const AppShell = () => {
@@ -8,6 +9,7 @@ export const AppShell = () => {
             <main className="min-h-0 min-w-0 flex-1 overflow-hidden bg-primary">
                 <Outlet />
             </main>
+            <NetworkStatus />
         </div>
     );
 };
