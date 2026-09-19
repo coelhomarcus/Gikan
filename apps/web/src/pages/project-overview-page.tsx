@@ -1,9 +1,9 @@
 import { ArrowRight, ExternalLink, Gauge, ListChecks } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
+import { Skeleton } from "@/components/base/feedback/skeleton";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { LoadingState } from "@/components/feedback/loading-state";
 import { AppIcons } from "@/components/foundations/icons";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCycles, useIssues } from "@/features/issues/hooks/use-issues";
@@ -13,19 +13,23 @@ import { useProject } from "@/features/projects/hooks/use-project";
 export const ProjectOverviewPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const { data: project, isLoading, isError } = useProject(projectId!);
-    const { data: issues, isLoading: issuesLoading } = useIssues(projectId!);
-    const { data: columns, isLoading: columnsLoading } = useColumns(projectId!);
-    const { data: cycles } = useCycles(projectId!);
+    const { data: issues, isLoading: issuesLoading, isError: issuesError } = useIssues(projectId!);
+    const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId!);
+    const { data: cycles, isLoading: cyclesLoading, isError: cyclesError } = useCycles(projectId!);
     const activeCycle = cycles?.find((cycle) => cycle.status === "active");
     const totalEstimate = (issues ?? []).reduce((total, issue) => total + (issue.estimate ?? 0), 0);
-
-    if (isLoading) return <LoadingState label="Loading project..." className="p-6" />;
-    if (isError || !project) return <ErrorMessage message="Could not load the project." />;
+    const overviewLoading = isLoading || issuesLoading || columnsLoading || cyclesLoading;
+    const overviewError = isError || issuesError || columnsError || cyclesError;
 
     return (
         <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="overview" />
             <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-6 lg:px-8 lg:py-8">
+                {overviewLoading ? (
+                    <OverviewSkeleton />
+                ) : overviewError || !project ? (
+                    <ErrorMessage message="Could not load the project overview." />
+                ) : (
                 <div className="flex flex-col">
                     <header className="flex flex-wrap items-start justify-between gap-6 border-b border-subtle pb-6">
                         <div className="min-w-0">
@@ -86,10 +90,34 @@ export const ProjectOverviewPage = () => {
 
                     {!issuesLoading && issues?.length === 0 && <EmptyState title="No issues yet" description="Create an issue from the Issues view to start tracking work in this project." />}
                 </div>
+                )}
             </main>
         </div>
     );
 };
+
+function OverviewSkeleton() {
+    return (
+        <div className="flex flex-col" role="status" aria-label="Loading project overview" aria-live="polite">
+            <div className="space-y-3 border-b border-subtle pb-6">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-8 w-72 max-w-full" />
+                <Skeleton className="h-4 w-96 max-w-full" />
+            </div>
+            <div className="grid gap-6 border-b border-subtle py-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+                <div className="space-y-4">
+                    <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-4 w-64 max-w-full" /></div>
+                    <div className="space-y-3 rounded-lg border border-subtle p-4"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-full" /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-1"><Skeleton className="h-20 rounded-lg" /><Skeleton className="h-20 rounded-lg" /></div>
+            </div>
+            <section className="space-y-4 py-6">
+                <div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-4 w-72 max-w-full" /></div>
+                <div className="space-y-3 rounded-lg border border-subtle p-4"><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /><Skeleton className="h-8 w-full" /></div>
+            </section>
+        </div>
+    );
+}
 
 function Fact({ icon: Icon, label, value }: { icon: typeof Gauge; label: string; value: string }) {
     return (

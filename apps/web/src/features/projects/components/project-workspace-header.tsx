@@ -4,6 +4,7 @@ import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
 import { Topbar } from "@/components/layout/topbar";
 import { useProject } from "@/features/projects/hooks/use-project";
+import { useProjects } from "@/features/projects/hooks/use-projects";
 import { ProjectIcon } from "./project-icon";
 
 export function ProjectWorkspaceHeader({
@@ -15,7 +16,9 @@ export function ProjectWorkspaceHeader({
     actions?: ReactNode;
     activeView: "overview" | "issues" | "board" | "documents" | "cycles" | "settings";
 }) {
-    const { data: project } = useProject(projectId);
+    const { data: projectData } = useProject(projectId);
+    const { data: projects } = useProjects();
+    const project = projectData ?? projects?.find((candidate) => candidate.id === projectId);
     const location = useLocation();
     const issues = activeView === "issues" || activeView === "board";
     const title = issues ? "Issues" : activeView.charAt(0).toUpperCase() + activeView.slice(1);

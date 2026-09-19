@@ -1,5 +1,7 @@
 import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
+import { Skeleton } from "@/components/base/feedback/skeleton";
+import { Sheet } from "@/components/base/sheet/sheet";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { AppShell } from "@/components/layout/app-shell";
 import { AuthLayout } from "@/components/layout/auth-layout";
@@ -31,7 +33,7 @@ export const AppRoutes = () => {
     const backgroundLocation = (location.state as { backgroundLocation?: typeof location } | null)?.backgroundLocation;
 
     return (
-        <Suspense fallback={<LoadingState label="Loading Gikan..." className="h-full p-6" />}>
+        <Suspense fallback={<div className="min-h-dvh bg-canvas" aria-hidden="true" />}>
             <Routes location={backgroundLocation || location}>
                 <Route element={<AuthLayout />}>
                     <Route path="/login" element={<LoginPage />} />
@@ -58,15 +60,51 @@ export const AppRoutes = () => {
                     <Route path="/projects/:projectId/page" element={<Navigate replace to="../documents" />} />
                 </Route>
 
-                {import.meta.env.DEV && <Route path="/__design-system" element={<DesignSystemPage />} />}
-                <Route path="*" element={<NotFound />} />
+                {import.meta.env.DEV && (
+                    <Route
+                        path="/__design-system"
+                        element={
+                            <Suspense fallback={<LoadingState label="Loading design system..." className="p-6" />}>
+                                <DesignSystemPage />
+                            </Suspense>
+                        }
+                    />
+                )}
+                <Route
+                    path="*"
+                    element={
+                        <Suspense fallback={<LoadingState label="Loading page..." className="p-6" />}>
+                            <NotFound />
+                        </Suspense>
+                    }
+                />
             </Routes>
 
             {backgroundLocation && (
-                <Routes>
-                    <Route path="/projects/:projectId/issues/:issueIdentifier" element={<IssueView mode="peek" onClose={() => navigate(-1)} />} />
-                </Routes>
+                <Suspense fallback={<IssuePeekLoadingFallback onClose={() => navigate(-1)} />}>
+                    <Routes>
+                        <Route path="/projects/:projectId/issues/:issueIdentifier" element={<IssueView mode="peek" onClose={() => navigate(-1)} />} />
+                    </Routes>
+                </Suspense>
             )}
         </Suspense>
     );
 };
+
+function IssuePeekLoadingFallback({ onClose }: { onClose: () => void }) {
+    return (
+        <Sheet open onOpenChange={(open) => !open && onClose()} title="Loading issue">
+            <div className="flex h-full min-h-0 flex-col" role="status" aria-label="Loading issue">
+                <div className="flex h-12 shrink-0 items-center border-b border-subtle px-4">
+                    <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="space-y-5 px-8 py-5">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-7 w-4/5" />
+                    <Skeleton className="h-24 w-full" />
+                    <Skeleton className="h-28 w-full" />
+                </div>
+            </div>
+        </Sheet>
+    );
+}

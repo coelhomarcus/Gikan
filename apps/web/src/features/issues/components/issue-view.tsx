@@ -8,11 +8,11 @@ import { IssueAvatar, PriorityIcon, StateIcon } from "@/features/board/component
 import { cx } from "@/utils/cx";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Skeleton } from "@/components/base/feedback/skeleton";
 import { Sheet } from "@/components/base/sheet/sheet";
 import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
 import { Select } from "@/components/base/select/select";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { LoadingState } from "@/components/feedback/loading-state";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
@@ -136,7 +136,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     }, [mode, resolvedIdentifier]);
 
     if (isLoading) {
-        const state = <LoadingState label="Loading issue..." className="p-6" />;
+        const state = <IssueLoadingSkeleton mode={mode} />;
         return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
     }
     if (isError || !issue) {
@@ -857,6 +857,47 @@ function formatDate(value: string) {
 
 function IssuePeekState({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {
     return <Sheet open onOpenChange={(open) => !open && onClose?.()} title="Issue panel"><div className="flex h-full min-h-0 flex-col">{children}</div></Sheet>;
+}
+
+function IssueLoadingSkeleton({ mode }: { mode: "page" | "peek" }) {
+    return (
+        <div
+            className="flex h-full min-h-0 flex-col"
+            role="status"
+            aria-label={mode === "peek" ? "Loading issue" : "Loading issue details"}
+            aria-live="polite"
+        >
+            {mode === "page" && (
+                <div className="flex h-12 shrink-0 items-center border-b border-subtle px-4">
+                    <Skeleton className="h-4 w-52" />
+                </div>
+            )}
+            <div
+                className={
+                    mode === "peek"
+                        ? "issue-peek-body flex-1 space-y-5 overflow-y-auto px-8 py-5"
+                        : "mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 lg:flex-row lg:items-start lg:gap-6 lg:px-8"
+                }
+            >
+                <div className="min-w-0 flex-1 space-y-5">
+                    {mode === "peek" && <Skeleton className="h-3 w-16" />}
+                    <Skeleton className="h-8 w-4/5" />
+                    <Skeleton className="h-24 w-full" />
+                    <div className="space-y-3">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                </div>
+                <div className={mode === "peek" ? "space-y-4" : "w-full shrink-0 space-y-4 lg:w-72"}>
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                    <Skeleton className="h-9 w-full" />
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function errorMessage(reason: unknown, fallback = "Could not save the issue.") {
