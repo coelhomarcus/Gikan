@@ -25,9 +25,9 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
         if (!this.state.hasError) return this.props.children;
 
         return (
-            <main className="flex min-h-dvh items-center justify-center bg-primary px-5 py-12 text-primary sm:px-8">
-                <section className="w-full max-w-md rounded-2xl border border-secondary bg-secondary_alt/40 p-6 shadow-2xl sm:p-8" role="alert">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-error-primary/10 text-fg-error-primary">
+            <main className="flex min-h-dvh items-center justify-center bg-surface-1 px-5 py-12 text-primary sm:px-8">
+                <section className="w-full max-w-md rounded-2xl border border-subtle bg-surface-2/40 p-6 shadow-2xl sm:p-8" role="alert">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-danger-subtle/10 text-danger-primary">
                         <AlertTriangle className="size-5" aria-hidden="true" />
                     </div>
                     <h1 className="mt-5 text-display-xs font-semibold tracking-tight">Something went wrong</h1>

@@ -86,7 +86,7 @@ const withPillTypes = {
         common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset shadow-xs",
         styles: {
             gray: {
-                root: "bg-primary text-secondary ring-primary",
+                root: "bg-surface-1 text-secondary ring-strong",
                 addon: "text-neutral-500",
                 addonButton: "hover:bg-utility-neutral-100 text-utility-neutral-400 hover:text-utility-neutral-500",
             },
@@ -104,7 +104,7 @@ const withBadgeTypes = {
         styles: filledColors,
     },
     [badgeTypes.badgeModern]: {
-        common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset bg-primary text-secondary ring-primary shadow-xs",
+        common: "size-max flex items-center whitespace-nowrap rounded-md ring-1 ring-inset bg-surface-1 text-secondary ring-strong shadow-xs",
         styles: addonOnlyColors,
     },
 };
@@ -365,7 +365,7 @@ export const BadgeWithButton = <T extends BadgeTypes>(props: BadgeWithButtonProp
                 aria-label={buttonLabel}
                 onClick={props.onButtonClick}
                 className={cx(
-                    "flex cursor-pointer items-center justify-center p-0.5 outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2",
+                    "flex cursor-pointer items-center justify-center p-0.5 outline-accent-strong transition duration-100 ease-linear focus-visible:outline-2",
                     colors.styles[color].addonButton,
                     type === "pill-color" ? "rounded-full" : "rounded-[3px]",
                 )}

@@ -199,9 +199,9 @@ export const FileUploadDropZone = ({
             onDragEnd={handleDragOut}
             onDrop={handleDrop}
             className={cx(
-                "relative flex flex-col items-center gap-3 rounded-xl bg-primary px-6 py-4 text-tertiary ring-1 ring-secondary transition duration-100 ease-linear ring-inset",
-                isDraggingOver && "ring-2 ring-brand",
-                isDisabled && "cursor-not-allowed bg-secondary",
+                "relative flex flex-col items-center gap-3 rounded-xl bg-surface-1 px-6 py-4 text-tertiary ring-1 ring-subtle transition duration-100 ease-linear ring-inset",
+                isDraggingOver && "ring-2 ring-accent-strong",
+                isDisabled && "cursor-not-allowed bg-surface-2",
                 className,
             )}
         >
@@ -226,7 +226,7 @@ export const FileUploadDropZone = ({
                     </label>
                     <span className="text-sm max-md:hidden">or drag and drop</span>
                 </div>
-                <p className={cx("text-xs transition duration-100 ease-linear", isInvalid && "text-error-primary")}>
+                <p className={cx("text-xs transition duration-100 ease-linear", isInvalid && "text-danger-primary")}>
                     {hint || "SVG, PNG, JPG or GIF (max. 800x400px)"}
                 </p>
             </div>
@@ -262,7 +262,7 @@ export const FileListItemProgressBar = ({ name, size, progress, failed, type, fi
         <motion.li
             layout="position"
             className={cx(
-                "relative flex gap-3 rounded-xl bg-primary p-4 ring-1 ring-secondary transition-shadow duration-100 ease-linear ring-inset",
+                "relative flex gap-3 rounded-xl bg-surface-1 p-4 ring-1 ring-subtle transition-shadow duration-100 ease-linear ring-inset",
                 failed && "ring-2 ring-error",
                 className,
             )}
@@ -284,11 +284,11 @@ export const FileListItemProgressBar = ({ name, size, progress, failed, type, fi
                                 {isComplete && <CheckCircle className="size-4 stroke-[2.5px] text-fg-success-primary" />}
                                 {isComplete && <p className="text-sm font-medium text-success-primary">Complete</p>}
 
-                                {!isComplete && !failed && <UploadCloud02 className="size-4 stroke-[2.5px] text-fg-quaternary" />}
-                                {!isComplete && !failed && <p className="text-sm font-medium text-quaternary">Uploading...</p>}
+                                {!isComplete && !failed && <UploadCloud02 className="size-4 stroke-[2.5px] text-placeholder" />}
+                                {!isComplete && !failed && <p className="text-sm font-medium text-placeholder">Uploading...</p>}
 
-                                {failed && <XCircle className="size-4 text-fg-error-primary" />}
-                                {failed && <p className="text-sm font-medium text-error-primary">Failed</p>}
+                                {failed && <XCircle className="size-4 text-danger-primary" />}
+                                {failed && <p className="text-sm font-medium text-danger-primary">Failed</p>}
                             </div>
                         </div>
                     </div>
@@ -316,11 +316,11 @@ export const FileListItemProgressFill = ({ name, size, progress, failed, type, f
     const isComplete = progress === 100;
 
     return (
-        <motion.li layout="position" className={cx("relative flex gap-3 overflow-hidden rounded-xl bg-primary p-4", className)}>
+        <motion.li layout="position" className={cx("relative flex gap-3 overflow-hidden rounded-xl bg-surface-1 p-4", className)}>
             {/* Progress fill. */}
             <div
                 style={{ transform: `translateX(-${100 - progress}%)` }}
-                className={cx("absolute inset-0 size-full bg-secondary transition duration-75 ease-linear", isComplete && "opacity-0")}
+                className={cx("absolute inset-0 size-full bg-surface-2 transition duration-75 ease-linear", isComplete && "opacity-0")}
                 role="progressbar"
                 aria-valuenow={progress}
                 aria-valuemin={0}
@@ -329,7 +329,7 @@ export const FileListItemProgressFill = ({ name, size, progress, failed, type, f
             {/* Inner ring. */}
             <div
                 className={cx(
-                    "absolute inset-0 size-full rounded-[inherit] ring-1 ring-secondary transition duration-100 ease-linear ring-inset",
+                    "absolute inset-0 size-full rounded-[inherit] ring-1 ring-subtle transition duration-100 ease-linear ring-inset",
                     failed && "ring-2 ring-error",
                 )}
             />
@@ -349,7 +349,7 @@ export const FileListItemProgressFill = ({ name, size, progress, failed, type, f
                                     <hr className="h-3 w-px rounded-t-full rounded-b-full border-none bg-border-primary" />
                                     <div className="flex items-center gap-1">
                                         {isComplete && <CheckCircle className="size-4 stroke-[2.5px] text-fg-success-primary" />}
-                                        {!isComplete && <UploadCloud02 className="size-4 stroke-[2.5px] text-fg-quaternary" />}
+                                        {!isComplete && <UploadCloud02 className="size-4 stroke-[2.5px] text-placeholder" />}
 
                                         <p className="text-sm text-tertiary">{progress}%</p>
                                     </div>

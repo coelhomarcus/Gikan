@@ -49,12 +49,12 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
             <div className="flex w-full flex-col gap-6">
                 <div>
                     <p className="text-sm font-medium text-secondary">Issue key</p>
-                    <p className="mt-1.5 font-mono text-sm text-fg-brand-primary">{project.issueKey}</p>
+                    <p className="mt-1.5 font-mono text-sm text-accent-primary">{project.issueKey}</p>
                 </div>
                 <div>
                     <p className="text-sm font-medium text-secondary">Name</p>
                     <p className="mt-1.5 flex items-center gap-2 text-sm text-tertiary">
-                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
+                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-placeholder" />
                         {project.name}
                     </p>
                 </div>
@@ -69,7 +69,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
                             href={project.repositoryUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-2 inline-flex items-center gap-2 text-sm text-brand-secondary hover:underline"
+                            className="mt-2 inline-flex items-center gap-2 text-sm text-accent-primary hover:underline"
                         >
                             {project.repositoryUrl}
                             <ExternalLink className="size-3.5 shrink-0" aria-hidden="true" />
@@ -109,7 +109,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
                 control={control}
                 name="icon"
                 render={({ field }) => (
-                    <Suspense fallback={<div className="h-24 animate-pulse rounded-md bg-secondary_alt" aria-label="Loading icon picker" />}>
+                    <Suspense fallback={<div className="h-24 animate-pulse rounded-md bg-surface-2" aria-label="Loading icon picker" />}>
                         <ProjectIconPicker value={field.value} onChange={field.onChange} />
                     </Suspense>
                 )}

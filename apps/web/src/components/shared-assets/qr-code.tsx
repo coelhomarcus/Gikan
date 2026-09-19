@@ -10,7 +10,7 @@ const QRCodeFrameHandle = ({ className, ...props }: HTMLAttributes<HTMLDivElemen
 export const GradientScan = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
     <div
         {...props}
-        className={cx("absolute bottom-0 h-1/2 w-full border-t border-brand bg-brand-solid/10", className)}
+        className={cx("absolute bottom-0 h-1/2 w-full border-t border-accent-strong bg-accent-primary/10", className)}
         style={{
             maskImage: "radial-gradient(52.19% 100% at 50% 0%, #000 0%, rgba(0,0,0,0) 95.31%)",
             WebkitMaskImage: "radial-gradient(52.19% 100% at 50% 0%, #000 0%, rgba(0,0,0,0) 95.31%)",

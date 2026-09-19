@@ -20,9 +20,9 @@ const PaginationItem = ({ value, rounded, isCurrent }: { value: number; rounded?
             isCurrent={isCurrent}
             className={({ isSelected }) =>
                 cx(
-                    "flex size-9 cursor-pointer items-center justify-center p-0 text-sm font-medium text-quaternary outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover hover:text-secondary focus-visible:z-10 focus-visible:bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2",
+                    "flex size-9 cursor-pointer items-center justify-center p-0 text-sm font-medium text-placeholder outline-accent-strong transition duration-100 ease-linear hover:bg-layer-1-hover hover:text-secondary focus-visible:z-10 focus-visible:bg-layer-1-hover focus-visible:outline-2 focus-visible:outline-offset-2",
                     rounded ? "rounded-full" : "rounded-md",
-                    isSelected && "bg-primary_hover text-secondary",
+                    isSelected && "bg-layer-1-hover text-secondary",
                 )
             }
         >
@@ -53,7 +53,7 @@ const MobilePagination = ({ page = 1, total = 10, className, onPageChange }: Mob
                 onClick={() => onPageChange?.(Math.max(0, page - 1))}
             />
 
-            <span className="text-sm text-fg-secondary">
+            <span className="text-sm text-secondary">
                 Page <span className="font-medium">{page}</span> of <span className="font-medium">{total}</span>
             </span>
 
@@ -76,7 +76,7 @@ export const PaginationPageDefault = ({ rounded, page = 1, total = 10, className
             {...props}
             page={page}
             total={total}
-            className={cx("flex w-full items-center justify-between gap-3 border-t border-secondary pt-4 md:pt-5", className)}
+            className={cx("flex w-full items-center justify-between gap-3 border-t border-subtle pt-4 md:pt-5", className)}
         >
             <div className="hidden flex-1 justify-start md:flex">
                 <Pagination.PrevTrigger asChild>
@@ -107,7 +107,7 @@ export const PaginationPageDefault = ({ rounded, page = 1, total = 10, className
                             )}
                         </div>
 
-                        <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
+                        <div className="flex justify-center text-sm whitespace-pre text-secondary md:hidden">
                             Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
                         </div>
                     </>
@@ -138,7 +138,7 @@ export const PaginationPageMinimalCenter = ({ rounded, page = 1, total = 10, cla
             {...props}
             page={page}
             total={total}
-            className={cx("flex w-full items-center justify-between gap-3 border-t border-secondary pt-4 md:pt-5", className)}
+            className={cx("flex w-full items-center justify-between gap-3 border-t border-subtle pt-4 md:pt-5", className)}
         >
             <div className="flex flex-1 justify-start">
                 <Pagination.PrevTrigger asChild>
@@ -163,7 +163,7 @@ export const PaginationPageMinimalCenter = ({ rounded, page = 1, total = 10, cla
                             )}
                         </div>
 
-                        <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
+                        <div className="flex justify-center text-sm whitespace-pre text-secondary md:hidden">
                             Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
                         </div>
                     </>
@@ -189,7 +189,7 @@ export const PaginationCardDefault = ({ rounded, page = 1, total = 10, ...props 
             {...props}
             page={page}
             total={total}
-            className="flex w-full items-center justify-between gap-3 border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4"
+            className="flex w-full items-center justify-between gap-3 border-t border-subtle px-4 py-3 md:px-6 md:pt-3 md:pb-4"
         >
             <div className="flex flex-1 justify-start">
                 <Pagination.PrevTrigger asChild>
@@ -214,7 +214,7 @@ export const PaginationCardDefault = ({ rounded, page = 1, total = 10, ...props 
                             )}
                         </div>
 
-                        <div className="flex justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
+                        <div className="flex justify-center text-sm whitespace-pre text-secondary md:hidden">
                             Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
                         </div>
                     </>
@@ -259,7 +259,7 @@ export const PaginationCardMinimal = ({
     onPageSizeChange,
 }: PaginationCardMinimalProps) => {
     return (
-        <div className={cx("border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4", className)}>
+        <div className={cx("border-t border-subtle px-4 py-3 md:px-6 md:pt-3 md:pb-4", className)}>
             <MobilePagination page={page} total={total} onPageChange={onPageChange} />
 
             <nav aria-label="Pagination" className={cx("hidden items-center gap-3 md:flex", align === "center" && "justify-between")}>
@@ -276,7 +276,7 @@ export const PaginationCardMinimal = ({
                         align === "left" && "order-last ml-auto flex-row-reverse",
                     )}
                 >
-                    <span className="text-sm font-medium text-fg-secondary">
+                    <span className="text-sm font-medium text-secondary">
                         Page {page} of {total}
                     </span>
                     <Select
@@ -319,7 +319,7 @@ export const PaginationButtonGroup = ({ align = "left", page = 1, total = 10, ..
     return (
         <div
             className={cx(
-                "flex border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4",
+                "flex border-t border-subtle px-4 py-3 md:px-6 md:pt-3 md:pb-4",
                 align === "left" && "justify-start",
                 align === "center" && "justify-center",
                 align === "right" && "justify-end",
@@ -387,14 +387,14 @@ export const PaginationCardAdvanced = ({
     onPageSizeChange,
 }: PaginationCardAdvancedProps) => {
     return (
-        <div className={cx("border-t border-secondary px-4 py-3 md:px-6 md:pt-3 md:pb-4", className)}>
+        <div className={cx("border-t border-subtle px-4 py-3 md:px-6 md:pt-3 md:pb-4", className)}>
             <Pagination.Root
                 page={page}
                 total={total}
                 onPageChange={onPageChange}
                 className={cx("flex items-center gap-3", align === "center" && "justify-between")}
             >
-                <div className="hidden items-center gap-2 text-sm font-medium whitespace-nowrap text-fg-secondary md:flex">
+                <div className="hidden items-center gap-2 text-sm font-medium whitespace-nowrap text-secondary md:flex">
                     Page
                     <InputBase
                         aria-label="Page"
@@ -407,7 +407,7 @@ export const PaginationCardAdvanced = ({
                     of {total}
                 </div>
 
-                <hr className={cx("mx-1 h-4 w-px border-l border-primary max-md:hidden", align === "center" && "hidden")} />
+                <hr className={cx("mx-1 h-4 w-px border-l border-strong max-md:hidden", align === "center" && "hidden")} />
 
                 <div className={cx("hidden items-center gap-2 md:flex", align === "center" && "order-last")}>
                     <span className="text-sm font-medium whitespace-nowrap text-secondary">Rows per page</span>
@@ -454,7 +454,7 @@ export const PaginationCardAdvanced = ({
                                     )}
                                 </div>
 
-                                <div className="flex flex-1 justify-center text-sm whitespace-pre text-fg-secondary md:hidden">
+                                <div className="flex flex-1 justify-center text-sm whitespace-pre text-secondary md:hidden">
                                     Page <span className="font-medium">{currentPage}</span> of <span className="font-medium">{total}</span>
                                 </div>
                             </>

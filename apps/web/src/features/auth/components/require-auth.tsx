@@ -8,7 +8,7 @@ export const RequireAuth = ({ children }: { children: ReactNode }) => {
     const location = useLocation();
 
     if (isLoading) {
-        return <LoadingState label="Loading your session..." className="flex min-h-dvh items-center justify-center bg-primary" />;
+        return <LoadingState label="Loading your session..." className="flex min-h-dvh items-center justify-center bg-surface-1" />;
     }
 
     if (!user) {

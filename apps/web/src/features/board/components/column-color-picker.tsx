@@ -37,7 +37,7 @@ export const ColumnColorPicker = ({ value, onChange, label = "Color" }: ColumnCo
                 <label
                     className={cx(
                         "relative flex size-6 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full outline-offset-2 transition duration-100 ease-linear",
-                        isCustom ? "outline-2 outline-fg-primary" : "ring-1 ring-secondary ring-inset",
+                        isCustom ? "outline-2 outline-fg-primary" : "ring-1 ring-subtle ring-inset",
                     )}
                     style={isCustom ? { backgroundColor: current } : undefined}
                     title="Custom color"

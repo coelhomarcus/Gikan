@@ -1,115 +1,147 @@
-import { useEffect, useState } from "react";
-import { ChevronDown, Plus } from "lucide-react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useLocation, useNavigate } from "react-router";
+import { useState } from "react";
+import { AddOutline, ChevronDownOutline, ChevronRightOutline } from "@makeplane/propel/icons";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
-import { NavItemBase } from "@/components/application/app-navigation/base-components/nav-item";
-import { SidebarNavigationSimple } from "@/components/application/app-navigation/sidebar-navigation/sidebar-simple";
+import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
-import { ProjectIcon } from "@/features/projects/components/project-icon";
-import { ProjectSearchModal } from "@/features/projects/components/project-search-modal";
-import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
+import type { AppIcon } from "@/components/foundations/icons";
 import { useColumns } from "@/features/board/hooks/use-board";
+import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
+import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { useProjects } from "@/features/projects/hooks/use-projects";
-import { SidebarAccount } from "./sidebar-account";
 
-const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPod|iPad/.test(navigator.userAgent);
-const SEARCH_SHORTCUT_LABEL = isMac ? "⌘K" : "Ctrl+K";
-
-export const Sidebar = () => {
+export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const location = useLocation();
     const navigate = useNavigate();
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isProjectsExpanded, setIsProjectsExpanded] = useState(() => typeof window === "undefined" || localStorage.getItem("gikan-projects-expanded") !== "false");
     const { data: projects } = useProjects();
-    const activeProjectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
-    const { data: activeColumns } = useColumns(activeProjectId);
-
-    useEffect(() => {
-        if (activeProjectId) setIsProjectsExpanded(true);
-    }, [activeProjectId]);
-
-    function toggleProjects() {
-        setIsProjectsExpanded((expanded) => {
-            const next = !expanded;
-            localStorage.setItem("gikan-projects-expanded", String(next));
-            return next;
-        });
-    }
-
-    const navSlot = (
-        <ul className="flex flex-col px-3 pt-4">
-            <li className="py-px">
-                <NavItemBase type="link" href="/" icon={AppIcons.Projects} current={location.pathname === "/"}>
-                    Projects
-                </NavItemBase>
-            </li>
-            {(projects ?? []).length > 0 && (
-                <li className="py-0.25">
-                    <button type="button" aria-expanded={isProjectsExpanded} onClick={toggleProjects} className="flex w-full items-center justify-between rounded px-3 pb-1 pt-3 text-left text-[11px] font-medium uppercase tracking-[0.08em] text-tertiary hover:text-secondary">
-                        Your projects
-                        <ChevronDown aria-hidden="true" className={`size-3.5 transition-transform ${isProjectsExpanded ? "" : "-rotate-90"}`} />
-                    </button>
-                    {isProjectsExpanded && <ul className="pb-1">
-                        {(projects ?? []).map((project) => (
-                            <li key={project.id} className="py-0.25">
-                                <NavItemBase
-                                    type="collapsible-child"
-                                    href={`/projects/${project.id}`}
-                                    current={location.pathname === `/projects/${project.id}` || location.pathname.startsWith(`/projects/${project.id}/`)}
-                                    truncate={false}
-                                >
-                                    <span className="flex min-w-0 items-center gap-2">
-                                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-fg-quaternary" />
-                                        <span className="min-w-0 flex-1 truncate">{project.name}</span>
-                                        <span className="font-mono text-[10px] text-tertiary">{project.issueKey}</span>
-                                    </span>
-                                </NavItemBase>
-                            </li>
-                        ))}
-                    </ul>}
-                </li>
-            )}
-            {activeProjectId && activeColumns?.[0] && (
-                <li className="mt-2 px-1">
-                    <Button size="sm" iconLeading={Plus} color="secondary" className="w-full justify-start" onClick={() => setIsCreateOpen(true)}>
-                        New issue
-                    </Button>
-                </li>
-            )}
-        </ul>
-    );
-
-    useHotkeys(
-        "mod+k",
-        (event) => {
-            event.preventDefault();
-            setIsSearchOpen(true);
-        },
-        { enableOnFormTags: true },
-    );
-
+    const projectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
+    const { data: columns } = useColumns(projectId);
+    const [creating, setCreating] = useState(false);
+    const [expanded, setExpanded] = useState(() => localStorage.getItem("gikan-projects-expanded") !== "false");
+    const settings = location.pathname === "/settings/profile";
+    const projectSettings = location.pathname.includes("/settings/");
+    const navClass = "flex min-h-7 items-center gap-2 rounded-md px-2 py-1 text-sm text-secondary hover:bg-layer-transparent-hover";
+    const views: Array<[string, string, AppIcon]> = [
+        ["", "Overview", AppIcons.Overview],
+        ["/issues", "Issues", AppIcons.Issues],
+        ["/cycles", "Cycles", AppIcons.Cycles],
+        ["/documents", "Documents", AppIcons.Documents],
+    ];
     return (
-        <>
-            <SidebarNavigationSimple
-                activeUrl={location.pathname}
-                items={[]}
-                navSlot={navSlot}
-                showAccountCard={false}
-                featureCard={<SidebarAccount />}
-                onSearchClick={() => setIsSearchOpen(true)}
-                searchShortcut={SEARCH_SHORTCUT_LABEL}
-            />
-            {isSearchOpen && <ProjectSearchModal onClose={() => setIsSearchOpen(false)} />}
-            {isCreateOpen && activeColumns?.[0] && (
+        <div className="flex h-full flex-col pt-3">
+            <div className="flex items-center justify-between px-5 pb-3">
+                <span className="text-lg font-medium">{settings ? "Settings" : projectSettings ? "Project settings" : "Projects"}</span>
+                <ButtonUtility icon={AppIcons.Menu} tooltip="Collapse navigation" color="tertiary" onClick={onCollapse} />
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto px-3">
+                {settings ? (
+                    <Link to="/settings/profile" className={`${navClass} bg-layer-1`} aria-current="page">
+                        <AppIcons.General className="size-4" />
+                        Profile
+                    </Link>
+                ) : projectSettings ? (
+                    <>
+                        <Link to={`/projects/${projectId}`} className={`${navClass} mb-4`}>
+                            <AppIcons.Back className="size-4" />
+                            Back to project
+                        </Link>
+                        {[
+                            ["general", "General"],
+                            ["states", "States"],
+                            ["members", "Members"],
+                            ["labels", "Labels"],
+                        ].map(([section, label]) => (
+                            <Link
+                                key={section}
+                                to={`/projects/${projectId}/settings/${section}`}
+                                className={`${navClass} ${location.pathname.endsWith(`/${section}`) ? "bg-layer-1 text-primary" : ""}`}
+                                aria-current={location.pathname.endsWith(`/${section}`) ? "page" : undefined}
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                    </>
+                ) : (
+                    <>
+                        {projectId && columns?.[0] && (
+                            <Button color="secondary" className="mb-3 w-full justify-start" iconLeading={AddOutline} onClick={() => setCreating(true)}>
+                                New issue
+                            </Button>
+                        )}
+                        <Link
+                            to="/"
+                            className={`${navClass} ${location.pathname === "/" ? "bg-layer-1 text-primary" : ""}`}
+                            aria-current={location.pathname === "/" ? "page" : undefined}
+                        >
+                            <AppIcons.Projects className="size-4" />
+                            All projects
+                        </Link>
+                        <button
+                            className="mt-5 mb-1 flex w-full items-center gap-1 px-2 py-1 text-xs font-medium text-tertiary"
+                            aria-expanded={expanded}
+                            onClick={() =>
+                                setExpanded((value) => {
+                                    localStorage.setItem("gikan-projects-expanded", String(!value));
+                                    return !value;
+                                })
+                            }
+                        >
+                            <ChevronDownOutline className={`size-3 transition-transform ${expanded ? "" : "-rotate-90"}`} />
+                            Your projects
+                        </button>
+                        {expanded &&
+                            (projects ?? []).map((project) => (
+                                <div key={project.id} className="mb-1">
+                                    <Link
+                                        to={`/projects/${project.id}`}
+                                        className={`${navClass} font-medium ${projectId === project.id ? "text-primary" : ""}`}
+                                    >
+                                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-tertiary" />
+                                        <span className="truncate">{project.name}</span>
+                                        <ChevronRightOutline className={`ml-auto size-3 shrink-0 ${projectId === project.id ? "rotate-90" : ""}`} />
+                                    </Link>
+                                    {projectId === project.id && (
+                                        <nav aria-label={`${project.name} views`} className="ml-4 border-l border-subtle pl-2">
+                                            {views.map(([suffix, label, Icon]) => {
+                                                const active =
+                                                    suffix === "/issues"
+                                                        ? /\/(issues|board)(\/|$)/.test(location.pathname)
+                                                        : location.pathname === `/projects/${project.id}${suffix}`;
+                                                return (
+                                                    <Link
+                                                        key={label}
+                                                        to={`/projects/${project.id}${suffix}`}
+                                                        className={`${navClass} ${active ? "bg-layer-1 text-primary" : ""}`}
+                                                        aria-current={active ? "page" : undefined}
+                                                    >
+                                                        <Icon className="size-4 shrink-0" />
+                                                        {label}
+                                                    </Link>
+                                                );
+                                            })}
+                                            <Link to={`/projects/${projectId}/settings/general`} className={navClass}>
+                                                <AppIcons.Settings className="size-4" />
+                                                Settings
+                                            </Link>
+                                        </nav>
+                                    )}
+                                </div>
+                            ))}
+                    </>
+                )}
+            </div>
+            <div className="flex h-12 shrink-0 items-center border-t border-subtle px-5 text-xs text-placeholder">Gikan</div>
+            {creating && columns?.[0] && (
                 <IssueQuickCreateModal
-                    projectId={activeProjectId}
-                    columnId={activeColumns[0].id}
-                    onClose={() => setIsCreateOpen(false)}
-                    onCreated={(identifier) => navigate(`/projects/${activeProjectId}/issues/${identifier}`)}
+                    projectId={projectId}
+                    columnId={columns[0].id}
+                    onClose={() => setCreating(false)}
+                    onCreated={(identifier) => {
+                        setCreating(false);
+                        navigate(`/projects/${projectId}/issues/${identifier}`);
+                    }}
                 />
             )}
-        </>
+        </div>
     );
-};
+}

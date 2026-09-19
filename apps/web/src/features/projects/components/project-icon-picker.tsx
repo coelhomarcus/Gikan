@@ -96,8 +96,8 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                                             buttons[Math.max(0, Math.min(buttons.length - 1, index + offset))]?.focus();
                                         }}
                                         className={cx(
-                                            "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-fg-secondary ring-1 ring-secondary transition duration-100 ease-linear ring-inset hover:bg-primary_hover hover:text-fg-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-                                            isSelected && "bg-brand-primary_alt text-fg-brand-primary ring-2 ring-brand hover:text-fg-brand-primary",
+                                            "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-secondary ring-1 ring-subtle transition duration-100 ease-linear ring-inset hover:bg-layer-1-hover hover:text-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong",
+                                            isSelected && "bg-brand-primary_alt text-accent-primary ring-2 ring-accent-strong hover:text-accent-primary",
                                         )}
                                     >
                                         <Icon className="size-4.5" aria-hidden="true" />

@@ -48,7 +48,7 @@ export const RegisterPage = () => {
                 <ControlledInput control={control} name="password" label="Password" type="password" isRequired hint="At least 8 characters" />
                 <ControlledInput control={control} name="specialCode" label="Special code" isRequired />
 
-                {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
+                {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 
                 <Button type="submit" size="lg" isLoading={mutation.isPending}>
                     Create account
@@ -57,7 +57,7 @@ export const RegisterPage = () => {
 
             <p className="text-center text-sm text-tertiary">
                 Already have an account?{" "}
-                <Link to="/login" className="font-semibold text-brand-secondary hover:underline">
+                <Link to="/login" className="font-semibold text-accent-primary hover:underline">
                     Sign in
                 </Link>
             </p>

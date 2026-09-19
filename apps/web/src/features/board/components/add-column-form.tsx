@@ -20,7 +20,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
 
     if (!isAdding) {
         return (
-            <div className="w-80 shrink-0">
+            <div className="w-[350px] shrink-0">
                 <Button color="secondary" size="sm" iconLeading={Plus} onClick={() => setIsAdding(true)} className="w-full justify-start">
                     New column
                 </Button>
@@ -30,7 +30,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
 
     return (
         <form
-            className="flex w-80 shrink-0 flex-col gap-3 rounded-xl bg-secondary p-3"
+            className="flex w-[350px] shrink-0 flex-col gap-2 rounded-md bg-layer-1 p-2"
             onSubmit={(event) => {
                 event.preventDefault();
                 const trimmed = name.trim();

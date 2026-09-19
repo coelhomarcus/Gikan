@@ -55,7 +55,7 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
     return (
         <div className="flex flex-col gap-6">
             {isProjectOwner && (
-                <form className="flex flex-col gap-4 rounded-lg border border-secondary p-4" onSubmit={submit}>
+                <form className="flex flex-col gap-4 rounded-lg border border-subtle p-4" onSubmit={submit}>
                     <div>
                         <h3 className="text-sm font-semibold text-primary">New cycle</h3>
                         <p className="mt-1 text-sm text-tertiary">Plan a focused period of work for this project.</p>
@@ -85,7 +85,7 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
             {isError && <ErrorMessage message="Could not load the project cycles." />}
             {!isLoading && !isError && cycles?.length === 0 && <EmptyState title="No cycles yet" description={isProjectOwner ? "Create a cycle to organize a focused period of work." : "This project does not have any cycles yet."} />}
             {!isLoading && !isError && cycles && cycles.length > 0 && (
-                <div className="divide-y divide-secondary overflow-hidden rounded-lg border border-secondary">
+                <div className="divide-y divide-subtle overflow-hidden rounded-lg border border-subtle">
                     {cycles.map((cycle) => (
                         <CycleRow
                             key={cycle.id}

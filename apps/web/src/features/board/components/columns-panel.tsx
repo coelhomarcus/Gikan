@@ -74,7 +74,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
             <p className="text-sm text-tertiary">Manage the statuses used by this project. Their order matches the board from left to right.</p>
 
             {isProjectOwner && (
-                <form className="flex flex-col gap-3 rounded-lg border border-secondary p-4" onSubmit={createStatus}>
+                <form className="flex flex-col gap-3 rounded-lg border border-subtle p-4" onSubmit={createStatus}>
                     <div>
                         <h3 className="text-sm font-semibold text-primary">New status</h3>
                         <p className="mt-1 text-sm text-tertiary">Add a status without leaving Settings.</p>
@@ -136,12 +136,12 @@ function StatusRow({ column, index, count, isProjectOwner, isPending, onMove, on
     }
 
     return (
-        <li className="flex flex-col gap-3 rounded-xl border border-secondary p-4">
+        <li className="flex flex-col gap-3 rounded-xl border border-subtle p-4">
             <div className="flex items-center justify-between gap-3">
                 {isProjectOwner ? (
                     <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={submitRename}>
                         <span className="shrink-0 text-sm text-tertiary">{index + 1}.</span>
-                        <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Status ${column.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-brand" inputClassName="font-medium" />
+                        <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Status ${column.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-accent-strong" inputClassName="font-medium" />
                         <Button type="submit" size="xs" color="tertiary" isDisabled={isPending || name.trim() === column.name}>Save</Button>
                     </form>
                 ) : (

@@ -102,14 +102,14 @@ export const Avatar = ({
         }
 
         if (initials) {
-            return <span className={cx("text-quaternary", styles[size].initials)}>{initials}</span>;
+            return <span className={cx("text-placeholder", styles[size].initials)}>{initials}</span>;
         }
 
         if (PlaceholderIcon) {
-            return <PlaceholderIcon className={cx("text-fg-quaternary", styles[size].icon)} />;
+            return <PlaceholderIcon className={cx("text-placeholder", styles[size].icon)} />;
         }
 
-        return placeholder || <User className={cx("text-fg-quaternary", styles[size].icon)} />;
+        return placeholder || <User className={cx("text-placeholder", styles[size].icon)} />;
     };
 
     const renderBadgeContent = () => {
@@ -135,7 +135,7 @@ export const Avatar = ({
                 "relative inline-flex shrink-0 rounded-[7px]",
                 rounded && "rounded-full",
                 // Focus styles
-                focusable && "outline-transparent group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-focus-ring",
+                focusable && "outline-transparent group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-accent-strong",
                 border && "ring-1 ring-secondary_alt",
                 border && styles[size].rootWithBorder,
                 styles[size].root,
@@ -144,7 +144,7 @@ export const Avatar = ({
         >
             <div
                 className={cx(
-                    "relative inline-flex size-full shrink-0 items-center justify-center overflow-hidden rounded-md bg-tertiary outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:inset-[0.5px]",
+                    "relative inline-flex size-full shrink-0 items-center justify-center overflow-hidden rounded-md bg-layer-2 outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:inset-[0.5px]",
                     rounded && "rounded-full",
                     canShowImage &&
                         size !== "xs" &&

@@ -22,14 +22,14 @@ export const ProjectsPage = () => {
                 )}
 
                 {projects && projects.length > 0 && (
-                    <div className="overflow-hidden rounded-lg border border-secondary">
-                        <div className="hidden items-center gap-3 border-b border-secondary bg-secondary px-3 py-2 text-xs font-medium text-tertiary sm:flex">
+                    <div className="overflow-hidden rounded-lg border border-subtle">
+                        <div className="hidden items-center gap-3 border-b border-subtle bg-surface-2 px-3 py-2 text-xs font-medium text-tertiary sm:flex">
                             <span className="w-8 shrink-0" />
                             <span className="flex-1">Project</span>
                             <span className="w-28 text-right">Updated</span>
                             <span className="w-4 shrink-0" />
                         </div>
-                        <div className="divide-y divide-secondary">
+                        <div className="divide-y divide-subtle">
                             {projects.map((project) => (
                                 <ProjectCard key={project.id} project={project} />
                             ))}
@@ -42,9 +42,9 @@ export const ProjectsPage = () => {
 };
 
 function ProjectListSkeleton() {
-    return <div className="overflow-hidden rounded-lg border border-secondary" aria-label="Loading projects" role="status">
-        <div className="hidden h-9 border-b border-secondary bg-secondary sm:block" />
-        <div className="divide-y divide-secondary">
+    return <div className="overflow-hidden rounded-lg border border-subtle" aria-label="Loading projects" role="status">
+        <div className="hidden h-9 border-b border-subtle bg-surface-2 sm:block" />
+        <div className="divide-y divide-subtle">
             {["one", "two", "three"].map((key) => <div key={key} className="flex min-h-16 items-center gap-4 px-3 py-3">
                 <Skeleton className="size-8 shrink-0 rounded-md" />
                 <div className="min-w-0 flex-1 space-y-2"><Skeleton className="h-3 w-40" /><Skeleton className="h-3 w-64 max-w-full" /></div>

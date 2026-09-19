@@ -6,10 +6,10 @@ type AlertTone = "error" | "success" | "warning" | "info";
 
 const icons = { error: AlertCircle, success: CheckCircle2, warning: TriangleAlert, info: Info } satisfies Record<AlertTone, typeof AlertCircle>;
 const toneClasses: Record<AlertTone, string> = {
-    error: "border-error_subtle bg-error-primary/10 text-error-primary",
+    error: "border-danger-subtle bg-danger-subtle/10 text-danger-primary",
     success: "border-fg-success-primary/40 bg-success-primary/10 text-success-primary",
     warning: "border-fg-warning-primary/40 bg-warning-primary/10 text-warning-primary",
-    info: "border-secondary bg-secondary_alt text-secondary",
+    info: "border-subtle bg-surface-2 text-secondary",
 };
 
 export const Alert = ({ tone = "info", children, className, ...props }: ComponentProps<"div"> & { tone?: AlertTone; children: ReactNode }) => {

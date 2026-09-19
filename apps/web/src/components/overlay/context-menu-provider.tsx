@@ -107,7 +107,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
         <>
             {children}
             {state && (
-                <div ref={menuRef} role="menu" style={{ left: state.x, top: state.y }} className="fixed z-50 min-w-[220px] rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary">
+                <div ref={menuRef} role="menu" style={{ left: state.x, top: state.y }} className="fixed z-50 min-w-[220px] rounded-lg bg-surface-1 p-1 shadow-lg ring-1 ring-subtle">
                     {state.items.map((item) => (
                         <button
                             key={item.key}
@@ -117,9 +117,9 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                                 item.onSelect();
                                 setState(null);
                             }}
-                            className={cx("flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-secondary transition duration-100 ease-linear hover:bg-primary_hover hover:text-primary", "focus-visible:bg-primary_hover focus-visible:text-primary focus-visible:outline-none")}
+                            className={cx("flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm text-secondary transition duration-100 ease-linear hover:bg-layer-1-hover hover:text-primary", "focus-visible:bg-layer-1-hover focus-visible:text-primary focus-visible:outline-none")}
                         >
-                            <item.icon aria-hidden="true" className="size-4 shrink-0 text-fg-quaternary" />
+                            <item.icon aria-hidden="true" className="size-4 shrink-0 text-placeholder" />
                             {item.label}
                         </button>
                     ))}

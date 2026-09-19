@@ -10,6 +10,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     useEffect(() => {
         const root = document.documentElement;
         root.classList.add("dark-mode");
+        root.dataset.theme = "dark";
         root.style.colorScheme = "dark";
         localStorage.removeItem("ui-theme");
     }, []);

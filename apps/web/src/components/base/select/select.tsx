@@ -1,6 +1,7 @@
 import type { FC, ReactNode, RefAttributes } from "react";
-import { ChevronDown } from "lucide-react";
+import { useId } from "react";
 import { Select as BaseSelect } from "@base-ui/react/select";
+import { ChevronDown } from "lucide-react";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { HintText } from "@/components/base/input/hint-text";
 import { Label } from "@/components/base/input/label";
@@ -30,8 +31,21 @@ export interface SelectProps extends RefAttributes<HTMLDivElement>, CommonProps 
     children: ReactNode | ((item: SelectItemType) => ReactNode);
 }
 
-const SelectValue = ({ icon, size, placeholder, items }: { icon?: FC | ReactNode; size: "sm" | "md" | "lg"; placeholder?: string; items: SelectItemType[] }) => (
-    <BaseSelect.Value className={cx("flex min-w-0 flex-1 items-center gap-2 truncate text-left", "*:data-icon:size-4", sizes[size].text)} placeholder={placeholder}>
+const SelectValue = ({
+    icon,
+    size,
+    placeholder,
+    items,
+}: {
+    icon?: FC | ReactNode;
+    size: "sm" | "md" | "lg";
+    placeholder?: string;
+    items: SelectItemType[];
+}) => (
+    <BaseSelect.Value
+        className={cx("flex min-w-0 flex-1 items-center gap-2 truncate text-left", "*:data-icon:size-4", sizes[size].text)}
+        placeholder={placeholder}
+    >
         {(value) => {
             const selected = value as SelectItemType | string | number | null;
             const selectedItem = (typeof selected === "object" && selected ? selected : items.find((item) => item.id === selected)) ?? null;
@@ -76,6 +90,7 @@ const Select = ({
 }: SelectProps) => {
     const selectedValue = selectedKey !== undefined ? selectedKey : value;
     const initialValue = defaultSelectedKey !== undefined ? defaultSelectedKey : defaultValue;
+    const triggerId = useId();
     const renderedItems = typeof children === "function" ? items.map((item) => children(item)) : children;
 
     return (
@@ -95,21 +110,23 @@ const Select = ({
             >
                 <div className={cx("flex flex-col gap-2", className)} data-invalid={isInvalid || undefined}>
                     {label && (
-                        <Label isRequired={hideRequiredIndicator ? false : isRequired} isInvalid={isInvalid} tooltip={tooltip}>
+                        <Label htmlFor={triggerId} isRequired={hideRequiredIndicator ? false : isRequired} isInvalid={isInvalid} tooltip={tooltip}>
                             {label}
                         </Label>
                     )}
                     <BaseSelect.Trigger
+                        id={triggerId}
+                        aria-label={ariaLabel ?? label}
                         className={cx(
-                            "relative flex w-full cursor-pointer items-center rounded-md bg-primary shadow-xs ring-1 ring-primary outline-hidden transition duration-100 ease-linear ring-inset",
-                            "focus-visible:ring-2 focus-visible:ring-brand",
+                            "shadow-xs relative flex w-full cursor-pointer items-center rounded-md bg-surface-1 ring-1 ring-strong outline-hidden transition duration-100 ease-linear ring-inset",
+                            "focus-visible:ring-2 focus-visible:ring-accent-strong",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                             sizes[size].root,
                         )}
                         aria-invalid={isInvalid || undefined}
                     >
                         <SelectValue icon={icon} size={size} placeholder={placeholder} items={items} />
-                        <BaseSelect.Icon className="ml-auto shrink-0 text-fg-quaternary">
+                        <BaseSelect.Icon className="ml-auto shrink-0 text-placeholder">
                             <ChevronDown aria-hidden="true" className={size === "lg" ? "size-5" : "size-4 stroke-[2.25px]"} />
                         </BaseSelect.Icon>
                     </BaseSelect.Trigger>
@@ -117,7 +134,7 @@ const Select = ({
                         <BaseSelect.Positioner className="z-50 outline-none" sideOffset={4}>
                             <BaseSelect.Popup
                                 className={cx(
-                                    "min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-md bg-primary p-1 shadow-lg ring-1 ring-secondary_alt outline-none",
+                                    "shadow-lg min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-md bg-surface-1 p-1 ring-1 ring-secondary_alt outline-none",
                                     "data-[side=bottom]:animate-in data-[side=bottom]:fade-in data-[side=bottom]:slide-in-from-top-1",
                                     "data-[side=top]:animate-in data-[side=top]:fade-in data-[side=top]:slide-in-from-bottom-1",
                                     popoverClassName,

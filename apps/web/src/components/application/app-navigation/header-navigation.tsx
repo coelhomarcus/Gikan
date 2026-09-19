@@ -122,7 +122,7 @@ export const HeaderNavigationBase = ({
     return (
         <>
             <MobileNavigationHeader>
-                <aside className="flex h-full max-w-full flex-col justify-between overflow-auto bg-primary pt-4">
+                <aside className="flex h-full max-w-full flex-col justify-between overflow-auto bg-surface-1 pt-4">
                     <div className="flex flex-col gap-5 px-4">
                         <UntitledLogo className="h-6" />
 
@@ -160,14 +160,14 @@ export const HeaderNavigationBase = ({
 
             <header className="max-lg:hidden">
                 <section
-                    className={cx("flex h-16 w-full items-center justify-center bg-primary", (!hideBorder || showSecondaryNav) && "border-b border-secondary")}
+                    className={cx("flex h-16 w-full items-center justify-center bg-surface-1", (!hideBorder || showSecondaryNav) && "border-b border-subtle")}
                 >
                     <div className={cx("flex w-full max-w-container items-center pr-3 pl-4 md:px-8", centered && "gap-8")}>
                         <div className={cx("flex items-center", centered ? "flex-1" : "mr-4")}>
                             <a
                                 aria-label="Go to homepage"
                                 href="/"
-                                className="rounded-xs outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
+                                className="rounded-xs outline-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2"
                             >
                                 <UntitledLogo className="h-6" />
                             </a>
@@ -192,7 +192,7 @@ export const HeaderNavigationBase = ({
                 </section>
 
                 {showSecondaryNav && (
-                    <section className={cx("flex w-full items-center justify-center bg-primary", !hideBorder && "border-b border-secondary")}>
+                    <section className={cx("flex w-full items-center justify-center bg-surface-1", !hideBorder && "border-b border-subtle")}>
                         {secondaryType === "tabs" ? (
                             <div className="w-full max-w-container px-8 pt-3">
                                 <Tabs selectedKey={activeTabKey}>

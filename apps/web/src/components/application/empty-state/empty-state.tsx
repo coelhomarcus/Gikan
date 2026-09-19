@@ -158,7 +158,7 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
             {RING_RADII.map((radius) => (
                 <div
                     key={radius}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-secondary"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-subtle"
                     style={{ width: radius * 2, height: radius * 2 }}
                 />
             ))}
@@ -172,7 +172,7 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
                 return (
                     <div
                         key={i}
-                        className={cx("absolute top-1/2 left-1/2 rounded-full bg-primary p-px shadow-xs ring-[0.5px] ring-black/10", slot.size)}
+                        className={cx("absolute top-1/2 left-1/2 rounded-full bg-surface-1 p-px shadow-xs ring-[0.5px] ring-black/10", slot.size)}
                         style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
                     >
                         <img src={avatar.src} alt="" className="size-full rounded-full object-cover outline-[0.5px] -outline-offset-[0.5px] outline-black/16" />
@@ -261,7 +261,7 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
     const row2 = [...row2Base, ...row2Base, ...row2Base];
 
     const renderGridAvatar = (avatar: { src: string; alt?: string }, key: number) => (
-        <div key={key} className={cx("shrink-0 bg-primary p-px shadow-xs ring-[0.75px] ring-black/10", config.avatar)}>
+        <div key={key} className={cx("shrink-0 bg-surface-1 p-px shadow-xs ring-[0.75px] ring-black/10", config.avatar)}>
             <div
                 className={cx(
                     "relative size-full overflow-hidden outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",

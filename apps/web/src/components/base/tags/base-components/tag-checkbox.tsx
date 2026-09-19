@@ -12,14 +12,14 @@ export const TagCheckbox = ({ className, isFocused, isSelected, isDisabled, size
     return (
         <div
             className={cx(
-                "flex cursor-pointer appearance-none items-center justify-center rounded bg-primary ring-1 ring-primary ring-inset",
+                "flex cursor-pointer appearance-none items-center justify-center rounded bg-surface-1 ring-1 ring-strong ring-inset",
                 size === "sm" && "size-3.5",
                 size === "md" && "size-4",
                 size === "lg" && "size-4.5",
-                isSelected && "bg-brand-solid ring-brand-solid",
+                isSelected && "bg-accent-primary ring-brand-solid",
                 isDisabled && "cursor-not-allowed opacity-50",
-                isDisabled && !isSelected && "bg-tertiary",
-                isFocused && "outline-2 outline-offset-2 outline-focus-ring",
+                isDisabled && !isSelected && "bg-layer-2",
+                isFocused && "outline-2 outline-offset-2 outline-accent-strong",
                 className,
             )}
         >

@@ -45,10 +45,10 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()} isDismissable>
             <Modal className="max-w-md">
                 <Dialog>
-                    <div className="w-full rounded-xl bg-primary p-6 shadow-xl ring-1 ring-secondary">
+                    <div className="w-full rounded-xl bg-surface-1 p-6 shadow-xl ring-1 ring-subtle">
                         <div className="mb-4 flex items-start justify-between gap-4">
                             <div>
-                                <div className="flex items-center gap-2 text-fg-brand-primary">
+                                <div className="flex items-center gap-2 text-accent-primary">
                                     <FilePlus2 className="size-4" aria-hidden="true" />
                                     <span className="text-xs font-medium uppercase tracking-wide">New issue</span>
                                 </div>
@@ -61,7 +61,7 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
                         <form className="flex flex-col gap-4" onSubmit={submit}>
                             <Input autoFocus label="Title" placeholder="Describe the work" value={title} onChange={setTitle} isRequired />
                             {error && (
-                                <p role="alert" className="flex items-center gap-2 text-sm text-error-primary">
+                                <p role="alert" className="flex items-center gap-2 text-sm text-danger-primary">
                                     <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
                                     {error}
                                 </p>

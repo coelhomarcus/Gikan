@@ -15,8 +15,8 @@ const baseClasses: Record<Theme, { root?: string; addon?: string; icon?: string 
         addon: "rounded-full ring-1 ring-inset",
     },
     modern: {
-        root: "rounded-lg bg-primary text-secondary shadow-xs ring-1 ring-inset ring-primary hover:bg-secondary",
-        addon: "flex items-center rounded-md bg-primary shadow-xs ring-1 ring-inset ring-primary",
+        root: "rounded-lg bg-surface-1 text-secondary shadow-xs ring-1 ring-inset ring-strong hover:bg-surface-2",
+        addon: "flex items-center rounded-md bg-surface-1 shadow-xs ring-1 ring-inset ring-strong",
         icon: "text-utility-neutral-500",
     },
 };
@@ -58,27 +58,27 @@ const colorClasses: Record<Theme, Record<Color, { root?: string; addon?: string;
     light: {
         brand: {
             root: "bg-utility-brand-50 text-utility-brand-700 ring-utility-brand-200 hover:bg-utility-brand-100",
-            addon: "bg-primary text-current ring-utility-brand-200",
+            addon: "bg-surface-1 text-current ring-utility-brand-200",
             icon: "text-utility-brand-500",
         },
         gray: {
             root: "bg-utility-neutral-50 text-utility-neutral-700 ring-utility-neutral-200 hover:bg-utility-neutral-100",
-            addon: "bg-primary text-current ring-utility-neutral-200",
+            addon: "bg-surface-1 text-current ring-utility-neutral-200",
             icon: "text-utility-neutral-500",
         },
         error: {
             root: "bg-utility-red-50 text-utility-red-700 ring-utility-red-200 hover:bg-utility-red-100",
-            addon: "bg-primary text-current ring-utility-red-200",
+            addon: "bg-surface-1 text-current ring-utility-red-200",
             icon: "text-utility-red-500",
         },
         warning: {
             root: "bg-utility-yellow-50 text-utility-yellow-700 ring-utility-yellow-200 hover:bg-utility-yellow-100",
-            addon: "bg-primary text-current ring-utility-yellow-200",
+            addon: "bg-surface-1 text-current ring-utility-yellow-200",
             icon: "text-utility-yellow-500",
         },
         success: {
             root: "bg-utility-green-50 text-utility-green-700 ring-utility-green-200 hover:bg-utility-green-100",
-            addon: "bg-primary text-current ring-utility-green-200",
+            addon: "bg-surface-1 text-current ring-utility-green-200",
             icon: "text-utility-green-500",
         },
     },

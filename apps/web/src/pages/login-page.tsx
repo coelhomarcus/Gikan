@@ -45,7 +45,7 @@ export const LoginPage = () => {
                 <ControlledInput control={control} name="identifier" label="Username or email" isRequired autoFocus />
                 <ControlledInput control={control} name="password" label="Password" type="password" isRequired />
 
-                {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
+                {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 
                 <Button type="submit" size="lg" isLoading={mutation.isPending}>
                     Sign in
@@ -54,7 +54,7 @@ export const LoginPage = () => {
 
             <p className="text-center text-sm text-tertiary">
                 Don't have an account?{" "}
-                <Link to="/register" className="font-semibold text-brand-secondary hover:underline">
+                <Link to="/register" className="font-semibold text-accent-primary hover:underline">
                     Create an account
                 </Link>
             </p>

@@ -34,7 +34,7 @@ export const PaginationDot = ({ framed, className, size = "md", isBrand, ...prop
                                 asChild
                                 key={index}
                                 className={cx(
-                                    "relative cursor-pointer rounded-full bg-quaternary outline-focus-ring after:absolute focus-visible:outline-2 focus-visible:outline-offset-2",
+                                    "relative cursor-pointer rounded-full bg-quaternary outline-accent-strong after:absolute focus-visible:outline-2 focus-visible:outline-offset-2",
                                     sizes[size].button,
                                     page.isCurrent && "bg-fg-brand-primary_alt",
                                     isBrand && "bg-fg-brand-secondary",

@@ -1,13 +1,14 @@
 @import "tailwindcss";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
+@import "@makeplane/propel/styles";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono";
 @import "./theme.css";
 @import "./typography.css";
 
 @plugin "@tailwindcss/typography";
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:where(.dark-mode, .dark-mode *));
+
 @custom-variant label (& [data-label]);
 @custom-variant focus-input-within (&:has(input:focus));
 
@@ -25,7 +26,7 @@
 
 /* Keep every scrollable surface aligned with the dark application palette. */
 * {
-    scrollbar-color: var(--color-neutral-700) transparent;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
     scrollbar-width: thin;
 }
 
@@ -42,15 +43,15 @@
     border: 3px solid transparent;
     border-radius: 9999px;
     background-clip: padding-box;
-    background-color: var(--color-neutral-700);
+    background-color: var(--scrollbar-thumb);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-    background-color: var(--color-neutral-600);
+    background-color: var(--scrollbar-thumb-hover);
 }
 
 *::-webkit-scrollbar-thumb:active {
-    background-color: var(--color-brand-500);
+    background-color: var(--scrollbar-thumb-active);
 }
 
 *::-webkit-scrollbar-corner {
@@ -68,8 +69,8 @@ body {
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-font-variant-ligatures: contextual;
-    font-variant-ligatures: contextual;
+    -webkit-font-variant-ligatures: none;
+    font-variant-ligatures: none;
     -webkit-font-kerning: normal;
     font-kerning: normal;
 }
@@ -131,6 +132,57 @@ input[type="number"] {
 .tiptap-editor-readonly .ProseMirror {
     min-height: 0;
     padding: 0;
+}
+
+/* Plane 01064a7: Kanban block.tsx and peek-overview/{view,properties}.tsx.
+ * Scoped because the full issue page has a separate property sidebar. */
+.plane-board-page > header { height: 45px; position: relative; }
+.plane-board-page [data-peek-selected="true"] { border-color: var(--border-accent-strong); }
+.plane-issue-peek .issue-view-header { height: 60px; flex-shrink: 0; }
+.plane-issue-peek .issue-view-header > div:last-child button { width: 28px; height: 28px; }
+.plane-issue-peek .issue-view-header > div:last-child button:not(:first-of-type) { background: var(--bg-layer-2); box-shadow: inset 0 0 0 1px var(--border-strong); }
+.plane-issue-peek .peek-description .tiptap-editor { min-height: 0; }
+.plane-issue-peek .peek-description .ProseMirror {
+    min-height: 24px;
+    padding: 0;
+    font-size: 16px;
+    line-height: 28px;
+    font-weight: 400;
+    color: var(--txt-primary);
+}
+.plane-issue-peek .peek-description .tiptap-toolbar { margin-bottom: 8px; }
+.peek-property-control > label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.peek-property-control { gap: 0; }
+.peek-property-control > button,
+.peek-property-control > div {
+    height: 30px;
+    min-height: 30px;
+    padding: 0 4px 0 0;
+    background: transparent;
+    border-radius: 4px;
+    box-shadow: none;
+}
+.peek-property-control > button:hover,
+.peek-property-control > div:hover { background: var(--bg-layer-1-hover); }
+.peek-property-control > button:focus-visible,
+.peek-property-control > div:focus-within { outline: 1px solid var(--border-accent-strong); }
+.peek-property-control input,
+.peek-property-control button span { font-size: 13px; font-weight: 450; color: var(--txt-secondary); }
+.peek-property-control input::placeholder { color: var(--txt-secondary); }
+.peek-property-control [data-icon] { display: none; }
+.peek-property-control > button > span:last-child,
+.peek-property-control > div > button { opacity: 0; }
+.peek-property-control:hover > button > span:last-child,
+.peek-property-control:hover > div > button,
+.peek-property-control:focus-within > div > button { opacity: 1; }
+.has-decoration .peek-property-control > button,
+.has-decoration .peek-property-control > div { padding-left: 24px; }
+.peek-comments .tiptap-editor { min-height: 0; }
+.peek-comments .ProseMirror { min-height: 60px; padding: 8px; font-size: 13px; }
+@media (max-width: 767px) {
+    .plane-board-page > header { height: auto; min-height: 45px; flex-wrap: wrap; padding-block: 8px; }
+    .plane-issue-peek .issue-peek-body { padding: 20px; }
+    .peek-property-row > span { width: 110px; }
 }
 
 .tiptap-editor-readonly .ProseMirror [data-type="taskItem"] > label {
@@ -246,4 +298,12 @@ input[type="search"]::-webkit-search-cancel-button {
 .recharts-surface g,
 .recharts-surface path {
     outline: none;
+}
+
+@layer base {
+    html { color-scheme: dark; background: var(--bg-canvas); }
+    body { font-size: 13px; font-weight: 450; color: var(--txt-primary); }
+    button:not(:disabled), [role="button"]:not([aria-disabled="true"]) { cursor: pointer; }
+    :focus-visible { outline: 2px solid var(--border-accent-strong); outline-offset: 2px; }
+    input:-webkit-autofill { -webkit-background-clip: text; -webkit-text-fill-color: var(--txt-primary); caret-color: var(--txt-primary); }
 }

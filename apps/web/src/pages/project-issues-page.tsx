@@ -1,13 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Issue } from "@/features/issues/api";
-import { ChevronDown, Filter, Plus, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, Plus } from "lucide-react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 import type { Location } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
-import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
-import { Select } from "@/components/base/select/select";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Skeleton } from "@/components/base/feedback/skeleton";
@@ -16,26 +14,18 @@ import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useCreateIssue, useCycles, useIssues } from "@/features/issues/hooks/use-issues";
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
-import { useProject } from "@/features/projects/hooks/use-project";
+import { IssueToolbar } from "@/features/issues/components/issue-toolbar";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { ApiError } from "@/lib/api-client";
 
 type OrderBy = "position" | "priority" | "updated" | "number";
 type GroupBy = "none" | "status" | "assignee" | "cycle";
 
-const orderLabels: Record<OrderBy, string> = {
-    position: "Manual order",
-    number: "Issue number",
-    priority: "Priority",
-    updated: "Recently updated",
-};
-
 export const ProjectIssuesPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const { data: project } = useProject(projectId!);
     const orderBy = readOrder(searchParams.get("order"));
     const groupBy = readGroup(searchParams.get("group"));
     const search = searchParams.get("q") ?? "";
@@ -53,13 +43,8 @@ export const ProjectIssuesPage = () => {
     const [isCreating, setIsCreating] = useState(false);
     const [title, setTitle] = useState("");
     const [createError, setCreateError] = useState<string | null>(null);
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const [filterQuery, setFilterQuery] = useState("");
-    const [isDisplayOpen, setIsDisplayOpen] = useState(false);
     const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
     const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
-    const filterRef = useRef<HTMLDivElement>(null);
-    const displayRef = useRef<HTMLDivElement>(null);
 
     const columnById = useMemo(() => new Map((columns ?? []).map((column) => [column.id, column])), [columns]);
     const memberById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
@@ -109,26 +94,6 @@ export const ProjectIssuesPage = () => {
     }, [orderedIssues, selectedIssueId]);
 
     useEffect(() => {
-        if (!isFilterOpen && !isDisplayOpen) return;
-        function handlePointerDown(event: PointerEvent) {
-            const target = event.target as Node;
-            if (isFilterOpen && !filterRef.current?.contains(target)) setIsFilterOpen(false);
-            if (isDisplayOpen && !displayRef.current?.contains(target)) setIsDisplayOpen(false);
-        }
-        function handleKeyDown(event: KeyboardEvent) {
-            if (event.key !== "Escape") return;
-            if (isFilterOpen) setIsFilterOpen(false);
-            if (isDisplayOpen) setIsDisplayOpen(false);
-        }
-        document.addEventListener("pointerdown", handlePointerDown);
-        document.addEventListener("keydown", handleKeyDown);
-        return () => {
-            document.removeEventListener("pointerdown", handlePointerDown);
-            document.removeEventListener("keydown", handleKeyDown);
-        };
-    }, [isDisplayOpen, isFilterOpen]);
-
-    useEffect(() => {
         if (!location.pathname.endsWith("/issues")) return;
 
         function handleListKeyDown(event: KeyboardEvent) {
@@ -156,17 +121,6 @@ export const ProjectIssuesPage = () => {
         return () => window.removeEventListener("keydown", handleListKeyDown);
     }, [location.pathname, orderedIssues, selectedIssueId]);
 
-    function updateQuery(key: string, value: string) {
-        setSearchParams(
-            (current) => {
-                if (value) current.set(key, value);
-                else current.delete(key);
-                return current;
-            },
-            { replace: true },
-        );
-    }
-
     function clearFilters() {
         setSearchParams(
             (current) => {
@@ -177,13 +131,6 @@ export const ProjectIssuesPage = () => {
         );
     }
 
-    function filterOptions(options: Array<{ value: string; label: string }>, selectedValue: string) {
-        const normalized = filterQuery.trim().toLowerCase();
-        if (!normalized) return options;
-        const matching = options.filter((option) => option.label.toLowerCase().includes(normalized));
-        const selected = options.find((option) => option.value === selectedValue);
-        return selected && !matching.some((option) => option.value === selected.value) ? [selected, ...matching] : matching;
-    }
 
     function openIssue(identifier: string) {
         navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } });
@@ -212,32 +159,15 @@ export const ProjectIssuesPage = () => {
         );
     }
 
-    const activeFilterCount = [priority, status, assignee, category, cycle].filter(Boolean).length;
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="issues" />
-            <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-5 lg:px-8">
+            <IssueToolbar projectId={projectId!} onCreate={() => { setCreateError(null); setIsCreating(true); }} />
+            <main className="min-h-0 w-full flex-1 overflow-y-auto">
                 <div className="flex flex-col gap-6">
-                    <div className="flex flex-wrap items-end justify-between gap-3">
-                        <div>
-                            <p className="font-mono text-xs text-fg-brand-primary">{project?.issueKey ?? "Project"}</p>
-                            <h1 className="mt-1 text-xl font-semibold text-primary">Issues</h1>
-                        </div>
-                        <Button
-                            size="sm"
-                            iconLeading={Plus}
-                            onClick={() => {
-                                setCreateError(null);
-                                setIsCreating(true);
-                            }}
-                        >
-                            New issue
-                        </Button>
-                    </div>
-
                     {isCreating && (
-                        <div className="flex items-center gap-2 rounded-md border border-secondary bg-secondary_alt p-2">
+                        <div className="flex items-center gap-2 rounded-md border border-subtle bg-surface-2 p-2">
                             <Input
                                 autoFocus
                                 value={title}
@@ -257,89 +187,15 @@ export const ProjectIssuesPage = () => {
                             <Button size="xs" color="tertiary" onClick={() => setIsCreating(false)}>
                                 Cancel
                             </Button>
-                            {createError && <p role="alert" className="text-xs text-error-primary">{createError}</p>}
-                        </div>
-                    )}
-
-                    <div className="flex flex-wrap items-center gap-2 border-b border-secondary pb-3">
-                        <Input value={search} onChange={(value) => updateQuery("q", value)} placeholder="Search issues" icon={Search} size="sm" className="min-w-48 flex-1 sm:flex-none" />
-
-                        <div ref={filterRef} className="relative">
-                            <ToolbarButton active={isFilterOpen || activeFilterCount > 0} icon={Filter} onClick={() => setIsFilterOpen((open) => !open)} aria-expanded={isFilterOpen}>
-                                Filter{activeFilterCount > 0 && ` · ${activeFilterCount}`}
-                            </ToolbarButton>
-                            {isFilterOpen && (
-                                <div className="absolute top-10 left-0 z-20 grid w-[min(20rem,calc(100vw-2rem))] gap-3 rounded-lg border border-secondary bg-primary p-3 shadow-xl sm:grid-cols-2">
-                                    <Input
-                                        autoFocus
-                                        value={filterQuery}
-                                        onChange={setFilterQuery}
-                                        placeholder="Search filter values"
-                                        aria-label="Search filter values"
-                                        size="sm"
-                                        className="col-span-full"
-                                    />
-                                    <FilterSelect searchable label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={filterOptions((columns ?? []).map((item) => ({ value: item.id, label: item.name })), status)} />
-                                    <FilterSelect
-                                        label="Priority"
-                                        value={priority}
-                                        onChange={(value) => updateQuery("priority", value)}
-                                        options={filterOptions(["high", "medium", "low"].map((value) => ({ value, label: capitalize(value) })), priority)}
-                                    />
-                                    <FilterSelect searchable label="Assignee" value={assignee} onChange={(value) => updateQuery("assignee", value)} options={filterOptions((members ?? []).map((item) => ({ value: item.id, label: item.name })), assignee)} />
-                                    <FilterSelect searchable label="Label" value={category} onChange={(value) => updateQuery("label", value)} options={filterOptions((categories ?? []).map((item) => ({ value: item.id, label: item.name })), category)} />
-                                    <FilterSelect searchable label="Cycle" value={cycle} onChange={(value) => updateQuery("cycle", value)} options={filterOptions((cycles ?? []).map((item) => ({ value: item.id, label: item.name })), cycle)} />
-                                    <button type="button" onClick={clearFilters} className="self-end text-left text-xs text-tertiary hover:text-primary">
-                                        Clear filters
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        <div ref={displayRef} className="relative">
-                            <ToolbarButton active={isDisplayOpen || orderBy !== "position" || groupBy !== "none"} icon={SlidersHorizontal} onClick={() => setIsDisplayOpen((open) => !open)} aria-expanded={isDisplayOpen}>
-                                Display
-                            </ToolbarButton>
-                            {isDisplayOpen && (
-                                <div className="absolute top-10 right-0 z-20 grid w-56 gap-3 rounded-lg border border-secondary bg-primary p-3 shadow-xl">
-                                    <FilterSelect label="Order by" value={orderBy} onChange={(value) => updateQuery("order", value)} options={Object.entries(orderLabels).map(([value, label]) => ({ value, label }))} />
-                                    <FilterSelect
-                                        label="Group by"
-                                        value={groupBy}
-                                        onChange={(value) => updateQuery("group", value === "none" ? "" : value)}
-                                        options={[
-                                            { value: "none", label: "No grouping" },
-                                            { value: "status", label: "Status" },
-                                            { value: "assignee", label: "Assignee" },
-                                            { value: "cycle", label: "Cycle" },
-                                        ]}
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        {(activeFilterCount > 0 || search) && (
-                            <button type="button" onClick={clearFilters} className="inline-flex h-8 items-center gap-1 rounded-md px-2 text-xs text-tertiary hover:bg-primary_hover hover:text-primary">
-                                Clear <X aria-hidden="true" className="size-3.5" />
-                            </button>
-                        )}
-                    </div>
-
-                    {activeFilterCount > 0 && (
-                        <div className="flex flex-wrap gap-2">
-                            {priority && <FilterChip label={`Priority: ${capitalize(priority)}`} onClear={() => updateQuery("priority", "")} />}
-                            {status && <FilterChip label={`Status: ${columnById.get(status)?.name ?? "Selected"}`} onClear={() => updateQuery("status", "")} />}
-                            {assignee && <FilterChip label={`Assignee: ${memberById.get(assignee)?.name ?? "Selected"}`} onClear={() => updateQuery("assignee", "")} />}
-                            {category && <FilterChip label={`Label: ${categoryById.get(category)?.name ?? "Selected"}`} onClear={() => updateQuery("label", "")} />}
-                            {cycle && <FilterChip label={`Cycle: ${cycleById.get(cycle)?.name ?? "Selected"}`} onClear={() => updateQuery("cycle", "")} />}
+                            {createError && <p role="alert" className="text-xs text-danger-primary">{createError}</p>}
                         </div>
                     )}
 
                     {isLoading && <IssueListSkeleton />}
                     {isError && <ErrorMessage message="Could not load the project issues." />}
                     {!isLoading && !isError && (
-                        <div className="overflow-hidden rounded-lg border border-secondary">
-                            <div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] gap-3 border-b border-secondary px-3 py-2 text-[11px] font-medium tracking-wide text-tertiary uppercase sm:grid lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem]">
+                        <div className="overflow-hidden">
+                            <div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] gap-3 border-b border-subtle px-3 py-2 text-xs font-medium text-tertiary sm:grid lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem]">
                                 <span>Issue</span>
                                 <span>Status</span>
                                 <span>Priority</span>
@@ -351,7 +207,7 @@ export const ProjectIssuesPage = () => {
                             {groups.map((group) => (
                                 <section key={group.key} aria-label={group.label ?? "All issues"}>
                                     {group.label && (
-                                        <h2 className="border-b border-secondary bg-secondary_alt">
+                                        <h2 className="border-b border-subtle bg-surface-2">
                                             <button
                                                 type="button"
                                                 aria-expanded={!collapsedGroups.has(group.key)}
@@ -361,9 +217,9 @@ export const ProjectIssuesPage = () => {
                                                     else next.add(group.key);
                                                     return next;
                                                 })}
-                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-secondary hover:bg-primary_hover"
+                                                className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-secondary hover:bg-layer-1-hover"
                                             >
-                                                <ChevronDown className={`size-3.5 text-fg-quaternary transition-transform ${collapsedGroups.has(group.key) ? "-rotate-90" : ""}`} aria-hidden="true" />
+                                                <ChevronDown className={`size-3.5 text-placeholder transition-transform ${collapsedGroups.has(group.key) ? "-rotate-90" : ""}`} aria-hidden="true" />
                                                 <span>{group.label}</span>
                                                 <span className="text-tertiary">{group.issues.length}</span>
                                             </button>
@@ -411,9 +267,9 @@ export const ProjectIssuesPage = () => {
 };
 
 function IssueListSkeleton() {
-    return <div className="overflow-hidden rounded-lg border border-secondary" aria-label="Loading issues" role="status">
-        <div className="hidden h-9 border-b border-secondary bg-secondary sm:block" />
-        <div className="divide-y divide-secondary">{["one", "two", "three", "four", "five"].map((key) => <div key={key} className="flex min-h-12 items-center gap-3 px-3 py-2">
+    return <div className="overflow-hidden" aria-label="Loading issues" role="status">
+        <div className="hidden h-9 border-b border-subtle bg-surface-2 sm:block" />
+        <div className="divide-y divide-subtle">{["one", "two", "three", "four", "five"].map((key) => <div key={key} className="flex min-h-12 items-center gap-3 px-3 py-2">
             <Skeleton className="size-2 shrink-0 rounded-full" /><Skeleton className="h-3 w-16 shrink-0" /><Skeleton className="h-3 min-w-0 flex-1" /><Skeleton className="hidden h-6 w-16 sm:block" /><Skeleton className="hidden h-3 w-20 lg:block" />
         </div>)}</div>
     </div>;
@@ -425,43 +281,6 @@ function readOrder(value: string | null): OrderBy {
 
 function readGroup(value: string | null): GroupBy {
     return value === "status" || value === "assignee" || value === "cycle" ? value : "none";
-}
-
-function capitalize(value: string) {
-    return value.charAt(0).toUpperCase() + value.slice(1);
-}
-
-function ToolbarButton({ active, icon: Icon, children, ...props }: { active?: boolean; icon: typeof Filter; children: React.ReactNode; onClick: () => void; "aria-expanded": boolean }) {
-    return (
-        <Button size="xs" color={active ? "secondary" : "tertiary"} iconLeading={Icon} className={`border ${active ? "border-brand/60 bg-secondary_alt" : "border-secondary"}`} {...props}>{children}</Button>
-    );
-}
-
-function FilterSelect({ label, value, onChange, options, searchable = false }: { label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; searchable?: boolean }) {
-    const items = [...(label !== "Order by" && label !== "Group by" ? [{ value: "", label: "All" }] : []), ...options].map((option) => ({ id: option.value, label: option.label }));
-
-    if (searchable) {
-        return (
-            <ComboBox items={items} selectedKey={value || null} onSelectionChange={(next) => onChange(String(next ?? ""))} label={label} placeholder="All" size="sm">
-                {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
-            </ComboBox>
-        );
-    }
-
-    return (
-        <Select items={items} selectedKey={value} onSelectionChange={(next) => onChange(String(next ?? ""))} label={label} size="sm">
-            {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
-        </Select>
-    );
-}
-
-function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
-    return (
-        <button type="button" onClick={onClear} className="inline-flex items-center gap-1 rounded-full border border-secondary bg-secondary_alt px-2 py-1 text-xs text-secondary hover:text-primary">
-            {label}
-            <X aria-hidden="true" className="size-3" />
-        </button>
-    );
 }
 
 function IssueRow({
@@ -496,13 +315,13 @@ function IssueRow({
             data-issue-identifier={issue.identifier}
             data-issue-title={issue.title}
             onFocus={onSelect}
-            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-secondary px-3 py-2 text-left transition-colors last:border-0 hover:bg-primary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand max-sm:grid-cols-1 max-sm:gap-2 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
-                selected ? "bg-secondary" : ""
+            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-subtle px-4 py-2 text-left transition-colors last:border-0 hover:bg-layer-1-hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-strong max-sm:grid-cols-1 max-sm:gap-2 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
+                selected ? "bg-surface-2" : ""
             }`}
         >
             <span className="flex min-w-0 items-center gap-2">
                 <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
-                <span className="shrink-0 font-mono text-[11px] text-fg-brand-primary">
+                <span className="w-16 shrink-0 text-xs text-tertiary">
                     {issue.identifier}
                 </span>
                 <span className="min-w-0 truncate text-sm text-primary">{issue.title}</span>
@@ -511,7 +330,7 @@ function IssueRow({
             <span className="truncate text-xs text-secondary max-sm:hidden">{column?.name ?? "Unknown"}</span>
             <span className="max-sm:hidden"><ImportanceBadge importance={issue.priority} /></span>
             <span className="flex min-w-0 items-center gap-2 text-xs text-tertiary max-sm:hidden">
-                {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-secondary" />}
+                {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-subtle" />}
                 <span className="truncate">{member?.name ?? "Unassigned"}</span>
             </span>
             <span className="hidden truncate text-xs text-tertiary lg:block">{category?.name ?? "—"}</span>

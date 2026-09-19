@@ -1,6 +1,6 @@
 # Gikan
 
-Issue tracking for multiple projects, inspired by Linear. Each project has an issue list, Kanban board, documents, members, labels, cycles, comments, and activity history.
+Gikan is a dark workspace for organizing projects and tracking issues. Each project includes an issue list, Kanban board, documents, members, labels, cycles, comments, and activity history.
 
 ## Stack
 
@@ -55,7 +55,7 @@ pnpm dev:web   # http://localhost:5173
 - `/projects/:projectId/issues/:issueIdentifier` — issue page.
 - `/projects/:projectId/page` — compatibility redirect to Documents.
 
-Issues use public identifiers such as `LIN-184`. Opening an issue from the list or board displays a Peek panel while preserving the source screen. Direct navigation or a refresh displays the full issue page.
+Issues use project-specific identifiers such as `TK-184`. Opening an issue from the list or board displays a Peek panel while preserving the source screen. Direct navigation or a refresh displays the full issue page.
 
 Project issue keys are generated automatically from the project name (for example, `Todo Kanban` becomes `TK`). If the key is already in use, Gikan adds a numeric suffix.
 

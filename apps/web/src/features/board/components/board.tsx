@@ -6,6 +6,7 @@ import {
     type DragOverEvent,
     DragOverlay,
     type DragStartEvent,
+    KeyboardSensor,
     MeasuringStrategy,
     PointerSensor,
     pointerWithin,
@@ -13,14 +14,15 @@ import {
     useSensor,
     useSensors,
 } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useLocation, useNavigate } from "react-router";
+import { filterIssues, readIssueOrder } from "@/features/issues/lib/issue-filters";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Alert } from "@/components/base/feedback/alert";
 import { Skeleton } from "@/components/base/feedback/skeleton";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import type { Issue } from "@/features/issues/api";
-import { useIssues, useUpdateIssue } from "@/features/issues/hooks/use-issues";
+import { useCycles, useIssues, useUpdateIssue } from "@/features/issues/hooks/use-issues";
 import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { ApiError } from "@/lib/api-client";
@@ -43,12 +45,15 @@ const collisionDetection: CollisionDetection = (args) => {
 /** Columns change size as issues enter and leave during a drag, so their rectangles must be measured continuously. */
 const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
-export const Board = ({ projectId }: { projectId: string }) => {
+export const Board = ({ projectId, filters = new URLSearchParams() }: { projectId: string; filters?: URLSearchParams }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
-    const { data: issues, isLoading: issuesLoading, isError: issuesError } = useIssues(projectId, { orderBy: "position" });
+    const orderBy = readIssueOrder(filters.get("order"));
+    const { data: issues, isLoading: issuesLoading, isError: issuesError } = useIssues(projectId, { orderBy });
+    const filtered = useMemo(() => filterIssues(issues ?? [], filters), [issues, filters]);
     const { data: categories } = useCategories(projectId);
+    const { data: cycles } = useCycles(projectId);
     const { data: members } = useProjectMembers(projectId);
     const updateIssue = useUpdateIssue(projectId);
 
@@ -58,8 +63,12 @@ export const Board = ({ projectId }: { projectId: string }) => {
     const [dragIssues, setDragIssues] = useState<Issue[] | null>(null);
     const [moveError, setMoveError] = useState<string | null>(null);
 
-    const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }));
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+    );
 
+    const cyclesById = useMemo(() => new Map((cycles ?? []).map((cycle) => [cycle.id, cycle])), [cycles]);
     const categoriesById = useMemo(() => new Map((categories ?? []).map((category) => [category.id, category])), [categories]);
     const membersById = useMemo(() => new Map((members ?? []).map((member) => [member.id, member])), [members]);
 
@@ -68,7 +77,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
      * During a drag, `dragIssues` is reordered in `onDragOver` so columns live-preview where the
      * issue will land instead of making the user drag blindly.
      */
-    const board = useMemo(() => dragIssues ?? [...(issues ?? [])].sort((a, b) => a.position - b.position), [dragIssues, issues]);
+    const board = useMemo(() => dragIssues ?? [...filtered].sort((a, b) => a.position - b.position), [dragIssues, filtered]);
 
     /** Resolves the target column: `over` is the column itself (card area) or a card inside it. */
     function resolveColumnId(overId: string, list: Issue[]): string | undefined {
@@ -156,7 +165,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
             finalIndex,
         );
 
-        const original = issues?.find((issue) => issue.id === activeId);
+        const original = filtered.find((issue) => issue.id === activeId);
         if (original && original.columnId === targetColumnId && original.position === position) {
             setDragIssues(null);
             return;
@@ -219,6 +228,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
                             projectId={projectId}
                             categoriesById={categoriesById}
                             membersById={membersById}
+                            cyclesById={cyclesById}
                             onOpenIssue={(identifier) => navigate(`/projects/${projectId}/issues/${identifier}`, { state: { backgroundLocation: location } })}
                             onCreateIssue={(columnId) => setCreateColumnId(columnId)}
                         />
@@ -230,9 +240,9 @@ export const Board = ({ projectId }: { projectId: string }) => {
                     {activeIssue && (
                         <div
                             style={{ width: activeIssueWidth }}
-                            className="flex cursor-grabbing flex-col gap-2 rounded-md border border-brand bg-primary p-3 shadow-lg"
+                            className="block cursor-grabbing rounded-lg border border-accent-strong bg-layer-2 p-3 shadow-lg"
                         >
-                            <IssueCardContent issue={activeIssue} category={activeCategory} assignee={activeAssignee} />
+                            <IssueCardContent issue={activeIssue} category={activeCategory} assignee={activeAssignee} column={columns?.find((column) => column.id === activeIssue.columnId)} cycle={activeIssue.cycleId ? cyclesById.get(activeIssue.cycleId) : undefined} />
                         </div>
                     )}
                 </DragOverlay>
@@ -245,7 +255,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
 function BoardSkeleton() {
     return <div className="flex h-full min-w-max items-start gap-4" aria-label="Loading board" role="status">
-        {["one", "two", "three"].map((key) => <div key={key} className="flex h-full w-80 shrink-0 flex-col gap-3 rounded-lg bg-secondary p-2">
+        {["one", "two", "three"].map((key) => <div key={key} className="flex h-full w-[350px] shrink-0 flex-col gap-4 rounded-md bg-layer-1 p-2">
             <div className="flex h-8 items-center justify-between px-1"><Skeleton className="h-3 w-28" /><Skeleton className="size-4 rounded-full" /></div>
             <div className="space-y-2"><Skeleton className="h-24 w-full rounded-md" /><Skeleton className="h-20 w-full rounded-md" /><Skeleton className="h-28 w-full rounded-md" /></div>
         </div>)}

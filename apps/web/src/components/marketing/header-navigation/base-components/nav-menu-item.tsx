@@ -17,12 +17,12 @@ export const NavMenuItemLink = ({ href, icon: Icon, iconClassName, title, badge,
     <a
         href={href}
         className={cx(
-            "inline-flex w-full gap-3 px-4 py-3 outline-focus-ring transition duration-100 ease-linear hover:bg-primary_hover focus-visible:outline-2 sm:max-w-80 sm:p-3 md:rounded-lg",
+            "inline-flex w-full gap-3 px-4 py-3 outline-accent-strong transition duration-100 ease-linear hover:bg-layer-1-hover focus-visible:outline-2 sm:max-w-80 sm:p-3 md:rounded-lg",
             className,
         )}
     >
         {isValidElement(Icon) && Icon}
-        {isReactComponent(Icon) && <Icon className={cx("mt-0.5 size-4 shrink-0 stroke-[2.3px] text-fg-brand-primary", iconClassName)} />}
+        {isReactComponent(Icon) && <Icon className={cx("mt-0.5 size-4 shrink-0 stroke-[2.3px] text-accent-primary", iconClassName)} />}
 
         <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-0.5">

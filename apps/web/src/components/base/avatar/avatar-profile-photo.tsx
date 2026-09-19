@@ -73,11 +73,11 @@ export const AvatarProfilePhoto = ({
             return (
                 <div
                     className={cx(
-                        "flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt outline-transparent before:hidden",
+                        "flex size-full items-center justify-center rounded-full bg-layer-2 ring-1 ring-secondary_alt outline-transparent before:hidden",
                         styles[size].content,
                     )}
                 >
-                    <span className={cx("text-quaternary", styles[size].initials)}>{initials}</span>
+                    <span className={cx("text-placeholder", styles[size].initials)}>{initials}</span>
                 </div>
             );
         }
@@ -86,11 +86,11 @@ export const AvatarProfilePhoto = ({
             return (
                 <div
                     className={cx(
-                        "flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt outline-transparent before:hidden",
+                        "flex size-full items-center justify-center rounded-full bg-layer-2 ring-1 ring-secondary_alt outline-transparent before:hidden",
                         styles[size].content,
                     )}
                 >
-                    <PlaceholderIcon className={cx("text-fg-quaternary", styles[size].icon)} />
+                    <PlaceholderIcon className={cx("text-placeholder", styles[size].icon)} />
                 </div>
             );
         }
@@ -98,11 +98,11 @@ export const AvatarProfilePhoto = ({
         return (
             <div
                 className={cx(
-                    "flex size-full items-center justify-center rounded-full bg-tertiary ring-1 ring-secondary_alt outline-transparent before:hidden",
+                    "flex size-full items-center justify-center rounded-full bg-layer-2 ring-1 ring-secondary_alt outline-transparent before:hidden",
                     styles[size].content,
                 )}
             >
-                {placeholder || <User className={cx("text-fg-quaternary", styles[size].icon)} />}
+                {placeholder || <User className={cx("text-placeholder", styles[size].icon)} />}
             </div>
         );
     };
@@ -122,7 +122,7 @@ export const AvatarProfilePhoto = ({
     return (
         <div
             className={cx(
-                "relative flex shrink-0 items-center justify-center rounded-full bg-primary ring-1 ring-secondary_alt",
+                "relative flex shrink-0 items-center justify-center rounded-full bg-surface-1 ring-1 ring-secondary_alt",
                 styles[size].root,
                 (!src || isFailed) && styles[size].rootWithPlaceholder,
                 className,

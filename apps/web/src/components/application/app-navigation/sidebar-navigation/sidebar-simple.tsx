@@ -65,14 +65,14 @@ export const SidebarNavigationSimple = ({
                 } as React.CSSProperties
             }
             className={cx(
-                "flex h-full w-full max-w-full flex-col overflow-hidden bg-primary pt-3 lg:w-(--width) lg:pt-4",
-                !hideBorder && "border-secondary md:border-r",
+                "flex h-full w-full max-w-full flex-col overflow-hidden bg-surface-1 pt-3 lg:w-(--width) lg:pt-4",
+                !hideBorder && "border-subtle md:border-r",
                 className,
             )}
         >
             <div className="flex min-h-0 flex-1 flex-col">
                 <div className="flex shrink-0 flex-col gap-4 px-3 lg:px-4">
-                    <a href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+                    <a href="/" className="w-fit rounded-md outline-accent-strong focus-visible:outline-2 focus-visible:outline-offset-2">
                         <GikanLogo className="h-6" />
                     </a>
 

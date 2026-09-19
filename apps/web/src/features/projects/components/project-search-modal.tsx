@@ -79,8 +79,8 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()} isDismissable>
             <Modal className="max-w-lg">
                 <Dialog>
-                    <div className="flex max-h-[70vh] w-full flex-col overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="border-b border-secondary p-3">
+                    <div className="flex max-h-[70vh] w-full flex-col overflow-hidden rounded-xl bg-surface-1 shadow-xl ring-1 ring-subtle">
+                        <div className="border-b border-subtle p-3">
                             <Input
                                 autoFocus
                                 aria-label="Search projects and issues"
@@ -141,9 +141,9 @@ function ResultGroup({ label, results, selectedIndex, offset, onOpen }: { label:
                             role="option"
                             aria-selected={isSelected}
                             onClick={() => onOpen(result)}
-                            className={`flex items-center gap-2 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-primary_hover ${isSelected ? "bg-secondary" : ""}`}
+                            className={`flex items-center gap-2 rounded-md px-3 py-2 text-left transition duration-100 ease-linear hover:bg-layer-1-hover ${isSelected ? "bg-surface-2" : ""}`}
                         >
-                            {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-fg-quaternary" /> : result.type === "command" ? <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-fg-quaternary" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-secondary text-[9px] text-fg-quaternary">#</span>}
+                            {result.type === "project" ? <ProjectIcon icon={result.icon} className="size-4 shrink-0 text-placeholder" /> : result.type === "command" ? <ArrowRight aria-hidden="true" className="size-4 shrink-0 text-placeholder" /> : <span className="flex size-4 shrink-0 items-center justify-center rounded border border-subtle text-[9px] text-placeholder">#</span>}
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <span className="flex min-w-0 items-baseline gap-2">
                                     <span className="truncate text-sm font-medium text-primary">{result.title}</span>

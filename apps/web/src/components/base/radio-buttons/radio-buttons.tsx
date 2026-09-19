@@ -6,7 +6,7 @@ import { cx } from "@/utils/cx";
 export interface RadioGroupContextType { size?: "sm" | "md" }
 export interface RadioButtonBaseProps { size?: "sm" | "md"; className?: string; isFocusVisible?: boolean; isSelected?: boolean; isDisabled?: boolean }
 
-export const RadioButtonBase = ({ className, isFocusVisible, isSelected, isDisabled, size = "sm" }: RadioButtonBaseProps) => <span aria-hidden className={cx("flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-primary ring-1 ring-primary ring-inset", size === "md" && "size-5", isSelected && "bg-brand-solid ring-brand-solid", isDisabled && "cursor-not-allowed opacity-50", isFocusVisible && "outline-2 outline-offset-2 outline-focus-ring", className)}><span className={cx("size-1.5 rounded-full bg-fg-white opacity-0", size === "md" && "size-2", isSelected && "opacity-100")} /></span>;
+export const RadioButtonBase = ({ className, isFocusVisible, isSelected, isDisabled, size = "sm" }: RadioButtonBaseProps) => <span aria-hidden className={cx("flex size-4 shrink-0 cursor-pointer items-center justify-center rounded-full bg-surface-1 ring-1 ring-strong ring-inset", size === "md" && "size-5", isSelected && "bg-accent-primary ring-brand-solid", isDisabled && "cursor-not-allowed opacity-50", isFocusVisible && "outline-2 outline-offset-2 outline-accent-strong", className)}><span className={cx("size-1.5 rounded-full bg-fg-white opacity-0", size === "md" && "size-2", isSelected && "opacity-100")} /></span>;
 
 interface RadioButtonProps {
     value?: string;

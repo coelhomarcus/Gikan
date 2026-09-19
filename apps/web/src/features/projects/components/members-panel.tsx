@@ -42,7 +42,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
         <div className="flex flex-col gap-6">
             {isProjectOwner && (
                 <form
-                    className="flex items-end gap-4 rounded-xl border border-secondary p-4"
+                    className="flex items-end gap-4 rounded-xl border border-subtle p-4"
                     noValidate
                     onSubmit={handleSubmit((data) => {
                         addMutation.mutate(data.username, {
@@ -55,7 +55,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
                 >
                     <div className="flex-1">
                         <ControlledInput control={control} name="username" label="Invite by username" placeholder="username" isRequired />
-                        {formState.errors.root && <p className="mt-1 text-sm text-error-primary">{formState.errors.root.message}</p>}
+                        {formState.errors.root && <p className="mt-1 text-sm text-danger-primary">{formState.errors.root.message}</p>}
                     </div>
                     <Button type="submit" isLoading={addMutation.isPending}>
                         Invite
@@ -71,7 +71,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: MembersPanelProps) =
             {members && members.length > 0 && (
                 <ul className="flex flex-col gap-2">
                     {members.map((member) => (
-                        <li key={member.id} className="flex items-center gap-4 rounded-lg border border-secondary px-3 py-2">
+                        <li key={member.id} className="flex items-center gap-4 rounded-lg border border-subtle px-3 py-2">
                             <Avatar src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} size="md" />
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-semibold text-primary">{member.name}</p>

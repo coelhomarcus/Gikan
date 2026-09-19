@@ -66,7 +66,7 @@ export const ProjectDocumentsPage = () => {
     if (isError || !document) return <ErrorMessage message="Could not load the project document." />;
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="documents" />
             <main className="mx-auto min-h-0 w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6 lg:px-8">
                 <div className="mb-4 flex items-end justify-between gap-4">
@@ -75,7 +75,7 @@ export const ProjectDocumentsPage = () => {
                         <h1 className="text-display-xs font-semibold text-primary">Overview notes</h1>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className={mutation.isError ? "text-xs text-error-primary" : "text-xs text-tertiary"}>
+                        <span className={mutation.isError ? "text-xs text-danger-primary" : "text-xs text-tertiary"}>
                             {mutation.isPending ? "Saving..." : mutation.isError ? "Save failed" : isDirty ? "Unsaved changes" : "Saved"}
                         </span>
                         <Button size="sm" iconLeading={Save} isDisabled={!isDirty} isLoading={mutation.isPending} onClick={save}>
@@ -83,7 +83,7 @@ export const ProjectDocumentsPage = () => {
                         </Button>
                     </div>
                 </div>
-                <div className="rounded-lg border border-secondary bg-primary">
+                <div className="rounded-lg border border-subtle bg-surface-1">
                     <RichTextEditor
                         variant="document"
                         content={content}

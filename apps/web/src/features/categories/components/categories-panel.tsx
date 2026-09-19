@@ -38,7 +38,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
     return (
         <div className="flex flex-col gap-6">
             <form
-                className="flex flex-col gap-4 rounded-xl border border-secondary p-4"
+                className="flex flex-col gap-4 rounded-xl border border-subtle p-4"
                 noValidate
                 onSubmit={handleSubmit((data) => {
                     createMutation.mutate(data, {
@@ -94,7 +94,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                         const canDelete = isProjectOwner || category.createdBy === user?.id;
 
                         return (
-                            <li key={category.id} className="flex items-center justify-between gap-3 rounded-lg border border-secondary px-3 py-2">
+                            <li key={category.id} className="flex items-center justify-between gap-3 rounded-lg border border-subtle px-3 py-2">
                                 {canDelete ? (
                                     <CategoryEditor
                                         category={category}
@@ -139,7 +139,7 @@ function CategoryEditor({ category, isPending, onSave }: { category: { name: str
 
     return (
         <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-            <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Label ${category.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-brand" inputClassName="font-medium" />
+            <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Label ${category.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-accent-strong" inputClassName="font-medium" />
             <div className="flex items-center gap-2">
                 {CATEGORY_COLORS.map((item) => (
                     <button key={item} type="button" aria-label={`Use color ${item}`} aria-pressed={color === item} disabled={isPending} onClick={() => setColor(item)} className={cx("size-5 rounded-full disabled:opacity-50", color === item && "outline-2 outline-fg-primary outline-offset-1")} style={{ backgroundColor: item }} />

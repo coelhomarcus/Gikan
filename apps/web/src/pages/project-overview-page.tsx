@@ -23,13 +23,13 @@ export const ProjectOverviewPage = () => {
     if (isError || !project) return <ErrorMessage message="Could not load the project." />;
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-primary">
+        <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="overview" />
             <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-6 lg:px-8 lg:py-8">
                 <div className="flex flex-col">
-                    <header className="flex flex-wrap items-start justify-between gap-6 border-b border-secondary pb-6">
+                    <header className="flex flex-wrap items-start justify-between gap-6 border-b border-subtle pb-6">
                         <div className="min-w-0">
-                            <p className="font-mono text-xs text-fg-brand-primary">{project.issueKey}</p>
+                            <p className="font-mono text-xs text-accent-primary">{project.issueKey}</p>
                             <h1 className="mt-1 text-display-sm font-semibold tracking-tight text-primary">{project.name}</h1>
                             {project.description && <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{project.description}</p>}
                         </div>
@@ -40,7 +40,7 @@ export const ProjectOverviewPage = () => {
                         )}
                     </header>
 
-                    <section className="grid gap-6 border-b border-secondary py-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
+                    <section className="grid gap-6 border-b border-subtle py-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
                         <div>
                             <div className="flex items-center justify-between gap-3">
                                 <div>
@@ -49,7 +49,7 @@ export const ProjectOverviewPage = () => {
                                 </div>
                                 <span className="text-xs text-tertiary">{issuesLoading ? "..." : `${issues?.length ?? 0} issues`}</span>
                             </div>
-                            <div className="mt-4 divide-y divide-secondary rounded-lg border border-secondary">
+                            <div className="mt-4 divide-y divide-subtle rounded-lg border border-subtle">
                                 {(columns ?? []).map((column) => {
                                     const count = (issues ?? []).filter((issue) => issue.columnId === column.id).length;
                                     return (
@@ -77,7 +77,7 @@ export const ProjectOverviewPage = () => {
                             <h2 className="text-sm font-semibold text-primary">Project views</h2>
                             <p className="mt-1 text-sm text-tertiary">Choose the workspace that matches the way you want to work.</p>
                         </div>
-                        <div className="divide-y divide-secondary rounded-lg border border-secondary">
+                        <div className="divide-y divide-subtle rounded-lg border border-subtle">
                             <OverviewLink href={`/projects/${projectId}/issues`} icon={AppIcons.Issues} title="Issues" description="Browse, filter, and update the project work." />
                             <OverviewLink href={`/projects/${projectId}/board`} icon={AppIcons.Board} title="Board" description="Move issues through their statuses." />
                             <OverviewLink href={`/projects/${projectId}/documents`} icon={AppIcons.Documents} title="Documents" description="Keep the project's main document in one place." />
@@ -93,9 +93,9 @@ export const ProjectOverviewPage = () => {
 
 function Fact({ icon: Icon, label, value }: { icon: typeof Gauge; label: string; value: string }) {
     return (
-        <div className="rounded-lg border border-secondary p-4">
+        <div className="rounded-lg border border-subtle p-4">
             <div className="flex items-center gap-2 text-xs text-tertiary">
-                <Icon className="size-3.5 text-fg-quaternary" aria-hidden="true" />
+                <Icon className="size-3.5 text-placeholder" aria-hidden="true" />
                 <span>{label}</span>
             </div>
             <p className="mt-2 truncate text-sm font-medium text-primary">{value}</p>
@@ -105,15 +105,15 @@ function Fact({ icon: Icon, label, value }: { icon: typeof Gauge; label: string;
 
 function OverviewLink({ href, icon: Icon, title, description }: { href: string; icon: typeof AppIcons.Issues; title: string; description: string }) {
     return (
-        <Link to={href} className="group flex items-center gap-4 px-3 py-3 transition hover:bg-secondary">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-secondary text-fg-quaternary group-hover:text-fg-brand-primary">
+        <Link to={href} className="group flex items-center gap-4 px-3 py-3 transition hover:bg-surface-2">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-placeholder group-hover:text-accent-primary">
                 <Icon className="size-4" aria-hidden="true" />
             </span>
             <span className="min-w-0 flex-1">
                 <span className="block text-sm font-medium text-primary">{title}</span>
                 <span className="mt-0.5 block truncate text-sm text-tertiary">{description}</span>
             </span>
-            <ArrowRight className="size-4 shrink-0 text-fg-quaternary transition group-hover:translate-x-0.5 group-hover:text-fg-brand-primary" aria-hidden="true" />
+            <ArrowRight className="size-4 shrink-0 text-placeholder transition group-hover:translate-x-0.5 group-hover:text-accent-primary" aria-hidden="true" />
         </Link>
     );
 }

@@ -4,7 +4,7 @@ import { isReactComponent } from "@/utils/is-react-component";
 import { controlScale } from "@/components/base/control-scale";
 
 export const styles = sortCx({
-    common: { root: "group/button-group inline-flex h-max cursor-pointer items-center bg-primary font-semibold whitespace-nowrap text-secondary shadow-skeuomorphic ring-1 ring-primary outline-brand ring-inset hover:bg-primary_hover hover:text-secondary_hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-secondary/50 data-selected:bg-primary_hover data-selected:text-secondary_hover", icon: "pointer-events-none text-fg-quaternary" },
+    common: { root: "group/button-group inline-flex h-max cursor-pointer items-center bg-surface-1 font-semibold whitespace-nowrap text-secondary shadow-skeuomorphic ring-1 ring-strong outline-accent-strong ring-inset hover:bg-layer-1-hover hover:text-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:text-secondary/50 data-selected:bg-layer-1-hover data-selected:text-primary", icon: "pointer-events-none text-placeholder" },
     sizes: {
         sm: { root: `${controlScale.button.sm} gap-2 first:rounded-l-md last:rounded-r-md data-icon-leading:pl-3 data-icon-only:size-8 data-icon-only:px-0`, icon: "size-4" },
         md: { root: `${controlScale.button.md} gap-2 first:rounded-l-md last:rounded-r-md data-icon-leading:pl-4 data-icon-only:size-9 data-icon-only:px-0`, icon: "size-4" },

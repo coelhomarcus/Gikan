@@ -1,87 +1,78 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { Button } from "@/components/base/buttons/button";
+import type { ReactNode } from "react";
+import { Link, useLocation } from "react-router";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
 import { Topbar } from "@/components/layout/topbar";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { ProjectIcon } from "./project-icon";
-import { ProjectSettingsModal } from "./project-settings-modal";
 
-interface ProjectWorkspaceHeaderProps {
+export function ProjectWorkspaceHeader({
+    projectId,
+    activeView,
+    actions,
+}: {
     projectId: string;
-    activeView: "overview" | "issues" | "board" | "documents";
-}
-
-export const ProjectWorkspaceHeader = ({ projectId, activeView }: ProjectWorkspaceHeaderProps) => {
-    const navigate = useNavigate();
+    actions?: ReactNode;
+    activeView: "overview" | "issues" | "board" | "documents" | "cycles" | "settings";
+}) {
     const { data: project } = useProject(projectId);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
-    const overviewPath = `/projects/${projectId}`;
-    const issuesPath = `${overviewPath}/issues`;
-    const boardPath = `${overviewPath}/board`;
-    const documentsPath = `${overviewPath}/documents`;
-
+    const location = useLocation();
+    const issues = activeView === "issues" || activeView === "board";
+    const title = issues ? "Issues" : activeView.charAt(0).toUpperCase() + activeView.slice(1);
     return (
-        <>
-            <Topbar
-                title={
-                    <span className="flex min-w-0 items-center gap-2">
-                        <ProjectIcon icon={project?.icon} className="size-4.5 shrink-0 text-fg-quaternary" />
-                        <span className="truncate">{project?.name ?? "Project"}</span>
-                    </span>
-                }
-                onBack={() => navigate("/")}
-                actions={
-                    <div className="flex items-center gap-2">
-                        {project?.repositoryUrl && (
-                            <ButtonUtility
-                                icon={AppIcons.ExternalLink}
-                                size="sm"
-                                color="tertiary"
-                                tooltip="Open repository"
-                                href={project.repositoryUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            />
-                        )}
-                        <ButtonUtility icon={AppIcons.Settings} size="sm" color="tertiary" tooltip="Settings" onClick={() => setIsSettingsOpen(true)} />
-                    </div>
-                }
-            />
-
-            <nav aria-label="Project views" className="flex h-11 shrink-0 items-center gap-2 overflow-x-auto border-b border-secondary px-4 lg:px-6">
-                <ProjectViewLink href={overviewPath} active={activeView === "overview"} icon={AppIcons.Overview}>
-                    Overview
-                </ProjectViewLink>
-                <ProjectViewLink href={issuesPath} active={activeView === "issues"} icon={AppIcons.Issues}>
-                    Issues
-                </ProjectViewLink>
-                <ProjectViewLink href={boardPath} active={activeView === "board"} icon={AppIcons.Board}>
-                    Board
-                </ProjectViewLink>
-                <ProjectViewLink href={documentsPath} active={activeView === "documents"} icon={AppIcons.Documents}>
-                    Documents
-                </ProjectViewLink>
-            </nav>
-
-            {isSettingsOpen && <ProjectSettingsModal projectId={projectId} onClose={() => setIsSettingsOpen(false)} />}
-        </>
-    );
-};
-
-function ProjectViewLink({ href, active, icon: Icon, children }: { href: string; active: boolean; icon: typeof AppIcons.Overview; children: React.ReactNode }) {
-    return (
-        <Button
-            href={href}
-            color={active ? "secondary" : "tertiary"}
-            size="sm"
-            iconLeading={Icon}
-            aria-current={active ? "page" : undefined}
-            className="shrink-0"
-        >
-            {children}
-        </Button>
+        <Topbar
+            title={
+                <span className="flex min-w-0 items-center gap-2">
+                    <ProjectIcon icon={project?.icon} className="size-4 shrink-0 text-tertiary" />
+                    <Link to={`/projects/${projectId}`} className="truncate text-secondary hover:text-primary">
+                        {project?.name ?? "Project"}
+                    </Link>
+                    <span className="text-placeholder">/</span>
+                    <span>{title}</span>
+                </span>
+            }
+            actions={
+                <>
+                    {issues && (
+                        <nav aria-label="Issue layout" className="flex gap-0.5 rounded-md border border-subtle p-0.5">
+                            {(
+                                [
+                                    ["issues", "List", AppIcons.Issues],
+                                    ["board", "Board", AppIcons.Board],
+                                ] as const
+                            ).map(([view, label, Icon]) => (
+                                <Link
+                                    key={view}
+                                    to={`/projects/${projectId}/${view}${location.search}`}
+                                    aria-label={`${label} layout`}
+                                    aria-current={activeView === view ? "page" : undefined}
+                                    className={`flex size-6 items-center justify-center rounded-sm text-tertiary hover:bg-layer-1-hover ${activeView === view ? "bg-layer-2 text-primary" : ""}`}
+                                >
+                                    <Icon className="size-3.5" />
+                                </Link>
+                            ))}
+                        </nav>
+                    )}
+                    {actions}
+                    {!actions && project?.repositoryUrl && (
+                        <ButtonUtility
+                            icon={AppIcons.ExternalLink}
+                            color="tertiary"
+                            tooltip="Open repository"
+                            href={project.repositoryUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        />
+                    )}
+                    {!actions && <Link
+                        to={`/projects/${projectId}/settings/general`}
+                        aria-label="Project settings"
+                        className="flex size-6 items-center justify-center rounded text-tertiary hover:bg-layer-1-hover"
+                    >
+                        <AppIcons.Settings className="size-4" />
+                    </Link>}
+                </>
+            }
+        />
     );
 }

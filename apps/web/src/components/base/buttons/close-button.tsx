@@ -12,8 +12,8 @@ const sizes = {
 };
 
 const themes = {
-    light: "text-fg-quaternary hover:bg-primary_hover hover:text-fg-quaternary_hover focus-visible:outline-2 focus-visible:outline-offset-2 outline-focus-ring",
-    dark: "text-fg-white/70 hover:text-fg-white hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 outline-focus-ring",
+    light: "text-placeholder hover:bg-layer-1-hover hover:text-secondary focus-visible:outline-2 focus-visible:outline-offset-2 outline-accent-strong",
+    dark: "text-fg-white/70 hover:text-fg-white hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 outline-accent-strong",
 };
 
 interface CloseButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "color"> {

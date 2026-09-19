@@ -37,11 +37,11 @@ interface SlashItem {
 
 function SuggestionMenu<T extends { id: string; label: string; description?: string; icon?: typeof Heading2 }>({ items, selectedIndex, onSelect }: { items: T[]; selectedIndex: number; onSelect: (item: T) => void }) {
     return (
-        <div role="listbox" aria-label="Editor suggestions" className="min-w-60 overflow-hidden rounded-lg border border-secondary bg-primary p-1 shadow-2xl">
+        <div role="listbox" aria-label="Editor suggestions" className="min-w-60 overflow-hidden rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl">
             {items.length === 0 ? <p className="px-3 py-2 text-xs text-tertiary">No matching commands</p> : items.map((item, index) => {
                 const Icon = item.icon;
                 return (
-                    <button key={item.id} type="button" role="option" aria-selected={index === selectedIndex} className={cx("flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 py-2 text-left", index === selectedIndex && "bg-secondary")} onMouseDown={(event) => { event.preventDefault(); onSelect(item); }}>
+                    <button key={item.id} type="button" role="option" aria-selected={index === selectedIndex} className={cx("flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 py-2 text-left", index === selectedIndex && "bg-surface-2")} onMouseDown={(event) => { event.preventDefault(); onSelect(item); }}>
                         {Icon && <Icon className="size-4 shrink-0 text-tertiary" />}
                         <span className="min-w-0"><span className="block text-sm font-medium text-primary">{item.label}</span>{item.description && <span className="block truncate text-xs text-tertiary">{item.description}</span>}</span>
                     </button>
@@ -152,10 +152,11 @@ interface RichTextEditorProps {
     mentionItems?: MentionItem[];
     className?: string;
     onSubmitShortcut?: () => void;
+    toolbar?: boolean;
     variant?: "document" | "description" | "comment";
 }
 
-export const RichTextEditor = ({ content, editable = true, onChange, placeholder = "Write something...", mentionItems = [], className, onSubmitShortcut, variant = "document" }: RichTextEditorProps) => {
+export const RichTextEditor = ({ content, editable = true, onChange, placeholder = "Write something...", mentionItems = [], className, onSubmitShortcut, variant = "document", toolbar = true }: RichTextEditorProps) => {
     const mentionSuggestion = useMemo(() => createMentionSuggestion(mentionItems), [mentionItems]);
     const contentRef = useRef(content);
     const onChangeRef = useRef(onChange);
@@ -205,7 +206,7 @@ export const RichTextEditor = ({ content, editable = true, onChange, placeholder
     }, [content, editable, editor]);
 
     return <div className={cx("tiptap-editor", editable && "min-h-32", !editable && "tiptap-editor-readonly", `tiptap-editor-${variant}`, className)}>
-        {editable && editor && <RichTextToolbar editor={editor} />}
+        {editable && toolbar && editor && <RichTextToolbar editor={editor} />}
         {editable && editor && <RichTextBubbleMenu editor={editor} />}
         <EditorContent editor={editor} />
     </div>;
@@ -227,7 +228,7 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
         else editor.chain().focus().setLink({ href }).run();
         setIsLinkEditorOpen(false);
     };
-    return <div className="tiptap-toolbar sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-secondary bg-primary/95 px-2 py-1.5 backdrop-blur">
+    return <div className="tiptap-toolbar sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-subtle bg-surface-1/95 px-2 py-1.5 backdrop-blur">
         <ToggleGroupRoot aria-label="Text formatting">
             <ToggleGroupItem value="bold" aria-label="Bold" pressed={editor.isActive("bold")} onPressedChange={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></ToggleGroupItem>
             <ToggleGroupItem value="italic" aria-label="Italic" pressed={editor.isActive("italic")} onPressedChange={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></ToggleGroupItem>
@@ -237,13 +238,13 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
         <FormatButton icon={Heading2} label="Heading" active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
         <BasePopover.Root open={isLinkEditorOpen} onOpenChange={setIsLinkEditorOpen}>
             <BasePopover.Trigger
-                render={<button type="button" aria-label="Link" aria-pressed={editor.isActive("link")} className={cx("inline-flex size-7 items-center justify-center rounded-md text-tertiary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-primary", editor.isActive("link") && "bg-secondary text-primary")} onClick={toggleLink} />}
+                render={<button type="button" aria-label="Link" aria-pressed={editor.isActive("link")} className={cx("inline-flex size-7 items-center justify-center rounded-md text-tertiary outline-accent-strong transition-colors hover:bg-layer-1-hover hover:text-primary", editor.isActive("link") && "bg-surface-2 text-primary")} onClick={toggleLink} />}
             >
                 <Link2 className="size-4" />
             </BasePopover.Trigger>
             <BasePopover.Portal>
                 <BasePopover.Positioner side="bottom" align="start" sideOffset={6} className="z-50">
-                    <BasePopover.Popup className="w-72 rounded-lg border border-secondary bg-primary p-3 shadow-2xl outline-none">
+                    <BasePopover.Popup className="w-72 rounded-lg border border-subtle bg-surface-1 p-3 shadow-2xl outline-none">
                         <form className="flex flex-col gap-2" onSubmit={saveLink}>
                             <label className="text-xs font-medium text-secondary" htmlFor="tiptap-link-url">Link URL</label>
                             <Input autoFocus id="tiptap-link-url" size="sm" type="url" value={url} onChange={setUrl} placeholder="https://example.com" />
@@ -258,7 +259,7 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
         </BasePopover.Root>
         <div className="relative">
             <FormatButton icon={MoreHorizontal} label="More formatting" active={isMoreOpen} onClick={() => setIsMoreOpen((open) => !open)} />
-            {isMoreOpen && <div className="absolute top-9 left-0 z-20 flex min-w-44 flex-col gap-1 rounded-lg border border-secondary bg-primary p-1 shadow-xl">
+            {isMoreOpen && <div className="absolute top-9 left-0 z-20 flex min-w-44 flex-col gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-xl">
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={List} onClick={() => editor.chain().focus().toggleBulletList().run()}>Bullet list</Button>
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={ListOrdered} onClick={() => editor.chain().focus().toggleOrderedList().run()}>Numbered list</Button>
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={CheckSquare} onClick={() => editor.chain().focus().toggleTaskList().run()}>Task list</Button>
@@ -271,7 +272,7 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
 }
 
 function RichTextBubbleMenu({ editor }: { editor: NonNullable<ReturnType<typeof useEditor>> }) {
-    return <BubbleMenu editor={editor} options={{ placement: "top" }} className="flex items-center gap-1 rounded-lg border border-secondary bg-primary p-1 shadow-2xl">
+    return <BubbleMenu editor={editor} options={{ placement: "top" }} className="flex items-center gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl">
         <FormatButton icon={Bold} label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
         <FormatButton icon={Italic} label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
         <FormatButton icon={Strikethrough} label="Strikethrough" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} />
@@ -298,13 +299,13 @@ function LinkPopover({ editor }: { editor: NonNullable<ReturnType<typeof useEdit
 
     return <BasePopover.Root open={open} onOpenChange={setOpen}>
         <BasePopover.Trigger
-            render={<button type="button" aria-label="Link" aria-pressed={editor.isActive("link")} className={cx("inline-flex size-7 items-center justify-center rounded-md text-tertiary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-primary", editor.isActive("link") && "bg-secondary text-primary")} onClick={openEditor} />}
+            render={<button type="button" aria-label="Link" aria-pressed={editor.isActive("link")} className={cx("inline-flex size-7 items-center justify-center rounded-md text-tertiary outline-accent-strong transition-colors hover:bg-layer-1-hover hover:text-primary", editor.isActive("link") && "bg-surface-2 text-primary")} onClick={openEditor} />}
         >
             <Link2 className="size-4" />
         </BasePopover.Trigger>
         <BasePopover.Portal>
             <BasePopover.Positioner side="bottom" align="start" sideOffset={6} className="z-[110]">
-                <BasePopover.Popup className="w-72 rounded-lg border border-secondary bg-primary p-3 shadow-2xl outline-none">
+                <BasePopover.Popup className="w-72 rounded-lg border border-subtle bg-surface-1 p-3 shadow-2xl outline-none">
                     <form className="flex flex-col gap-2" onSubmit={save}>
                         <label className="text-xs font-medium text-secondary" htmlFor="tiptap-bubble-link-url">Link URL</label>
                         <Input autoFocus id="tiptap-bubble-link-url" size="sm" type="url" value={url} onChange={setUrl} placeholder="https://example.com" />

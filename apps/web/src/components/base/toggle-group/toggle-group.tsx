@@ -8,5 +8,5 @@ export const ToggleGroupRoot = ({ className, ...props }: ComponentProps<typeof T
 );
 
 export const ToggleGroupItem = ({ className, ...props }: ComponentProps<typeof Toggle>) => (
-    <Toggle {...props} className={(state) => cx("inline-flex size-8 items-center justify-center rounded-md text-tertiary outline-focus-ring transition-colors hover:bg-primary_hover hover:text-primary data-pressed:bg-secondary data-pressed:text-primary", typeof className === "function" ? className(state) : className)} />
+    <Toggle {...props} className={(state) => cx("inline-flex size-8 items-center justify-center rounded-md text-tertiary outline-accent-strong transition-colors hover:bg-layer-1-hover hover:text-primary data-pressed:bg-surface-2 data-pressed:text-primary", typeof className === "function" ? className(state) : className)} />
 );

@@ -37,7 +37,7 @@ export const SelectItem = ({
             value={value ?? id}
             label={text}
             disabled={isDisabled}
-            className={(state) => cx("w-full rounded-md outline-none", "data-[highlighted]:bg-primary_hover", "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50", state.highlighted && "bg-primary_hover", className)}
+            className={(state) => cx("w-full rounded-md outline-none", "data-[highlighted]:bg-layer-1-hover", "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50", state.highlighted && "bg-layer-1-hover", className)}
         >
             <div className={cx("flex cursor-pointer items-center select-none", sizes[size].root)}>
                 {isLeft && selectionIndicator === "checkbox" && <CheckboxBase size={size === "lg" ? "md" : "sm"} />}
@@ -48,7 +48,7 @@ export const SelectItem = ({
                     <span className={cx("truncate font-medium whitespace-nowrap text-primary", sizes[size].text)}>{children ?? label}</span>
                     {supportingText && <span className={cx("whitespace-nowrap text-tertiary", sizes[size].text)}>{supportingText}</span>}
                 </span>
-                {selectionIndicator === "checkmark" && <BaseSelect.ItemIndicator className="ml-auto"><Check aria-hidden="true" className="size-4 text-fg-brand-primary" /></BaseSelect.ItemIndicator>}
+                {selectionIndicator === "checkmark" && <BaseSelect.ItemIndicator className="ml-auto"><Check aria-hidden="true" className="size-4 text-accent-primary" /></BaseSelect.ItemIndicator>}
                 {!isLeft && selectionIndicator === "checkbox" && <BaseSelect.ItemIndicator className="ml-auto"><CheckboxBase size={size === "lg" ? "md" : "sm"} /></BaseSelect.ItemIndicator>}
             </div>
         </BaseSelect.Item>

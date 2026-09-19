@@ -21,7 +21,7 @@ const styles = sortCx({
         },
         colors: {
             brand: "bg-brand-secondary text-featured-icon-light-fg-brand",
-            gray: "bg-tertiary text-featured-icon-light-fg-gray",
+            gray: "bg-layer-2 text-featured-icon-light-fg-gray",
             error: "bg-error-secondary text-featured-icon-light-fg-error",
             warning: "bg-warning-secondary text-featured-icon-light-fg-warning",
             success: "bg-success-secondary text-featured-icon-light-fg-success",
@@ -37,9 +37,9 @@ const styles = sortCx({
             xl: "size-14 after:size-10 *:data-icon:size-5",
         },
         colors: {
-            brand: "before:border-utility-brand-200 before:bg-utility-brand-50 after:bg-brand-solid",
+            brand: "before:border-utility-brand-200 before:bg-utility-brand-50 after:bg-accent-primary",
             gray: "before:border-utility-neutral-200 before:bg-utility-neutral-50 after:bg-secondary-solid",
-            error: "before:border-utility-red-200 before:bg-utility-red-50 after:bg-error-solid",
+            error: "before:border-utility-red-200 before:bg-utility-red-50 after:bg-danger-primary",
             warning: "before:border-utility-yellow-200 before:bg-utility-yellow-50 after:bg-warning-solid",
             success: "before:border-utility-green-200 before:bg-utility-green-50 after:bg-success-solid",
         },
@@ -54,16 +54,16 @@ const styles = sortCx({
             xl: "size-14 rounded-xl before:rounded-[11px]",
         },
         colors: {
-            brand: "bg-brand-solid before:border-utility-brand-200/12",
+            brand: "bg-accent-primary before:border-utility-brand-200/12",
             gray: "bg-secondary-solid before:border-utility-neutral-200/12",
-            error: "bg-error-solid before:border-utility-red-200/12",
+            error: "bg-danger-primary before:border-utility-red-200/12",
             warning: "bg-warning-solid before:border-utility-yellow-200/12",
             success: "bg-success-solid before:border-utility-green-200/12",
         },
     },
 
     modern: {
-        base: "bg-primary shadow-xs-skeuomorphic ring-1 ring-primary ring-inset",
+        base: "bg-surface-1 shadow-xs-skeuomorphic ring-1 ring-strong ring-inset",
         sizes: {
             sm: "size-8 rounded-md",
             md: "size-10 rounded-lg",
@@ -71,16 +71,16 @@ const styles = sortCx({
             xl: "size-14 rounded-xl",
         },
         colors: {
-            brand: "text-fg-brand-primary",
-            gray: "text-fg-secondary",
-            error: "text-fg-error-primary",
+            brand: "text-accent-primary",
+            gray: "text-secondary",
+            error: "text-danger-primary",
             warning: "text-fg-warning-primary",
             success: "text-fg-success-primary",
         },
     },
     "modern-neue": {
         base: [
-            "bg-primary_alt ring-1 ring-inset before:absolute before:inset-1",
+            "bg-surface-1 ring-1 ring-inset before:absolute before:inset-1",
             // Shadow
             "before:shadow-[0px_1px_2px_0px_rgba(0,0,0,0.1),0px_3px_3px_0px_rgba(0,0,0,0.09),1px_8px_5px_0px_rgba(0,0,0,0.05),2px_21px_6px_0px_rgba(0,0,0,0),0px_0px_0px_1px_rgba(0,0,0,0.08),1px_13px_5px_0px_rgba(0,0,0,0.01),0px_-2px_2px_0px_rgba(0,0,0,0.13)_inset] before:ring-1 before:ring-secondary_alt",
         ].join(" "),
@@ -92,7 +92,7 @@ const styles = sortCx({
         },
         colors: {
             brand: "",
-            gray: "text-fg-secondary ring-primary",
+            gray: "text-secondary ring-strong",
             error: "",
             warning: "",
             success: "",
@@ -108,9 +108,9 @@ const styles = sortCx({
             xl: "size-7 before:size-9 after:size-11.5",
         },
         colors: {
-            brand: "text-fg-brand-primary before:border-fg-brand-primary/30 after:border-fg-brand-primary/10",
-            gray: "text-fg-tertiary before:border-fg-tertiary/30 after:border-fg-tertiary/10",
-            error: "text-fg-error-primary before:border-fg-error-primary/30 after:border-fg-error-primary/10",
+            brand: "text-accent-primary before:border-fg-brand-primary/30 after:border-fg-brand-primary/10",
+            gray: "text-tertiary before:border-fg-tertiary/30 after:border-fg-tertiary/10",
+            error: "text-danger-primary before:border-fg-error-primary/30 after:border-fg-error-primary/10",
             warning: "text-fg-warning-primary before:border-fg-warning-primary/30 after:border-fg-warning-primary/10",
             success: "text-fg-success-primary before:border-fg-success-primary/30 after:border-fg-success-primary/10",
         },

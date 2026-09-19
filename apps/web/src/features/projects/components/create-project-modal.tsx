@@ -44,10 +44,10 @@ export const CreateProjectModal = () => {
                     })}
                 >
                     <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
-                    <div className="rounded-md border border-secondary bg-secondary_alt px-3 py-2">
+                    <div className="rounded-md border border-subtle bg-surface-2 px-3 py-2">
                         <div className="flex items-center justify-between gap-3">
                             <span className="text-xs font-medium text-tertiary">Generated issue key</span>
-                            <span className="font-mono text-sm font-semibold text-fg-brand-primary">{projectName.trim() ? generatedIssueKey : "PRJ"}</span>
+                            <span className="font-mono text-sm font-semibold text-accent-primary">{projectName.trim() ? generatedIssueKey : "PRJ"}</span>
                         </div>
                         <p className="mt-1 text-xs text-tertiary">
                             This key is generated from the project name and can be changed later before the first issue.
@@ -60,13 +60,13 @@ export const CreateProjectModal = () => {
                         control={control}
                         name="icon"
                         render={({ field }) => (
-                            <Suspense fallback={<div className="h-24 animate-pulse rounded-md bg-secondary_alt" aria-label="Loading icon picker" />}>
+                            <Suspense fallback={<div className="h-24 animate-pulse rounded-md bg-surface-2" aria-label="Loading icon picker" />}>
                                 <ProjectIconPicker value={field.value} onChange={field.onChange} />
                             </Suspense>
                         )}
                     />
 
-                    {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
+                    {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 
                     <div className="mt-2 flex justify-end gap-3">
                         <Button type="button" color="secondary" onClick={close}>
