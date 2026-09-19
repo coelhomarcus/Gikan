@@ -1,6 +1,5 @@
-import { ArrowRight, ExternalLink, Gauge, ListChecks } from "lucide-react";
+import { ArrowRight, Gauge, ListChecks } from "lucide-react";
 import { Link, useParams } from "react-router";
-import { Button } from "@/components/base/buttons/button";
 import { Skeleton } from "@/components/base/feedback/skeleton";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -37,11 +36,6 @@ export const ProjectOverviewPage = () => {
                             <h1 className="mt-1 text-display-sm font-semibold tracking-tight text-primary">{project.name}</h1>
                             {project.description && <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{project.description}</p>}
                         </div>
-                        {project.repositoryUrl && (
-                            <Button href={project.repositoryUrl} target="_blank" rel="noopener noreferrer" color="secondary" size="sm" iconLeading={ExternalLink}>
-                                Repository
-                            </Button>
-                        )}
                     </header>
 
                     <section className="grid gap-6 border-b border-subtle py-6 lg:grid-cols-[minmax(0,1fr)_16rem]">
