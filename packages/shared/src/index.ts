@@ -3,5 +3,6 @@ export * from "./schemas/categories";
 export * from "./schemas/columns";
 export * from "./schemas/issues";
 export * from "./schemas/projects";
+export * from "./schemas/documents";
 export * from "./schemas/users";
 export * from "./rich-text";

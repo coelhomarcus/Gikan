@@ -84,10 +84,14 @@ test("creates an issue and saves an edited title from its peek view", async ({ p
 test("saves project document content and creates a cycle", async ({ page }) => {
     await mockApi(page);
     await page.goto(`/projects/${projectId}/documents`);
+    await page
+        .locator("main")
+        .getByRole("link", { name: /Overview notes/ })
+        .click();
     const editor = page.locator(".ProseMirror[contenteditable='true']").first();
     await editor.fill("Updated planning notes for the September sprint.");
     const documentSave = page.waitForResponse((response) => response.request().method() === "PATCH" && response.url().includes("/document"));
-    await page.getByRole("button", { name: "Save" }).click();
+    await editor.press("ControlOrMeta+s");
     await documentSave;
     await expect(page.getByText("Saved", { exact: true })).toBeVisible();
 
@@ -324,7 +328,7 @@ test("Peek menus, description save, and close preserve board context", async ({ 
     const description = peek.locator(".peek-description .ProseMirror");
     await description.fill("A description edited from the board Peek.");
     await expect(peek.locator(".tiptap-toolbar")).toBeVisible();
-    const saved = page.waitForResponse(r => r.request().method() === "PATCH" && r.url().endsWith("/issues/PLAT-1"));
+    const saved = page.waitForResponse((r) => r.request().method() === "PATCH" && r.url().endsWith("/issues/PLAT-1"));
     await peek.getByRole("button", { name: "Save description" }).click();
     await saved;
     await expect(peek.locator(".tiptap-toolbar")).toHaveCount(0);

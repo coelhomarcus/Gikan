@@ -51,9 +51,12 @@ pnpm dev:web   # http://localhost:5173
 - `/projects/:projectId` — project overview.
 - `/projects/:projectId/issues` — issue list.
 - `/projects/:projectId/board` — Kanban board.
-- `/projects/:projectId/documents` — project document.
+- `/projects/:projectId/documents` — project pages, search, and creation.
+- `/projects/:projectId/documents/:documentId` — full-width block editor.
 - `/projects/:projectId/issues/:issueIdentifier` — issue page.
 - `/projects/:projectId/page` — compatibility redirect to Documents.
+
+Documents support multiple pages per project, editable titles, slash commands, draggable blocks, URL images, and tables. Changes save after one second of inactivity; Ctrl/Cmd+S saves immediately. Local drafts persist in IndexedDB, and revision conflicts require an explicit choice before replacing a draft. Members can create and edit pages; the author, project owner, and admin can delete them.
 
 Issues use project-specific identifiers such as `TK-184`. Opening an issue from the list or board displays a Peek panel while preserving the source screen. Direct navigation or a refresh displays the full issue page.
 
@@ -95,4 +98,4 @@ docker run -p 3000:3000 \
   gikan
 ```
 
-Migrations preserve existing data, convert `cards` into `issues`, and convert legacy Markdown content into Tiptap documents.
+Migrations preserve existing data and convert `cards` into `issues`. Migration `0008_document_pages` turns existing project documents into pages named `Overview notes`, preserving their IDs and JSON content. Apply it before starting the updated application.

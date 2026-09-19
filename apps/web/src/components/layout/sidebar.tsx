@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AddOutline, ChevronDownOutline, ChevronRightOutline, LabelsOutline, MembersOutline, StateOutline } from "@makeplane/propel/icons";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -8,6 +8,7 @@ import { AppIcons } from "@/components/foundations/icons";
 import type { AppIcon } from "@/components/foundations/icons";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
+import { useDocuments } from "@/features/documents/hooks/use-documents";
 import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
 import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { useProjects } from "@/features/projects/hooks/use-projects";
@@ -19,6 +20,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const { data: projects } = useProjects();
     const projectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
     const { data: columns } = useColumns(projectId);
+    const { data: documents } = useDocuments(projectId);
     const [creating, setCreating] = useState(false);
     const [expanded, setExpanded] = useState(() => localStorage.getItem("gikan-projects-expanded") !== "false");
     const settings = location.pathname === "/settings/profile";
@@ -122,15 +124,28 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                                         ? /\/(issues|board)(\/|$)/.test(location.pathname)
                                                         : location.pathname === `/projects/${project.id}${suffix}`;
                                                 return (
-                                                    <Link
-                                                        key={label}
-                                                        to={`/projects/${project.id}${suffix}`}
-                                                        className={`${navClass} ${active ? "bg-layer-1 text-primary" : ""}`}
-                                                        aria-current={active ? "page" : undefined}
-                                                    >
-                                                        <Icon className="size-4 shrink-0" />
-                                                        {label}
-                                                    </Link>
+                                                    <Fragment key={label}>
+                                                        <Link
+                                                            to={`/projects/${project.id}${suffix}`}
+                                                            className={`${navClass} ${active ? "bg-layer-1 text-primary" : ""}`}
+                                                            aria-current={active ? "page" : undefined}
+                                                        >
+                                                            <Icon className="size-4 shrink-0" />
+                                                            {label}
+                                                        </Link>
+                                                        {suffix === "/documents" &&
+                                                            documents?.map((page) => (
+                                                                <Link
+                                                                    key={page.id}
+                                                                    to={`/projects/${projectId}/documents/${page.id}`}
+                                                                    className={`${navClass} ml-4 ${location.pathname.endsWith(`/documents/${page.id}`) ? "bg-layer-1 text-primary" : ""}`}
+                                                                    aria-current={location.pathname.endsWith(`/documents/${page.id}`) ? "page" : undefined}
+                                                                >
+                                                                    <AppIcons.Documents className="size-3 shrink-0" />
+                                                                    <span className="truncate">{page.title}</span>
+                                                                </Link>
+                                                            ))}
+                                                    </Fragment>
                                                 );
                                             })}
                                             <Link to={`/projects/${projectId}/settings/general`} className={navClass}>

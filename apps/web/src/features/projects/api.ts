@@ -1,4 +1,4 @@
-import type { CreateProjectInput, TiptapDocument, UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import type { CreateProjectInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Project {
@@ -45,18 +45,6 @@ export function updateProject(projectId: string, input: UpdateProjectInput): Pro
 
 export function updateProjectPage(projectId: string, input: UpdateProjectPageInput): Promise<Project> {
     return apiClient.patch<{ project: Project }>(`/projects/${projectId}/page`, input).then((res) => res.project);
-}
-
-export function getProjectDocument(projectId: string): Promise<{ id: string | null; projectId: string; contentJson: TiptapDocument }> {
-    return apiClient
-        .get<{ document: { id: string | null; projectId: string; contentJson: TiptapDocument } }>(`/projects/${projectId}/document`)
-        .then((res) => res.document);
-}
-
-export function updateProjectDocument(projectId: string, input: UpdateProjectDocumentInput) {
-    return apiClient
-        .patch<{ document: { id: string; projectId: string; contentJson: TiptapDocument } }>(`/projects/${projectId}/document`, input)
-        .then((res) => res.document);
 }
 
 export function deleteProject(projectId: string): Promise<void> {

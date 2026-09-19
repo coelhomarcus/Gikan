@@ -1,6 +1,6 @@
-import { writeFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { mockApi, projectId } from "./fixtures";
+import { writeFile } from "node:fs/promises";
+import { documentId, mockApi, projectId } from "./fixtures";
 
 const views = [
     ["projects", "/", "Platform"],
@@ -9,6 +9,7 @@ const views = [
     ["board", `/projects/${projectId}/board`, "Backlog"],
     ["issue", `/projects/${projectId}/issues/PLAT-1`, "Build the project workspace"],
     ["documents", `/projects/${projectId}/documents`, "Overview notes"],
+    ["document-editor", `/projects/${projectId}/documents/${documentId}`, "Make every detail count."],
     ["cycles", `/projects/${projectId}/cycles`, "September sprint"],
     ["settings-general", `/projects/${projectId}/settings/general`, "General"],
     ["settings-states", `/projects/${projectId}/settings/states`, "States"],
@@ -30,6 +31,7 @@ test("capture stable dark Gikan route references at desktop widths", async ({ pa
             await expect(page.locator("[data-app-content]")).toBeVisible();
             await expect(page.getByText(landmark, { exact: false }).first()).toBeVisible();
             if (name === "settings-general") await expect(page.getByLabel("Loading icon picker")).toHaveCount(0);
+            if (name === "document-editor") await expect(page.getByRole("textbox", { name: "Page title" })).toHaveValue("Overview notes");
             await page.evaluate(() => document.fonts.ready);
             const directory = `../../docs/visual/after/${viewport.width}-${viewport.height}`;
             await page.screenshot({ path: `${directory}/${name}.png`, animations: "disabled", fullPage: false });
@@ -45,6 +47,7 @@ test("capture responsive list, board, issue, and document views", async ({ page 
         ["board", `/projects/${projectId}/board`],
         ["issue", `/projects/${projectId}/issues/PLAT-1`],
         ["documents", `/projects/${projectId}/documents`],
+        ["document-editor", `/projects/${projectId}/documents/${documentId}`],
     ] as const;
     for (const viewport of [
         { width: 1024, height: 768 },
@@ -58,7 +61,8 @@ test("capture responsive list, board, issue, and document views", async ({ page 
             if (name === "list") await expect(page.locator('[data-issue-identifier="PLAT-1"]')).toBeVisible();
             if (name === "board") await expect(page.getByText("Backlog", { exact: true }).first()).toBeVisible();
             if (name === "issue") await expect(page.getByRole("textbox", { name: "Issue title" })).toHaveValue("Build the project workspace");
-            if (name === "documents") await expect(page.getByRole("heading", { name: "Overview notes" })).toBeVisible();
+            if (name === "documents") await expect(page.getByRole("heading", { name: "Documents" })).toBeVisible();
+            if (name === "document-editor") await expect(page.getByRole("textbox", { name: "Page title" })).toHaveValue("Overview notes");
             await page.evaluate(() => document.fonts.ready);
             const directory = `../../docs/visual/after/${viewport.width}-${viewport.height}`;
             await page.screenshot({ path: `${directory}/${name}.png`, animations: "disabled", fullPage: false });
@@ -96,10 +100,13 @@ test("capture interactive menu, focus, hover, Peek, and mobile drawer states", a
     await page.screenshot({ path: "../../docs/visual/after/390-844/mobile-navigation-open.png", animations: "disabled" });
 });
 
-
 test("capture Kanban and side Peek for Plane review", async ({ page }) => {
     await mockApi(page);
-    for (const viewport of [{ width: 1440, height: 900 }, { width: 1920, height: 1080 }, { width: 390, height: 844 }]) {
+    for (const viewport of [
+        { width: 1440, height: 900 },
+        { width: 1920, height: 1080 },
+        { width: 390, height: 844 },
+    ]) {
         await page.setViewportSize(viewport);
         await page.goto(`/projects/${projectId}/board`);
         const card = page.locator('[data-issue-identifier="PLAT-1"]');
@@ -115,14 +122,39 @@ test("capture Kanban and side Peek for Plane review", async ({ page }) => {
         await page.screenshot({ path: `${directory}/board-peek.png`, animations: "disabled" });
         if (viewport.width === 1440) {
             const measurements = await page.evaluate(() => {
-                const selectors = { card: '[data-issue-identifier="PLAT-1"]', cardTitle: '[data-issue-identifier="PLAT-1"] p', cardIdentifier: '[data-issue-identifier="PLAT-1"] > span', title: '.plane-issue-peek textarea', description: '.peek-description .ProseMirror', panel: '[role="dialog"]' };
-                return Object.fromEntries(Object.entries(selectors).map(([key, selector]) => {
-                    const element = document.querySelector(selector)!;
-                    const s = getComputedStyle(element), r = element.getBoundingClientRect();
-                    return [key, { x: r.x, y: r.y, width: r.width, height: r.height, fontSize: s.fontSize, lineHeight: s.lineHeight, weight: s.fontWeight, background: s.backgroundColor, color: s.color, padding: s.padding, radius: s.borderRadius }];
-                }));
+                const selectors = {
+                    card: '[data-issue-identifier="PLAT-1"]',
+                    cardTitle: '[data-issue-identifier="PLAT-1"] p',
+                    cardIdentifier: '[data-issue-identifier="PLAT-1"] > span',
+                    title: ".plane-issue-peek textarea",
+                    description: ".peek-description .ProseMirror",
+                    panel: '[role="dialog"]',
+                };
+                return Object.fromEntries(
+                    Object.entries(selectors).map(([key, selector]) => {
+                        const element = document.querySelector(selector)!;
+                        const s = getComputedStyle(element),
+                            r = element.getBoundingClientRect();
+                        return [
+                            key,
+                            {
+                                x: r.x,
+                                y: r.y,
+                                width: r.width,
+                                height: r.height,
+                                fontSize: s.fontSize,
+                                lineHeight: s.lineHeight,
+                                weight: s.fontWeight,
+                                background: s.backgroundColor,
+                                color: s.color,
+                                padding: s.padding,
+                                radius: s.borderRadius,
+                            },
+                        ];
+                    }),
+                );
             });
-            await writeFile('../../docs/visual/gikan-kanban-peek-measurements.json', JSON.stringify(measurements, null, 2));
+            await writeFile("../../docs/visual/gikan-kanban-peek-measurements.json", JSON.stringify(measurements, null, 2));
         }
     }
 });

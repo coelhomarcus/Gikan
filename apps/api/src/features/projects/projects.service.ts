@@ -1,7 +1,7 @@
-import { suggestProjectKey, type CreateProjectInput, type TiptapDocument, type UpdateProjectDocumentInput, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
+import { suggestProjectKey, type CreateProjectInput, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
-import { boardColumns, issues, projectDocuments, projectMembers, projects, users } from "../../db/schema";
+import { boardColumns, issues, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 import { isProjectKeyConflict } from "./project-key";
 
@@ -136,22 +136,6 @@ export async function updateProjectPage(projectId: string, input: UpdateProjectP
         throw new HttpError(404, "Project not found");
     }
     return project;
-}
-
-const EMPTY_DOCUMENT: TiptapDocument = { type: "doc", content: [] };
-
-export async function getProjectDocument(projectId: string) {
-    const document = await db.query.projectDocuments.findFirst({ where: eq(projectDocuments.projectId, projectId) });
-    return document ?? { id: null, projectId, contentJson: EMPTY_DOCUMENT, updatedAt: new Date().toISOString() };
-}
-
-export async function updateProjectDocument(projectId: string, input: UpdateProjectDocumentInput) {
-    const [document] = await db
-        .insert(projectDocuments)
-        .values({ projectId, contentJson: input.contentJson, updatedAt: new Date() })
-        .onConflictDoUpdate({ target: projectDocuments.projectId, set: { contentJson: input.contentJson, updatedAt: new Date() } })
-        .returning();
-    return document;
 }
 
 export async function deleteProject(projectId: string) {

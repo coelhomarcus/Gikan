@@ -21,6 +21,8 @@ app.set("trust proxy", 1);
 // (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, HSTS, etc.) are still worthwhile.
 app.use(helmet({ contentSecurityPolicy: false }));
 
+// URL images keep document payloads small; allow long text and tables without the default 100 KB limit.
+app.use("/api/projects/:projectId/documents", express.json({ limit: "2mb" }));
 app.use(express.json());
 app.use(cookieParser());
 

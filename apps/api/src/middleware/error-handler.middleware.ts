@@ -13,6 +13,11 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
         return;
     }
 
+    if (typeof err === "object" && err !== null && "type" in err && err.type === "entity.too.large") {
+        res.status(413).json({ error: "This document is too large to save. Split its content into smaller pages." });
+        return;
+    }
+
     console.error(err);
     res.status(500).json({ error: "Internal error" });
 }

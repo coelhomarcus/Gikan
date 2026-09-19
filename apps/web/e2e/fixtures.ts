@@ -1,5 +1,6 @@
 import type { Page } from "@playwright/test";
 
+export const documentId = "77777777-7777-4777-8777-777777777777";
 export const projectId = "11111111-1111-4111-8111-111111111111";
 const userId = "22222222-2222-4222-8222-222222222222";
 export const timestamp = "2026-09-18T12:00:00.000Z";
@@ -68,7 +69,10 @@ export const issues = ["Build the project workspace", "Refine the issue list", "
 );
 
 /** In-memory HTTP fixtures; never touches the running API or its database. */
-export async function mockApi(page: Page, options: { authenticated?: boolean; empty?: boolean; admin?: boolean; errorPath?: string; errorMethod?: string } = {}) {
+export async function mockApi(
+    page: Page,
+    options: { authenticated?: boolean; empty?: boolean; admin?: boolean; errorPath?: string; errorMethod?: string } = {},
+) {
     let authenticated = options.authenticated ?? true;
     const currentUser = { ...user, isAdmin: options.admin ?? true };
     const currentProject = { ...project };
@@ -77,7 +81,18 @@ export async function mockApi(page: Page, options: { authenticated?: boolean; em
     const currentCategories = structuredClone([category]);
     const currentCycles = structuredClone([cycle]);
     const members: Array<Record<string, unknown>> = [{ ...currentUser, role: options.admin === false ? "member" : "owner", joinedAt: timestamp }];
-    let document = { id: "document-1", projectId, contentJson: documentJson };
+    const documents = [
+        {
+            id: documentId,
+            projectId,
+            title: "Overview notes",
+            contentJson: documentJson,
+            createdBy: userId,
+            createdAt: timestamp,
+            updatedAt: timestamp,
+            revision: 1,
+        },
+    ];
     const comments: Record<string, unknown>[] = [];
     const relations: Record<string, unknown>[] = [];
     await page.clock.install({ time: new Date(timestamp) });
@@ -107,13 +122,50 @@ export async function mockApi(page: Page, options: { authenticated?: boolean; em
             if (method === "PATCH") Object.assign(currentProject, body);
             return json({ project: currentProject });
         }
-        if (path.endsWith("/document")) {
-            if (method === "PATCH") document = { ...document, ...body };
+        if (path === `/projects/${projectId}/documents`) {
+            if (method === "POST") {
+                const document = {
+                    ...documents[0],
+                    id: crypto.randomUUID(),
+                    projectId,
+                    title: "Untitled",
+                    contentJson: { type: "doc", content: [] },
+                    createdBy: userId,
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                    revision: 1,
+                    ...body,
+                };
+                documents.push(document);
+                return json({ document }, 201);
+            }
+            return json({ documents: documents.map(({ contentJson: _content, ...summary }) => summary) });
+        }
+        if (path.startsWith(`/projects/${projectId}/documents/`)) {
+            const index = documents.findIndex((document) => path.endsWith(`/${document.id}`));
+            if (index < 0) return json({ error: "Document not found" }, 404);
+            const document = documents[index];
+            if (method === "PATCH") {
+                if (body.expectedRevision !== document.revision) return json({ error: "This page was updated elsewhere." }, 409);
+                Object.assign(document, { title: body.title || "Untitled", contentJson: body.contentJson, revision: document.revision + 1 });
+            }
+            if (method === "DELETE") {
+                documents.splice(index, 1);
+                return route.fulfill({ status: 204 });
+            }
             return json({ document });
         }
         if (path.endsWith("/members")) {
             if (method === "POST") {
-                const member = { id: "new-member", name: "Sam Rivera", username: body.username, email: `${body.username}@example.test`, avatarUrl: null, role: "member", joinedAt: timestamp };
+                const member = {
+                    id: "new-member",
+                    name: "Sam Rivera",
+                    username: body.username,
+                    email: `${body.username}@example.test`,
+                    avatarUrl: null,
+                    role: "member",
+                    joinedAt: timestamp,
+                };
                 members.push(member);
                 return json({ members, member });
             }
@@ -185,14 +237,23 @@ export async function mockApi(page: Page, options: { authenticated?: boolean; em
             if (method === "POST") {
                 const target = currentIssues.find((item) => item.identifier.toLowerCase() === String(body.targetIssueIdentifier).toLowerCase());
                 if (!target) return json({ error: "Issue not found" }, 404);
-                const relation = { id: "relation-1", sourceIssueId: issues[0].id, targetIssueId: target.id, type: body.type, target: { id: target.id, number: target.number, title: target.title, projectId, project: { issueKey: currentProject.issueKey } } };
+                const relation = {
+                    id: "relation-1",
+                    sourceIssueId: issues[0].id,
+                    targetIssueId: target.id,
+                    type: body.type,
+                    target: { id: target.id, number: target.number, title: target.title, projectId, project: { issueKey: currentProject.issueKey } },
+                };
                 relations.push(relation);
                 return json({ relations, relation });
             }
             return json({ relations });
         }
         if (path.startsWith("/relations/") && method === "DELETE") {
-            relations.splice(relations.findIndex((relation) => relation.id === path.split("/").at(-1)), 1);
+            relations.splice(
+                relations.findIndex((relation) => relation.id === path.split("/").at(-1)),
+                1,
+            );
             return route.fulfill({ status: 204 });
         }
         if (path === `/projects/${projectId}/issues`) {
@@ -216,8 +277,16 @@ export async function mockApi(page: Page, options: { authenticated?: boolean; em
                     category: currentCategories.find((item) => item.id === issue.categoryId) ?? null,
                     column: currentColumns.find((c) => c.id === issue.columnId),
                     cycle: currentCycles.find((item) => item.id === issue.cycleId) ?? null,
-                    parent: currentIssues.find((item) => item.id === issue.parentIssueId) ? { id: issue.parentIssueId, number: currentIssues.find((item) => item.id === issue.parentIssueId)!.number, title: currentIssues.find((item) => item.id === issue.parentIssueId)!.title } : null,
-                    children: currentIssues.filter((item) => item.parentIssueId === issue.id).map((item) => ({ id: item.id, number: item.number, title: item.title, columnId: item.columnId, priority: item.priority })),
+                    parent: currentIssues.find((item) => item.id === issue.parentIssueId)
+                        ? {
+                              id: issue.parentIssueId,
+                              number: currentIssues.find((item) => item.id === issue.parentIssueId)!.number,
+                              title: currentIssues.find((item) => item.id === issue.parentIssueId)!.title,
+                          }
+                        : null,
+                    children: currentIssues
+                        .filter((item) => item.parentIssueId === issue.id)
+                        .map((item) => ({ id: item.id, number: item.number, title: item.title, columnId: item.columnId, priority: item.priority })),
                 },
             });
         }

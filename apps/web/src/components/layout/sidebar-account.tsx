@@ -5,6 +5,7 @@ import { Avatar } from "@/components/base/avatar/avatar";
 import { AppIcons } from "@/components/foundations/icons";
 import { AUTH_QUERY_KEY, logout } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { clearDocumentDrafts } from "@/features/documents/sessions";
 
 export function SidebarAccount() {
     const { user } = useAuth();
@@ -12,7 +13,12 @@ export function SidebarAccount() {
     const navigate = useNavigate();
     const mutation = useMutation({
         mutationFn: logout,
-        onSuccess: () => {
+        onSuccess: async () => {
+            if (user)
+                await clearDocumentDrafts(user.id).catch(() => {
+                    // Authentication still ends if browser storage is unavailable.
+                    console.warn("Could not clear local document storage during sign out.");
+                });
             queryClient.setQueryData(AUTH_QUERY_KEY, null);
             queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== AUTH_QUERY_KEY[0] });
             navigate("/login", { replace: true });

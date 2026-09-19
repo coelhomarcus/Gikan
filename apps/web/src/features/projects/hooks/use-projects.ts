@@ -1,17 +1,9 @@
-import type { UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import type { UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-import {
-    type Project,
-    type ProjectSummary,
-    createProject,
-    deleteProject,
-    getProjectDocument,
-    listProjects,
-    updateProject,
-    updateProjectDocument,
-    updateProjectPage,
-} from "../api";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { clearDocumentDrafts } from "@/features/documents/sessions";
+import { type Project, type ProjectSummary, createProject, deleteProject, listProjects, updateProject, updateProjectPage } from "../api";
 import { projectQueryKey } from "./use-project";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
@@ -44,11 +36,13 @@ export function useUpdateProject(projectId: string) {
 }
 
 export function useDeleteProject(project: Pick<Project, "id" | "issueKey">) {
+    const { user } = useAuth();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     return useMutation({
         mutationFn: () => deleteProject(project.id),
         onSuccess: async () => {
+            if (user) await clearDocumentDrafts(user.id, project.id).catch(() => console.warn("Could not clear local drafts for the deleted project."));
             navigate("/", { replace: true, flushSync: true });
             const filters = {
                 predicate: (query: { queryKey: readonly unknown[] }) =>
@@ -85,17 +79,5 @@ export function useUpdateProjectPage(projectId: string) {
             queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
             queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
         },
-    });
-}
-
-export function useProjectDocument(projectId: string) {
-    return useQuery({ queryKey: ["projects", projectId, "document"], queryFn: () => getProjectDocument(projectId), enabled: !!projectId });
-}
-
-export function useUpdateProjectDocument(projectId: string) {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (input: UpdateProjectDocumentInput) => updateProjectDocument(projectId, input),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId, "document"] }),
     });
 }

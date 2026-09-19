@@ -1,16 +1,14 @@
-import { addProjectMemberSchema, createProjectSchema, updateProjectDocumentSchema, updateProjectPageSchema, updateProjectSchema } from "@gikan/shared";
+import { addProjectMemberSchema, createProjectSchema, updateProjectPageSchema, updateProjectSchema } from "@gikan/shared";
 import { asyncHandler } from "../../middleware/async-handler";
 import {
     addProjectMember,
     createProject,
     deleteProject,
     getProjectById,
-    getProjectDocument,
     listProjectMembers,
     listProjectsForUser,
     removeProjectMember,
     updateProject,
-    updateProjectDocument,
     updateProjectPage,
 } from "./projects.service";
 
@@ -40,14 +38,6 @@ export const updatePage = asyncHandler<{ projectId: string }>(async (req, res) =
     const input = updateProjectPageSchema.parse(req.body);
     const project = await updateProjectPage(req.params.projectId, input);
     res.json({ project });
-});
-
-export const getDocument = asyncHandler<{ projectId: string }>(async (req, res) => {
-    res.json({ document: await getProjectDocument(req.params.projectId) });
-});
-
-export const updateDocument = asyncHandler<{ projectId: string }>(async (req, res) => {
-    res.json({ document: await updateProjectDocument(req.params.projectId, updateProjectDocumentSchema.parse(req.body)) });
 });
 
 export const remove = asyncHandler<{ projectId: string }>(async (req, res) => {

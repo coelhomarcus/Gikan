@@ -57,6 +57,13 @@
       "when": 1788950000000,
       "tag": "0007_linear_issues",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789848000000,
+      "tag": "0008_document_pages",
+      "breakpoints": true
     }
   ]
 }
