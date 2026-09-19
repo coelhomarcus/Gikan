@@ -43,7 +43,7 @@ test("list and board switch without dropping query state; settings routes load",
 
     await page.goto(`/projects/${projectId}/settings`);
     await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/settings/general`));
-    await expect(page.getByRole("heading", { name: "General" })).toBeVisible();
+    await expect(page.getByLabel("Project name", { exact: true })).toBeVisible();
     await page.goto(`/projects/${projectId}/settings/states`);
     await expect(page.getByRole("heading", { name: "States" })).toBeVisible();
     await page.goto(`/projects/${projectId}/cycles`);
@@ -148,45 +148,56 @@ test("project settings update details, statuses, labels, and members", async ({ 
     await page.goto(`/projects/${projectId}/settings/general`);
     await page.getByLabel("Description").fill("A focused workspace for product delivery.");
     const projectSave = page.waitForResponse((response) => response.request().method() === "PATCH" && response.url().endsWith(`/projects/${projectId}`));
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Save changes", exact: true }).click();
     await projectSave;
     await expect(page.getByText("Project details saved.")).toBeVisible();
 
     await page.goto(`/projects/${projectId}/settings/states`);
-    await page.getByPlaceholder("Status name").fill("In review");
-    await page.getByRole("button", { name: "Add", exact: true }).click();
-    const reviewStatus = page.getByRole("textbox", { name: "Status In review" });
-    await expect(reviewStatus).toBeVisible();
-    await reviewStatus.fill("QA review");
-    await page.locator("li").filter({ has: reviewStatus }).getByRole("button", { name: "Save" }).click();
-    const savedStatus = page.getByRole("textbox", { name: "Status QA review" });
+    await page.getByRole("button", { name: "Add state", exact: true }).click();
+    await page.getByRole("textbox", { name: "State name" }).fill("In review");
+    await page.locator("form").getByRole("button", { name: "Add state", exact: true }).click();
+    const reviewRow = page.locator("li").filter({ hasText: "In review" });
+    await expect(reviewRow).toBeVisible();
+    await reviewRow.hover();
+    await reviewRow.getByRole("button", { name: "Edit In review" }).click();
+    await page.getByRole("textbox", { name: "State name" }).fill("QA review");
+    await page.locator("form").getByRole("button", { name: "Save", exact: true }).click();
+    const savedStatus = page.locator("li").filter({ hasText: "QA review" });
     await expect(savedStatus).toBeVisible();
-    await page.locator("li").filter({ has: savedStatus }).getByRole("button", { name: "Delete status" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Delete status" }).click();
-    await expect(page.getByRole("textbox", { name: "Status QA review" })).toHaveCount(0);
+    await savedStatus.hover();
+    await savedStatus.getByRole("button", { name: "Delete state" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Delete state" }).click();
+    await expect(savedStatus).toHaveCount(0);
 
     await page.goto(`/projects/${projectId}/settings/labels`);
-    await page.getByLabel("New category").fill("User research");
-    await page.getByRole("button", { name: "Add", exact: true }).click();
-    const researchLabel = page.getByRole("textbox", { name: "Label User research" });
-    await expect(researchLabel).toBeVisible();
-    await researchLabel.fill("UX research");
-    await page.locator("li").filter({ has: researchLabel }).getByRole("button", { name: "Save" }).click();
-    const savedLabel = page.getByRole("textbox", { name: "Label UX research" });
+    await page.getByRole("button", { name: "Add label", exact: true }).click();
+    await page.getByRole("textbox", { name: "Label name" }).fill("User research");
+    await page.locator("form").getByRole("button", { name: "Add label", exact: true }).click();
+    const researchRow = page.locator("li").filter({ hasText: "User research" });
+    await expect(researchRow).toBeVisible();
+    await researchRow.hover();
+    await researchRow.getByRole("button", { name: "Edit User research" }).click();
+    await page.getByRole("textbox", { name: "Label name" }).fill("UX research");
+    await page.locator("form").getByRole("button", { name: "Save", exact: true }).click();
+    const savedLabel = page.locator("li").filter({ hasText: "UX research" });
     await expect(savedLabel).toBeVisible();
-    await page.locator("li").filter({ has: savedLabel }).getByRole("button", { name: "Delete" }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Delete category" }).click();
-    await expect(page.getByRole("textbox", { name: "Label UX research" })).toHaveCount(0);
+    await savedLabel.hover();
+    await savedLabel.getByRole("button", { name: "Delete label" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Delete label" }).click();
+    await expect(savedLabel).toHaveCount(0);
 
     await page.goto(`/projects/${projectId}/settings/members`);
-    await page.getByLabel("Invite by username").fill("sam");
+    await page.getByRole("button", { name: "Add member", exact: true }).click();
+    await page.getByLabel("Username", { exact: true }).fill("sam");
     const invite = page.waitForResponse((response) => response.request().method() === "POST" && response.url().endsWith(`/projects/${projectId}/members`));
-    await page.getByRole("button", { name: "Invite" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Add member", exact: true }).click();
     await invite;
-    await expect(page.getByText("@sam")).toBeVisible();
-    await page.getByRole("button", { name: "Remove" }).click();
+    const member = page.getByRole("row").filter({ hasText: "sam@example.test" });
+    await expect(member).toBeVisible();
+    await member.hover();
+    await member.getByRole("button", { name: /^Remove / }).click();
     await page.getByRole("dialog").getByRole("button", { name: "Remove member" }).click();
-    await expect(page.getByText("@sam")).toHaveCount(0);
+    await expect(member).toHaveCount(0);
 });
 
 test("issue properties and relations save, and description can be edited", async ({ page }) => {
@@ -245,16 +256,16 @@ test("board drag and drop moves an issue into its new status", async ({ page }) 
 test("profile edits are saved and administration export respects account permissions", async ({ page }) => {
     await mockApi(page);
     await page.goto("/settings/profile");
-    await page.getByRole("textbox", { name: "Name" }).fill("Alex Morgan Updated");
+    await page.getByRole("textbox", { name: "Full name", exact: true }).fill("Alex Morgan Updated");
     const profileSave = page.waitForResponse((response) => response.request().method() === "PATCH" && response.url().endsWith("/users/me"));
-    await page.getByRole("button", { name: "Save" }).click();
+    await page.getByRole("button", { name: "Save changes", exact: true }).click();
     await profileSave;
     await expect(page.getByText("Profile saved.")).toBeVisible();
-    await expect(page.getByRole("link", { name: "Download database backup" })).toHaveAttribute("href", "/api/admin/backup");
+    await expect(page.getByRole("link", { name: "Download backup" })).toHaveAttribute("href", "/api/admin/backup");
 
     await mockApi(page, { admin: false });
     await page.goto("/settings/profile");
-    await expect(page.getByRole("link", { name: "Download database backup" })).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Download backup" })).toHaveCount(0);
 });
 
 test("empty data has a clear empty state and issue update failures are reported", async ({ page }) => {

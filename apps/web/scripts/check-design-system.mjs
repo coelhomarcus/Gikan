@@ -31,7 +31,7 @@ for (const check of checks) {
     }
 }
 
-const activeRoots = ["pages", "features", "components/base", "components/layout", "components/overlay"];
+const activeRoots = ["pages", "features", "components/base", "components/layout", "components/overlay", "components/settings"];
 async function collect(directory) {
     const { readdir } = await import("node:fs/promises");
     const entries = await readdir(join(root, directory), { withFileTypes: true });

@@ -24,6 +24,7 @@ export function SidebarAccount() {
         <Menu.Root>
             <Menu.Trigger aria-label="Account menu" className="flex size-8 items-center justify-center rounded-md hover:bg-layer-1">
                 <Avatar
+                    key={user.avatarUrl}
                     src={user.avatarUrl ?? undefined}
                     initials={user.name
                         .split(" ")
@@ -35,15 +36,16 @@ export function SidebarAccount() {
             </Menu.Trigger>
             <Menu.Portal>
                 <Menu.Positioner align="end" sideOffset={6} className="z-50">
-                    <Menu.Popup className="w-60 rounded-md border border-subtle bg-layer-2 p-1 shadow-overlay-200 outline-none">
+                    <Menu.Popup className="w-64 rounded-md border border-subtle bg-layer-2 p-1 shadow-overlay-200 outline-none">
                         <div className="border-b border-subtle px-2 py-2">
                             <p className="truncate text-sm font-medium text-primary">{user.name}</p>
                             <p className="truncate text-xs text-tertiary">{user.email}</p>
                         </div>
                         <Menu.Item className={`${item} mt-1`} onClick={() => navigate("/settings/profile")}>
                             <AppIcons.Settings className="size-4" />
-                            Settings
+                            Account settings
                         </Menu.Item>
+                        <Menu.Separator className="my-1 border-t border-subtle" />
                         <Menu.Item className={item} disabled={mutation.isPending} onClick={() => mutation.mutate()}>
                             <AppIcons.SignOut className="size-4" />
                             Sign out

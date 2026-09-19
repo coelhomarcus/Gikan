@@ -2,7 +2,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join, relative } from "node:path";
 
 const root = new URL("../src/", import.meta.url).pathname;
-const roots = ["pages", "features", "components/base", "components/layout", "components/overlay"];
+const roots = ["pages", "features", "components/base", "components/layout", "components/overlay", "components/settings"];
 // Plane property chips and peek property rows use 6px icon gaps.
 const allowedSpacing = new Set(["components/base/input/pin-input.tsx", "components/base/textarea/textarea.tsx", "features/board/components/issue-card.tsx", "features/issues/components/issue-view.tsx"]);
 const files = [];

@@ -1,163 +1,172 @@
-import { arrayMove } from "@dnd-kit/sortable";
-import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/base/buttons/button";
+import { arrayMove } from "@dnd-kit/sortable";
+import {
+    ArrowDownOutline as ArrowDown,
+    TopArrowOutline as ArrowUp,
+    ChevronDownOutline as ChevronDown,
+    StateOutline as CircleDashed,
+    EditOutline as Pencil,
+    AddOutline as Plus,
+    DeleteOutline as Trash2,
+} from "@makeplane/propel/icons";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Alert } from "@/components/base/feedback/alert";
-import { Input } from "@/components/base/input/input";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
+import { NamedColorForm } from "@/components/settings/named-color-form";
+import { SettingsHeading } from "@/components/settings/settings-layout";
 import { ApiError } from "@/lib/api-client";
-import { useCreateColumn, useDeleteColumn, useColumns, useUpdateColumn } from "../hooks/use-board";
+import { useColumns, useCreateColumn, useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { COLUMN_COLORS } from "./column-color";
-import { ColumnColorPicker } from "./column-color-picker";
 
-interface ColumnsPanelProps {
-    projectId: string;
-    isProjectOwner: boolean;
-}
-
-/** All status management lives here so Settings and the Board expose the same model. */
-export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) => {
+export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
     const { data: columns, isLoading, isError } = useColumns(projectId);
     const createColumn = useCreateColumn(projectId);
     const updateColumn = useUpdateColumn(projectId);
     const deleteColumn = useDeleteColumn(projectId);
-    const [newName, setNewName] = useState("");
-    const [newColor, setNewColor] = useState(COLUMN_COLORS[0]);
+    const [editor, setEditor] = useState<string | null>(null);
+    const [expanded, setExpanded] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    if (isLoading) return <LoadingState label="Loading statuses..." />;
-    if (isError) return <ErrorMessage message="Could not load the project statuses." />;
-
-    function showError(reason: unknown, fallback: string) {
-        setError(reason instanceof ApiError ? reason.message : fallback);
-    }
-
-    function createStatus(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const name = newName.trim();
-        if (!name) {
-            setError("Add a status name.");
-            return;
-        }
-        setError(null);
-        createColumn.mutate(
-            { name, color: newColor },
-            {
-                onSuccess: () => {
-                    setNewName("");
-                    setNewColor(COLUMN_COLORS[0]);
-                },
-                onError: (reason) => showError(reason, "Could not create the status."),
-            },
-        );
-    }
+    const pending = updateColumn.isPending || deleteColumn.isPending || createColumn.isPending;
+    const showError = (reason: unknown) => setError(reason instanceof ApiError ? reason.message : "Could not update the workflow.");
 
     function moveColumn(columnId: string, direction: -1 | 1) {
         if (!columns) return;
-        const fromIndex = columns.findIndex((column) => column.id === columnId);
-        const toIndex = fromIndex + direction;
-        if (fromIndex === -1 || toIndex < 0 || toIndex >= columns.length) return;
-
-        const ordered = arrayMove(columns, fromIndex, toIndex);
-        const finalIndex = ordered.findIndex((column) => column.id === columnId);
-        const position = positionAtIndex(ordered.filter((column) => column.id !== columnId), finalIndex);
-        updateColumn.mutate({ columnId, input: { position } }, { onError: (reason) => showError(reason, "Could not reorder the status.") });
+        const from = columns.findIndex((column) => column.id === columnId);
+        const to = from + direction;
+        if (from < 0 || to < 0 || to >= columns.length) return;
+        const ordered = arrayMove(columns, from, to);
+        const position = positionAtIndex(
+            ordered.filter((column) => column.id !== columnId),
+            to,
+        );
+        setError(null);
+        updateColumn.mutate({ columnId, input: { position } }, { onError: showError });
     }
-
     return (
-        <div className="flex flex-col gap-4">
-            <p className="text-sm text-tertiary">Manage the statuses used by this project. Their order matches the board from left to right.</p>
-
-            {isProjectOwner && (
-                <form className="flex flex-col gap-3 rounded-lg border border-subtle p-4" onSubmit={createStatus}>
-                    <div>
-                        <h3 className="text-sm font-semibold text-primary">New status</h3>
-                        <p className="mt-1 text-sm text-tertiary">Add a status without leaving Settings.</p>
-                    </div>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <Input label="Name" value={newName} onChange={(value) => { setError(null); setNewName(value); }} placeholder="Status name" className="min-w-0 flex-1" />
-                        <ColumnColorPicker label="Color" value={newColor} onChange={setNewColor} />
-                        <Button type="submit" iconLeading={Plus} isLoading={createColumn.isPending}>Add</Button>
-                    </div>
-                </form>
-            )}
-
+        <div className="space-y-6">
+            <SettingsHeading title="States" description="Manage the states in your project's workflow." />
             {error && <Alert tone="error">{error}</Alert>}
-            {!columns || columns.length === 0 ? (
-                <EmptyState title="No statuses yet" description={isProjectOwner ? "Create a status above to start organizing issues." : "This project does not have any statuses yet."} />
+            {isLoading ? (
+                <LoadingState label="Loading states..." />
+            ) : isError ? (
+                <ErrorMessage message="Could not load the project states." />
             ) : (
-                <ul className="flex flex-col gap-3">
-                    {columns.map((column, index) => (
-                        <StatusRow
-                            key={column.id}
-                            column={column}
-                            index={index}
-                            count={columns.length}
-                            isProjectOwner={isProjectOwner}
-                            isPending={updateColumn.isPending || deleteColumn.isPending}
-                            onMove={(direction) => moveColumn(column.id, direction)}
-                            onRename={(name) => updateColumn.mutate({ columnId: column.id, input: { name } }, { onError: (reason) => showError(reason, "Could not rename the status.") })}
-                            onColorChange={(color) => updateColumn.mutate({ columnId: column.id, input: { color } }, { onError: (reason) => showError(reason, "Could not update the status color.") })}
-                            onDelete={() => deleteColumn.mutate(column.id, { onError: (reason) => showError(reason, "Could not delete the status.") })}
-                        />
-                    ))}
-                </ul>
+                <section className="space-y-1 rounded-sm border border-subtle bg-surface-2 p-2">
+                    <div className="flex items-center justify-between gap-2">
+                        <button
+                            type="button"
+                            className="flex min-w-0 flex-1 items-center gap-2 rounded-sm p-1 text-left text-sm font-medium text-secondary outline-accent-strong"
+                            aria-expanded={expanded}
+                            aria-controls="workflow-states"
+                            onClick={() => setExpanded(!expanded)}
+                        >
+                            <ChevronDown className={`size-5 transition-transform ${expanded ? "" : "-rotate-90"}`} />
+                            <CircleDashed className="size-5 text-tertiary" />
+                            Workflow <span className="text-xs font-normal text-tertiary">{columns?.length ?? 0}</span>
+                        </button>
+                        {isProjectOwner && (
+                            <ButtonUtility
+                                icon={Plus}
+                                size="sm"
+                                color="tertiary"
+                                tooltip="Add state"
+                                isDisabled={pending}
+                                onClick={() => {
+                                    setEditor("new");
+                                    setExpanded(true);
+                                }}
+                            />
+                        )}
+                    </div>
+                    <div id="workflow-states" hidden={!expanded} className="space-y-1">
+                        {editor === "new" && (
+                            <NamedColorForm
+                                key="new"
+                                label="State name"
+                                initialColor={COLUMN_COLORS[0]}
+                                submitLabel="Add state"
+                                onSave={(input) => createColumn.mutateAsync(input)}
+                                onClose={() => setEditor(null)}
+                            />
+                        )}
+                        {!columns?.length && editor !== "new" && <EmptyState title="No states yet" description="Add a state to start organizing issues." />}
+                        <ul className="space-y-1">
+                            {columns?.map((column, index) => (
+                                <li key={column.id}>
+                                    {editor === column.id ? (
+                                        <NamedColorForm
+                                            label="State name"
+                                            initialName={column.name}
+                                            initialColor={column.color}
+                                            submitLabel="Save"
+                                            onSave={(input) => updateColumn.mutateAsync({ columnId: column.id, input })}
+                                            onClose={() => setEditor(null)}
+                                        />
+                                    ) : (
+                                        <div className="group flex min-h-12 items-center justify-between gap-3 rounded-sm border border-subtle bg-surface-1 px-3.5 py-3">
+                                            <div className="flex min-w-0 items-center gap-3">
+                                                <CircleDashed className="size-4 shrink-0" style={{ color: column.color ?? "#87888c" }} />
+                                                <span className="truncate text-sm text-secondary">{column.name}</span>
+                                            </div>
+                                            {isProjectOwner && (
+                                                <div className="flex shrink-0 items-center gap-1 opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 md:opacity-0">
+                                                    <ButtonUtility
+                                                        icon={ArrowUp}
+                                                        size="sm"
+                                                        color="tertiary"
+                                                        tooltip="Move state up"
+                                                        isDisabled={pending || index === 0}
+                                                        onClick={() => moveColumn(column.id, -1)}
+                                                    />
+                                                    <ButtonUtility
+                                                        icon={ArrowDown}
+                                                        size="sm"
+                                                        color="tertiary"
+                                                        tooltip="Move state down"
+                                                        isDisabled={pending || index === (columns?.length ?? 0) - 1}
+                                                        onClick={() => moveColumn(column.id, 1)}
+                                                    />
+                                                    <ButtonUtility
+                                                        icon={Pencil}
+                                                        size="sm"
+                                                        color="tertiary"
+                                                        tooltip={`Edit ${column.name}`}
+                                                        isDisabled={pending}
+                                                        onClick={() => setEditor(column.id)}
+                                                    />
+                                                    <ConfirmDialog
+                                                        trigger={
+                                                            <ButtonUtility
+                                                                icon={Trash2}
+                                                                size="sm"
+                                                                color="tertiary"
+                                                                tooltip="Delete state"
+                                                                isDisabled={pending}
+                                                            />
+                                                        }
+                                                        title="Delete state"
+                                                        description={`The state "${column.name}" will be deleted. Move its issues first; states with issues cannot be deleted.`}
+                                                        confirmLabel="Delete state"
+                                                        isPending={deleteColumn.isPending}
+                                                        onConfirm={() => {
+                                                            setError(null);
+                                                            deleteColumn.mutate(column.id, { onError: showError });
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
             )}
         </div>
     );
 };
-
-function StatusRow({ column, index, count, isProjectOwner, isPending, onMove, onRename, onColorChange, onDelete }: {
-    column: { id: string; name: string; color: string | null };
-    index: number;
-    count: number;
-    isProjectOwner: boolean;
-    isPending: boolean;
-    onMove: (direction: -1 | 1) => void;
-    onRename: (name: string) => void;
-    onColorChange: (color: string | null) => void;
-    onDelete: () => void;
-}) {
-    const [name, setName] = useState(column.name);
-
-    function submitRename(event: React.FormEvent<HTMLFormElement>) {
-        event.preventDefault();
-        const nextName = name.trim();
-        if (!nextName || nextName === column.name) {
-            setName(column.name);
-            return;
-        }
-        onRename(nextName);
-    }
-
-    return (
-        <li className="flex flex-col gap-3 rounded-xl border border-subtle p-4">
-            <div className="flex items-center justify-between gap-3">
-                {isProjectOwner ? (
-                    <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={submitRename}>
-                        <span className="shrink-0 text-sm text-tertiary">{index + 1}.</span>
-                        <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Status ${column.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-accent-strong" inputClassName="font-medium" />
-                        <Button type="submit" size="xs" color="tertiary" isDisabled={isPending || name.trim() === column.name}>Save</Button>
-                    </form>
-                ) : (
-                    <p className="min-w-0 truncate text-sm font-medium text-primary"><span className="text-tertiary">{index + 1}.</span> {column.name}</p>
-                )}
-
-                {isProjectOwner && (
-                    <div className="flex shrink-0 items-center gap-1">
-                        <ButtonUtility icon={ArrowLeft} size="sm" color="tertiary" tooltip="Move left" isDisabled={isPending || index === 0} onClick={() => onMove(-1)} />
-                        <ButtonUtility icon={ArrowRight} size="sm" color="tertiary" tooltip="Move right" isDisabled={isPending || index === count - 1} onClick={() => onMove(1)} />
-                        <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete status" isDisabled={isPending} />} title="Delete status" description={`The status "${column.name}" will be deleted. Move its issues first; statuses with issues cannot be deleted.`} confirmLabel="Delete status" isPending={isPending} onConfirm={onDelete} />
-                    </div>
-                )}
-            </div>
-
-            {isProjectOwner ? <ColumnColorPicker label="Color" value={column.color} onChange={onColorChange} /> : <p className="flex items-center gap-2 text-sm text-tertiary"><span aria-hidden="true" className="size-3 shrink-0 rounded-full" style={{ backgroundColor: column.color ?? "#87888c" }} />{column.color ?? "No color"}</p>}
-        </li>
-    );
-}

@@ -7,6 +7,7 @@
     "build": "node scripts/build.mjs",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
+    "test:unit": "node --import tsx --test tests/*.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:migrate:prod": "node dist/migrate.js"

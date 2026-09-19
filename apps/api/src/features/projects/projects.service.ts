@@ -3,6 +3,7 @@ import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, issues, projectDocuments, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
+import { isProjectKeyConflict } from "./project-key";
 
 /** Initial colors for the default columns. The same hexes are used by migration 0005, which backfilled projects created before this field existed. */
 const DEFAULT_COLUMNS = [
@@ -39,7 +40,7 @@ async function resolveProjectKey(name: string) {
 
 export async function createProject(input: CreateProjectInput, creatorId: string) {
     for (let attempt = 0; attempt < 5; attempt += 1) {
-        const issueKey = await resolveProjectKey(input.name);
+        const issueKey = input.issueKey ?? await resolveProjectKey(input.name);
 
         try {
             return await db.transaction(async (tx) => {
@@ -69,9 +70,8 @@ export async function createProject(input: CreateProjectInput, creatorId: string
                 return project;
             });
         } catch (error) {
-            const databaseError = error as { code?: string; constraint?: string };
-            const keyConflict = databaseError.code === "23505" && databaseError.constraint === "projects_issue_key_unique";
-            if (!keyConflict || attempt === 4) throw error;
+            if (!isProjectKeyConflict(error)) throw error;
+            if (input.issueKey) throw new HttpError(409, "Project key is already in use");
         }
     }
 
@@ -113,7 +113,11 @@ export async function updateProject(projectId: string, input: UpdateProjectInput
         .update(projects)
         .set({ ...input, updatedAt: new Date() })
         .where(eq(projects.id, projectId))
-        .returning();
+        .returning()
+        .catch((error: unknown) => {
+            if (isProjectKeyConflict(error)) throw new HttpError(409, "Project key is already in use");
+            throw error;
+        });
 
     if (!project) {
         throw new HttpError(404, "Project not found");

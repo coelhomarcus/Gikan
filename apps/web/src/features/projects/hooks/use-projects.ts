@@ -1,6 +1,17 @@
 import type { UpdateProjectDocumentInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type Project, createProject, getProjectDocument, listProjects, updateProject, updateProjectDocument, updateProjectPage } from "../api";
+import { useNavigate } from "react-router";
+import {
+    type Project,
+    type ProjectSummary,
+    createProject,
+    deleteProject,
+    getProjectDocument,
+    listProjects,
+    updateProject,
+    updateProjectDocument,
+    updateProjectPage,
+} from "../api";
 import { projectQueryKey } from "./use-project";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
@@ -28,6 +39,26 @@ export function useUpdateProject(projectId: string) {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
             queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
+        },
+    });
+}
+
+export function useDeleteProject(project: Pick<Project, "id" | "issueKey">) {
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    return useMutation({
+        mutationFn: () => deleteProject(project.id),
+        onSuccess: async () => {
+            navigate("/", { replace: true, flushSync: true });
+            const filters = {
+                predicate: (query: { queryKey: readonly unknown[] }) =>
+                    (query.queryKey[0] === "projects" && query.queryKey[1] === project.id) ||
+                    (query.queryKey[0] === "issues" && typeof query.queryKey[1] === "string" && query.queryKey[1].startsWith(`${project.issueKey}-`)),
+            };
+            await queryClient.cancelQueries(filters);
+            queryClient.removeQueries(filters);
+            queryClient.setQueryData<ProjectSummary[]>(PROJECTS_QUERY_KEY, (old) => old?.filter((item) => item.id !== project.id));
+            await queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY, exact: true });
         },
     });
 }

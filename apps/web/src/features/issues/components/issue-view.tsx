@@ -534,8 +534,8 @@ function PeekProperties({ issue, projectIssues, columns, members, categories, cy
             {rows.map((row) => <div key={row.label} className="peek-property-row flex min-h-[30px] items-center gap-3">
                 <span className="flex w-[122px] shrink-0 items-center gap-1.5 text-body-xs-regular text-tertiary"><row.Icon className="size-4" />{row.displayLabel ?? row.label}</span>
                 <div className={cx("peek-property-value relative min-w-0 flex-1", !!row.decoration && "has-decoration")}>
-                    {row.decoration && <span className="pointer-events-none absolute top-1.5 left-0 z-10 flex size-[18px] items-center justify-center">{row.decoration}</span>}
-                    {row.readonly ? <span className="block py-1.5 pl-6 text-body-xs-medium text-secondary">{row.readonly}</span> : <PropertySelect label={row.label} value={row.value!} options={row.options!} onChange={row.change!} searchable={row.searchable} isDisabled={isPending} className="peek-property-control" />}
+                    {row.decoration && <span className="pointer-events-none absolute top-1.5 left-2 z-10 flex size-[18px] items-center justify-center">{row.decoration}</span>}
+                    {row.readonly ? <span className="block py-1.5 pr-2 pl-8 text-body-xs-medium text-secondary">{row.readonly}</span> : <PropertySelect label={row.label} value={row.value!} options={row.options!} onChange={row.change!} searchable={row.searchable} isDisabled={isPending} className="peek-property-control" />}
                 </div>
             </div>)}
         </div>

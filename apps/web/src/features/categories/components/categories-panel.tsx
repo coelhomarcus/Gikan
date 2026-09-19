@@ -1,153 +1,108 @@
-import { type CreateCategoryInput, createCategorySchema } from "@gikan/shared";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { EditOutline as Pencil, AddOutline as Plus, DeleteOutline as Trash2 } from "@makeplane/propel/icons";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { Alert } from "@/components/base/feedback/alert";
-import { Input } from "@/components/base/input/input";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
-import { ControlledInput } from "@/components/form/controlled-input";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
+import { NamedColorForm } from "@/components/settings/named-color-form";
+import { SettingsHeading } from "@/components/settings/settings-layout";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
-import { cx } from "@/utils/cx";
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from "../hooks/use-categories";
-import { CATEGORY_COLORS, CategoryBadge } from "./category-badge";
+import { CATEGORY_COLORS } from "./category-badge";
 
-interface CategoriesPanelProps {
-    projectId: string;
-    isProjectOwner: boolean;
-}
-
-export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelProps) => {
+export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
     const { user } = useAuth();
     const { data: categories, isLoading, isError } = useCategories(projectId);
     const createMutation = useCreateCategory(projectId);
     const deleteMutation = useDeleteCategory(projectId);
     const updateMutation = useUpdateCategory(projectId);
-
-    const { control, handleSubmit, reset, setError, formState } = useForm<CreateCategoryInput>({
-        resolver: zodResolver(createCategorySchema),
-        defaultValues: { name: "", color: CATEGORY_COLORS[0] },
-    });
+    const [editor, setEditor] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const pending = createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
 
     return (
-        <div className="flex flex-col gap-6">
-            <form
-                className="flex flex-col gap-4 rounded-xl border border-subtle p-4"
-                noValidate
-                onSubmit={handleSubmit((data) => {
-                    createMutation.mutate(data, {
-                        onSuccess: () => reset({ name: "", color: CATEGORY_COLORS[0] }),
-                        onError: (error) => {
-                            setError("root", { message: error instanceof ApiError ? error.message : "Could not create the category" });
-                        },
-                    });
-                })}
-            >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-                    <div className="flex-1">
-                        <ControlledInput control={control} name="name" label="New category" placeholder="e.g. Bug" isRequired />
-                    </div>
-                    <Button type="submit" isLoading={createMutation.isPending}>
-                        Add
+        <div className="space-y-6">
+            <SettingsHeading
+                title="Labels"
+                description="Create labels to help organize and filter issues in your project."
+                control={
+                    <Button size="lg" iconLeading={Plus} isDisabled={pending || !!editor} onClick={() => setEditor("new")}>
+                        Add label
                     </Button>
-                </div>
-
-                <Controller
-                    control={control}
-                    name="color"
-                    render={({ field }) => (
-                        <div className="flex items-center gap-2">
-                            {CATEGORY_COLORS.map((color) => (
-                                <button
-                                    key={color}
-                                    type="button"
-                                    aria-label={`Color ${color}`}
-                                    onClick={() => field.onChange(color)}
-                                    className={cx(
-                                        "size-6 shrink-0 rounded-full outline-offset-2 transition duration-100 ease-linear",
-                                        field.value === color && "outline-2 outline-fg-primary",
-                                    )}
-                                    style={{ backgroundColor: color }}
-                                />
-                            ))}
-                        </div>
-                    )}
+                }
+            />
+            {error && <Alert tone="error">{error}</Alert>}
+            {editor === "new" && (
+                <NamedColorForm
+                    key="new"
+                    label="Label name"
+                    initialColor={CATEGORY_COLORS[0]}
+                    submitLabel="Add label"
+                    onSave={(input) => createMutation.mutateAsync({ ...input, color: input.color ?? CATEGORY_COLORS[0] })}
+                    onClose={() => setEditor(null)}
                 />
-
-                {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
-            </form>
-
-            {isLoading && <LoadingState label="Loading labels..." />}
-            {isError && <ErrorMessage message="Could not load the project categories." />}
-
-            {categories && categories.length === 0 && <EmptyState title="No labels yet" description="Create a label to organize issues in this project." />}
-
-            {categories && categories.length > 0 && (
-                <ul className="flex flex-col gap-2">
-                    {categories.map((category) => {
-                        const canDelete = isProjectOwner || category.createdBy === user?.id;
-
-                        return (
-                            <li key={category.id} className="flex items-center justify-between gap-3 rounded-lg border border-subtle px-3 py-2">
-                                {canDelete ? (
-                                    <CategoryEditor
-                                        category={category}
-                                        isPending={updateMutation.isPending}
-                                        onSave={(input) =>
-                                            updateMutation.mutate(
-                                                { categoryId: category.id, input },
-                                                { onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not update the category" }) },
-                                            )
-                                        }
-                                    />
-                                ) : (
-                                    <CategoryBadge category={category} />
-                                )}
-                                {canDelete && (
-                                    <ConfirmDialog
-                                        trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete" />}
-                                        title="Delete category"
-                                        description={`The category "${category.name}" will be deleted and removed from the issues that use it. This action cannot be undone.`}
-                                        confirmLabel="Delete category"
-                                        isPending={deleteMutation.isPending}
-                                        onConfirm={() =>
-                                            deleteMutation.mutate(category.id, {
-                                                onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not delete the category" }),
-                                            })
-                                        }
-                                    />
-                                )}
-                            </li>
-                        );
-                    })}
-                </ul>
             )}
+            {isLoading && <LoadingState label="Loading labels..." />}
+            {isError && <ErrorMessage message="Could not load the project labels." />}
+            {categories?.length === 0 && editor !== "new" && (
+                <EmptyState title="No labels yet" description="Create a label to organize issues in this project." />
+            )}
+            <ul className="space-y-2">
+                {categories?.map((category) => {
+                    const editable = isProjectOwner || category.createdBy === user?.id;
+                    return (
+                        <li key={category.id}>
+                            {editor === category.id ? (
+                                <NamedColorForm
+                                    label="Label name"
+                                    initialName={category.name}
+                                    initialColor={category.color}
+                                    submitLabel="Save"
+                                    onSave={(input) => updateMutation.mutateAsync({ categoryId: category.id, input })}
+                                    onClose={() => setEditor(null)}
+                                />
+                            ) : (
+                                <div className="group flex min-h-12 items-center justify-between gap-3 rounded-sm border border-subtle bg-surface-1 px-3.5 py-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <span className="size-2.5 shrink-0 rounded-full" style={{ backgroundColor: category.color ?? CATEGORY_COLORS[0] }} />
+                                        <span className="truncate text-sm text-secondary">{category.name}</span>
+                                    </div>
+                                    {editable && (
+                                        <div className="flex shrink-0 items-center gap-1 opacity-100 group-focus-within:opacity-100 group-hover:opacity-100 md:opacity-0">
+                                            <ButtonUtility
+                                                icon={Pencil}
+                                                size="sm"
+                                                color="tertiary"
+                                                tooltip={`Edit ${category.name}`}
+                                                isDisabled={pending || !!editor}
+                                                onClick={() => setEditor(category.id)}
+                                            />
+                                            <ConfirmDialog
+                                                trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete label" isDisabled={pending} />}
+                                                title="Delete label"
+                                                description={`The label "${category.name}" will be removed from all issues. The issues will not be deleted.`}
+                                                confirmLabel="Delete label"
+                                                isPending={deleteMutation.isPending}
+                                                onConfirm={() => {
+                                                    setError(null);
+                                                    deleteMutation.mutate(category.id, {
+                                                        onError: (reason) =>
+                                                            setError(reason instanceof ApiError ? reason.message : "Could not delete the label."),
+                                                    });
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </li>
+                    );
+                })}
+            </ul>
         </div>
     );
 };
-
-function CategoryEditor({ category, isPending, onSave }: { category: { name: string; color: string | null }; isPending: boolean; onSave: (input: { name?: string; color?: string | null }) => void }) {
-    const [name, setName] = useState(category.name);
-    const [color, setColor] = useState(category.color ?? CATEGORY_COLORS[0]);
-    const isDirty = name.trim() !== category.name || color !== (category.color ?? CATEGORY_COLORS[0]);
-
-    return (
-        <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-            <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Label ${category.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-accent-strong" inputClassName="font-medium" />
-            <div className="flex items-center gap-2">
-                {CATEGORY_COLORS.map((item) => (
-                    <button key={item} type="button" aria-label={`Use color ${item}`} aria-pressed={color === item} disabled={isPending} onClick={() => setColor(item)} className={cx("size-5 rounded-full disabled:opacity-50", color === item && "outline-2 outline-fg-primary outline-offset-1")} style={{ backgroundColor: item }} />
-                ))}
-                <Button size="xs" color="tertiary" isDisabled={isPending || !name.trim() || !isDirty} onClick={() => onSave({ name: name.trim(), color })}>
-                    Save
-                </Button>
-            </div>
-        </div>
-    );
-}

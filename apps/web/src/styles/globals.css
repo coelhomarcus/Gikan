@@ -157,7 +157,7 @@ input[type="number"] {
 .peek-property-control > div {
     height: 30px;
     min-height: 30px;
-    padding: 0 4px 0 0;
+    padding: 0 8px;
     background: transparent;
     border-radius: 4px;
     box-shadow: none;
@@ -173,10 +173,11 @@ input[type="number"] {
 .peek-property-control > button > span:last-child,
 .peek-property-control > div > button { opacity: 0; }
 .peek-property-control:hover > button > span:last-child,
+.peek-property-control:focus-within > button > span:last-child,
 .peek-property-control:hover > div > button,
 .peek-property-control:focus-within > div > button { opacity: 1; }
 .has-decoration .peek-property-control > button,
-.has-decoration .peek-property-control > div { padding-left: 24px; }
+.has-decoration .peek-property-control > div { padding-left: 32px; }
 .peek-comments .tiptap-editor { min-height: 0; }
 .peek-comments .ProseMirror { min-height: 60px; padding: 8px; font-size: 13px; }
 @media (max-width: 767px) {

@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/base/buttons/button";
+import { Input } from "@/components/base/input/input";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
 import { ModalDialog } from "@/components/overlay/modal-dialog";
@@ -19,7 +20,7 @@ export const CreateProjectModal = () => {
     const navigate = useNavigate();
     const { control, handleSubmit, reset, setError, watch, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
+        defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
     });
     const projectName = watch("name");
     const generatedIssueKey = suggestProjectKey(projectName);
@@ -33,26 +34,36 @@ export const CreateProjectModal = () => {
                     onSubmit={handleSubmit((data) => {
                         mutation.mutate(data, {
                             onSuccess: (project) => {
-                                reset({ name: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON });
+                                reset();
                                 close();
                                 navigate(`/projects/${project.id}`);
                             },
                             onError: (error) => {
-                                setError("root", { message: error instanceof ApiError ? error.message : "Could not create the project" });
+                                setError(error instanceof ApiError && error.status === 409 ? "issueKey" : "root", {
+                                    message: error instanceof ApiError ? error.message : "Could not create the project",
+                                });
                             },
                         });
                     })}
                 >
                     <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
-                    <div className="rounded-md border border-subtle bg-surface-2 px-3 py-2">
-                        <div className="flex items-center justify-between gap-3">
-                            <span className="text-xs font-medium text-tertiary">Generated issue key</span>
-                            <span className="font-mono text-sm font-semibold text-accent-primary">{projectName.trim() ? generatedIssueKey : "PRJ"}</span>
-                        </div>
-                        <p className="mt-1 text-xs text-tertiary">
-                            This key is generated from the project name and can be changed later before the first issue.
-                        </p>
-                    </div>
+                    <Controller
+                        control={control}
+                        name="issueKey"
+                        render={({ field, fieldState }) => (
+                            <Input
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(value) => field.onChange(value.toUpperCase())}
+                                label="Project ID"
+                                placeholder={projectName.trim() ? generatedIssueKey : "PRJ"}
+                                maxLength={8}
+                                isInvalid={!!fieldState.error}
+                                inputClassName="uppercase"
+                                hint={fieldState.error?.message ?? "2–8 letters or numbers, used in issue identifiers. Leave blank to generate automatically."}
+                            />
+                        )}
+                    />
                     <ControlledTextarea control={control} name="description" label="Description" rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
 

@@ -22,12 +22,8 @@ export function ProjectSettingsPage() {
         <div className="flex h-full min-h-0 flex-col">
             <ProjectWorkspaceHeader projectId={projectId} activeView="settings" />
             <div className="min-h-0 flex-1 overflow-y-auto">
-                <div className="mx-auto w-full max-w-4xl px-6 py-8 md:px-10">
-                    <header className="mb-7 border-b border-subtle pb-5">
-                        <h1 className="text-xl font-medium">{entry.title}</h1>
-                        <p className="mt-1 text-sm text-tertiary">{entry.description}</p>
-                    </header>
-                    <entry.Panel projectId={projectId} isProjectOwner={isProjectOwner} />
+                <div className={section === "members" ? "w-full px-6 py-9 lg:px-12" : "mx-auto w-full max-w-[948px] px-6 py-9"}>
+                    <entry.Panel key={`${projectId}:${section}`} projectId={projectId} isProjectOwner={isProjectOwner} />
                 </div>
             </div>
         </div>

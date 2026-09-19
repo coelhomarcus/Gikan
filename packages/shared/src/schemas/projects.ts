@@ -104,6 +104,7 @@ export function suggestProjectKey(name: string): string {
 
 export const createProjectSchema = z.object({
     name: z.string().trim().min(2).max(120),
+    issueKey: optionalProjectKeySchema,
     description: z.string().trim().max(2000).optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,

@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { AddOutline, ChevronDownOutline, ChevronRightOutline } from "@makeplane/propel/icons";
+import { AddOutline, ChevronDownOutline, ChevronRightOutline, LabelsOutline, MembersOutline, StateOutline } from "@makeplane/propel/icons";
 import { Link, useLocation, useNavigate } from "react-router";
+import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
 import type { AppIcon } from "@/components/foundations/icons";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
 import { ProjectIcon } from "@/features/projects/components/project-icon";
@@ -12,6 +14,7 @@ import { useProjects } from "@/features/projects/hooks/use-projects";
 
 export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const location = useLocation();
+    const { user } = useAuth();
     const navigate = useNavigate();
     const { data: projects } = useProjects();
     const projectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
@@ -35,10 +38,20 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-3">
                 {settings ? (
-                    <Link to="/settings/profile" className={`${navClass} bg-layer-1`} aria-current="page">
-                        <AppIcons.General className="size-4" />
-                        Profile
-                    </Link>
+                    <>
+                        <div className="mb-6 flex min-w-0 items-center gap-3 px-2 py-2">
+                            <Avatar key={user?.avatarUrl} size="md" src={user?.avatarUrl} initials={user?.name.slice(0, 2).toUpperCase()} />
+                            <div className="min-w-0">
+                                <p className="truncate text-body-sm-medium text-secondary">{user?.name}</p>
+                                <p className="truncate text-caption-md-regular text-tertiary">{user?.email}</p>
+                            </div>
+                        </div>
+                        <p className="px-2 py-2 text-caption-md-medium text-tertiary">Account</p>
+                        <Link to="/settings/profile" className={`${navClass} bg-layer-1`} aria-current="page">
+                            <AppIcons.General className="size-4" />
+                            General
+                        </Link>
+                    </>
                 ) : projectSettings ? (
                     <>
                         <Link to={`/projects/${projectId}`} className={`${navClass} mb-4`}>
@@ -46,17 +59,18 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                             Back to project
                         </Link>
                         {[
-                            ["general", "General"],
-                            ["states", "States"],
-                            ["members", "Members"],
-                            ["labels", "Labels"],
-                        ].map(([section, label]) => (
+                            { section: "general", label: "General", Icon: AppIcons.General },
+                            { section: "states", label: "States", Icon: StateOutline },
+                            { section: "members", label: "Members", Icon: MembersOutline },
+                            { section: "labels", label: "Labels", Icon: LabelsOutline },
+                        ].map(({ section, label, Icon }) => (
                             <Link
                                 key={section}
                                 to={`/projects/${projectId}/settings/${section}`}
                                 className={`${navClass} ${location.pathname.endsWith(`/${section}`) ? "bg-layer-1 text-primary" : ""}`}
                                 aria-current={location.pathname.endsWith(`/${section}`) ? "page" : undefined}
                             >
+                                <Icon className="size-4 shrink-0" />
                                 {label}
                             </Link>
                         ))}
