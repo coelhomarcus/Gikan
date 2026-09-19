@@ -100,7 +100,7 @@ function ProjectDocumentContent({ projectId }: { projectId: string }) {
     return (
         <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId} activeView="documents" />
-            <main className="mx-auto min-h-0 w-full max-w-4xl flex-1 overflow-y-auto px-4 py-6 lg:px-8">
+            <main className="flex min-h-0 w-full flex-1 flex-col overflow-hidden px-4 pt-5 lg:px-8">
                 {isError && !document ? (
                     <ErrorMessage message="Could not load the project document." />
                 ) : !documentReady || !document ? (
@@ -108,12 +108,12 @@ function ProjectDocumentContent({ projectId }: { projectId: string }) {
                 ) : (
                     <>
                         {isError && <ErrorMessage message="Could not refresh the project document." />}
-                        <div className="mb-4 flex items-end justify-between gap-4">
-                            <div>
+                        <div className="mb-4 flex shrink-0 items-end justify-between gap-4">
+                            <div className="min-w-0">
                                 <p className="text-sm text-tertiary">Project document</p>
-                                <h1 className="text-display-xs font-semibold text-primary">Overview notes</h1>
+                                <h1 className="text-display-xs truncate font-semibold text-primary">Overview notes</h1>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex shrink-0 items-center gap-3">
                                 <span className={mutation.isError ? "text-xs text-danger-primary" : "text-xs text-tertiary"}>
                                     {mutation.isPending ? "Saving..." : mutation.isError ? "Save failed" : isDirty ? "Unsaved changes" : "Saved"}
                                 </span>
@@ -122,8 +122,14 @@ function ProjectDocumentContent({ projectId }: { projectId: string }) {
                                 </Button>
                             </div>
                         </div>
-                        <div className="rounded-lg border border-subtle bg-surface-1">
-                            <RichTextEditor variant="document" content={content} onChange={changeContent} placeholder="Write the project overview..." />
+                        <div className="min-h-0 flex-1 overflow-y-auto border-t border-subtle">
+                            <RichTextEditor
+                                variant="document"
+                                className="h-full min-h-full"
+                                content={content}
+                                onChange={changeContent}
+                                placeholder="Write the project overview..."
+                            />
                         </div>
                     </>
                 )}
@@ -142,7 +148,7 @@ function DocumentSkeleton() {
                 </div>
                 <Skeleton className="h-7 w-16" />
             </div>
-            <div className="space-y-4 rounded-lg border border-subtle p-6">
+            <div className="min-h-0 flex-1 space-y-4 border-t border-subtle py-6">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-11/12" />
                 <Skeleton className="h-4 w-4/5" />

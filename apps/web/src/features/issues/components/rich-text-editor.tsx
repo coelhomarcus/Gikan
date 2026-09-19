@@ -272,7 +272,12 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
 }
 
 function RichTextBubbleMenu({ editor }: { editor: NonNullable<ReturnType<typeof useEditor>> }) {
-    return <BubbleMenu editor={editor} options={{ placement: "top" }} className="flex items-center gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl">
+    return <BubbleMenu
+        editor={editor}
+        appendTo={() => document.body}
+        options={{ strategy: "fixed", placement: "top", offset: 8, flip: { padding: 12 }, shift: { padding: 12 } }}
+        className="z-[100] flex items-center gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl"
+    >
         <FormatButton icon={Bold} label="Bold" active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
         <FormatButton icon={Italic} label="Italic" active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
         <FormatButton icon={Strikethrough} label="Strikethrough" active={editor.isActive("strike")} onClick={() => editor.chain().focus().toggleStrike().run()} />

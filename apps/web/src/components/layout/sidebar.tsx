@@ -144,7 +144,6 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                     </>
                 )}
             </div>
-            <div className="flex h-12 shrink-0 items-center border-t border-subtle px-5 text-xs text-placeholder">Gikan</div>
             {creating && columns?.[0] && (
                 <IssueQuickCreateModal
                     projectId={projectId}

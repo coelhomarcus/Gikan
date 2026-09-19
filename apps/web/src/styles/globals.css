@@ -129,6 +129,46 @@ input[type="number"] {
     outline-offset: -2px;
 }
 
+/* The project document is a full-height writing surface, similar to Plane's page editor. */
+.tiptap-editor-document {
+    display: flex;
+    min-height: 100%;
+    flex-direction: column;
+}
+
+.tiptap-editor-document .tiptap-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.tiptap-editor-document > div:not(.tiptap-toolbar) {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.tiptap-editor-document .ProseMirror {
+    flex: 1;
+    width: 100%;
+    min-height: 100%;
+    padding: 24px 16px 64px;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+.tiptap-editor-document .tiptap-toolbar + .ProseMirror {
+    min-height: calc(100% - 40px);
+}
+
+@media (max-width: 767px) {
+    .tiptap-editor-document .ProseMirror {
+        padding: 20px 8px 48px;
+    }
+}
+
 .tiptap-editor-readonly .ProseMirror {
     min-height: 0;
     padding: 0;
