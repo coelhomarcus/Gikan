@@ -5,11 +5,12 @@ import { Link, useLocation, useNavigate, useParams, useSearchParams } from "reac
 import type { Location } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
+import { Input } from "@/components/base/input/input";
 import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
 import { Select } from "@/components/base/select/select";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { LoadingState } from "@/components/feedback/loading-state";
+import { Skeleton } from "@/components/base/feedback/skeleton";
 import { ImportanceBadge } from "@/features/board/components/importance-badge";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
@@ -237,16 +238,18 @@ export const ProjectIssuesPage = () => {
 
                     {isCreating && (
                         <div className="flex items-center gap-2 rounded-md border border-secondary bg-secondary_alt p-2">
-                            <input
+                            <Input
                                 autoFocus
                                 value={title}
-                                onChange={(event) => {
+                                onChange={(value) => {
                                     setCreateError(null);
-                                    setTitle(event.target.value);
+                                    setTitle(value);
                                 }}
                                 onKeyDown={(event) => event.key === "Enter" && submitIssue()}
                                 placeholder="Issue title"
-                                className="min-w-0 flex-1 bg-transparent px-2 text-sm text-primary outline-none"
+                                size="sm"
+                                className="min-w-0 flex-1"
+                                aria-label="Issue title"
                             />
                             <Button size="xs" isLoading={createIssue.isPending} onClick={submitIssue}>
                                 Create
@@ -259,15 +262,7 @@ export const ProjectIssuesPage = () => {
                     )}
 
                     <div className="flex flex-wrap items-center gap-2 border-b border-secondary pb-3">
-                        <label className="flex h-8 min-w-48 flex-1 items-center gap-2 rounded-md border border-secondary bg-primary px-2.5 text-sm text-tertiary sm:flex-none">
-                            <Search aria-hidden="true" className="size-4 shrink-0" />
-                            <input
-                                value={search}
-                                onChange={(event) => updateQuery("q", event.target.value)}
-                                placeholder="Search issues"
-                                className="min-w-0 flex-1 bg-transparent text-primary outline-none placeholder:text-tertiary"
-                            />
-                        </label>
+                        <Input value={search} onChange={(value) => updateQuery("q", value)} placeholder="Search issues" icon={Search} size="sm" className="min-w-48 flex-1 sm:flex-none" />
 
                         <div ref={filterRef} className="relative">
                             <ToolbarButton active={isFilterOpen || activeFilterCount > 0} icon={Filter} onClick={() => setIsFilterOpen((open) => !open)} aria-expanded={isFilterOpen}>
@@ -275,13 +270,14 @@ export const ProjectIssuesPage = () => {
                             </ToolbarButton>
                             {isFilterOpen && (
                                 <div className="absolute top-10 left-0 z-20 grid w-[min(20rem,calc(100vw-2rem))] gap-3 rounded-lg border border-secondary bg-primary p-3 shadow-xl sm:grid-cols-2">
-                                    <input
+                                    <Input
                                         autoFocus
                                         value={filterQuery}
-                                        onChange={(event) => setFilterQuery(event.target.value)}
+                                        onChange={setFilterQuery}
                                         placeholder="Search filter values"
                                         aria-label="Search filter values"
-                                        className="col-span-full h-8 rounded-md border border-secondary bg-secondary_alt px-2.5 text-xs text-primary outline-none placeholder:text-tertiary focus:border-brand"
+                                        size="sm"
+                                        className="col-span-full"
                                     />
                                     <FilterSelect searchable label="Status" value={status} onChange={(value) => updateQuery("status", value)} options={filterOptions((columns ?? []).map((item) => ({ value: item.id, label: item.name })), status)} />
                                     <FilterSelect
@@ -339,7 +335,7 @@ export const ProjectIssuesPage = () => {
                         </div>
                     )}
 
-                    {isLoading && <LoadingState label="Loading issues..." className="py-3" />}
+                    {isLoading && <IssueListSkeleton />}
                     {isError && <ErrorMessage message="Could not load the project issues." />}
                     {!isLoading && !isError && (
                         <div className="overflow-hidden rounded-lg border border-secondary">
@@ -414,6 +410,15 @@ export const ProjectIssuesPage = () => {
     );
 };
 
+function IssueListSkeleton() {
+    return <div className="overflow-hidden rounded-lg border border-secondary" aria-label="Loading issues" role="status">
+        <div className="hidden h-9 border-b border-secondary bg-secondary sm:block" />
+        <div className="divide-y divide-secondary">{["one", "two", "three", "four", "five"].map((key) => <div key={key} className="flex min-h-12 items-center gap-3 px-3 py-2">
+            <Skeleton className="size-2 shrink-0 rounded-full" /><Skeleton className="h-3 w-16 shrink-0" /><Skeleton className="h-3 min-w-0 flex-1" /><Skeleton className="hidden h-6 w-16 sm:block" /><Skeleton className="hidden h-3 w-20 lg:block" />
+        </div>)}</div>
+    </div>;
+}
+
 function readOrder(value: string | null): OrderBy {
     return value === "number" || value === "priority" || value === "updated" ? value : "position";
 }
@@ -428,14 +433,7 @@ function capitalize(value: string) {
 
 function ToolbarButton({ active, icon: Icon, children, ...props }: { active?: boolean; icon: typeof Filter; children: React.ReactNode; onClick: () => void; "aria-expanded": boolean }) {
     return (
-        <button
-            type="button"
-            className={`inline-flex h-8 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors ${active ? "border-brand/60 bg-secondary_alt text-primary" : "border-secondary text-secondary hover:bg-primary_hover"}`}
-            {...props}
-        >
-            <Icon aria-hidden="true" className="size-3.5" />
-            {children}
-        </button>
+        <Button size="xs" color={active ? "secondary" : "tertiary"} iconLeading={Icon} className={`border ${active ? "border-brand/60 bg-secondary_alt" : "border-secondary"}`} {...props}>{children}</Button>
     );
 }
 

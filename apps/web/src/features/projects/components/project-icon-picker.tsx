@@ -31,7 +31,7 @@ const iconGroups: Array<{ label: string; keys: ProjectIconKey[] }> = [
     },
     {
         label: "Nature and people",
-        keys: ["activity", "atom", "building", "compass", "fingerprint", "flask", "folder", "gamepad", "globe", "heart", "leaf", "lightbulb", "lock", "palette", "pen", "thumbs-up", "users", "tool", "flag", "package", "cart", "zap"],
+        keys: ["activity", "atom", "building", "compass", "fingerprint", "flask", "folder", "gamepad", "globe", "heart", "leaf", "lightbulb", "lock", "palette", "pen", "thumbs-up", "users", "tool", "flag", "package", "cart", "zap", "layers"],
     },
 ];
 
@@ -72,7 +72,7 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                 {filteredGroups.map((group) => (
                     <section key={group.label} aria-label={group.label}>
                         <p className="mb-2 text-xs font-medium text-tertiary">{group.label}</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
                             {group.keys.map((key) => {
                                 const Icon = resolveProjectIcon(key);
                                 const isSelected = selected === key;
@@ -84,7 +84,17 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                                         aria-label={`Use ${iconLabels[key]} icon`}
                                         aria-pressed={isSelected}
                                         title={iconLabels[key]}
+                                        tabIndex={isSelected || (!filteredGroups.some((item) => item.keys.includes(selected as ProjectIconKey)) && group.keys[0] === key) ? 0 : -1}
                                         onClick={() => onChange(key)}
+                                        onKeyDown={(event) => {
+                                            if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+                                            event.preventDefault();
+                                            const buttons = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button") ?? []);
+                                            const index = buttons.indexOf(event.currentTarget);
+                                            const columns = Math.max(1, getComputedStyle(event.currentTarget.parentElement!).gridTemplateColumns.split(" ").length);
+                                            const offset = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" ? -columns : event.key === "ArrowDown" ? columns : event.key === "Home" ? -index : buttons.length - index - 1;
+                                            buttons[Math.max(0, Math.min(buttons.length - 1, index + offset))]?.focus();
+                                        }}
                                         className={cx(
                                             "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-fg-secondary ring-1 ring-secondary transition duration-100 ease-linear ring-inset hover:bg-primary_hover hover:text-fg-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
                                             isSelected && "bg-brand-primary_alt text-fg-brand-primary ring-2 ring-brand hover:text-fg-brand-primary",

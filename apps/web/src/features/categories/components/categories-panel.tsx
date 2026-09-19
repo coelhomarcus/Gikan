@@ -5,6 +5,8 @@ import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Alert } from "@/components/base/feedback/alert";
+import { Input } from "@/components/base/input/input";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -78,7 +80,7 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: CategoriesPanelPr
                     )}
                 />
 
-                {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
+                {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
             </form>
 
             {isLoading && <LoadingState label="Loading labels..." />}
@@ -137,7 +139,7 @@ function CategoryEditor({ category, isPending, onSave }: { category: { name: str
 
     return (
         <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
-            <input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} aria-label={`Label ${category.name}`} className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1 py-1 text-sm font-medium text-primary outline-none focus:border-secondary focus:bg-primary disabled:opacity-60" />
+            <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Label ${category.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-brand" inputClassName="font-medium" />
             <div className="flex items-center gap-2">
                 {CATEGORY_COLORS.map((item) => (
                     <button key={item} type="button" aria-label={`Use color ${item}`} aria-pressed={color === item} disabled={isPending} onClick={() => setColor(item)} className={cx("size-5 rounded-full disabled:opacity-50", color === item && "outline-2 outline-fg-primary outline-offset-1")} style={{ backgroundColor: item }} />

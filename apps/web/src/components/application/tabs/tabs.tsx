@@ -1,5 +1,5 @@
+import { createContext, isValidElement, useContext } from "react";
 import type { ComponentProps, FC, ReactNode } from "react";
-import { isValidElement } from "react";
 import { Tabs as BaseTabs } from "@base-ui/react/tabs";
 import { Badge } from "@/components/base/badges/badges";
 import { cx } from "@/utils/cx";
@@ -34,14 +34,20 @@ interface TabListProps extends Omit<ComponentProps<typeof BaseTabs.List>, "child
     children?: ReactNode;
 }
 
-let TabConfigContext = (() => ({ size: "sm" as "sm" | "md", type: "button-brand" as TabType, fullWidth: false, orientation: "horizontal" as Orientation }))();
+const TabConfigContext = createContext({
+    size: "sm" as "sm" | "md",
+    type: "button-brand" as TabType,
+    fullWidth: false,
+    orientation: "horizontal" as Orientation,
+});
 
 export const TabList = ({ size = "sm", type = "button-brand", orientation = "horizontal", fullWidth, items, children, className, ...props }: TabListProps) => {
-    TabConfigContext = { size, type, fullWidth: Boolean(fullWidth), orientation };
     return (
-        <BaseTabs.List {...props} className={(state) => cx("group flex", orientation === "vertical" && "w-max flex-col", type === "button-border" && "gap-1 rounded-lg bg-secondary_alt p-1 ring-1 ring-secondary ring-inset", type === "button-minimal" && "gap-1 rounded-lg bg-secondary_alt ring-1 ring-secondary ring-inset", type === "underline" && "relative gap-4 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary", fullWidth && "w-full", typeof className === "function" ? className(state) : className)}>
-            {children ?? items?.map((item) => <Tab key={item.id} value={item.id} label={item.label ?? item.children}>{item.children ?? item.label}</Tab>)}
-        </BaseTabs.List>
+        <TabConfigContext.Provider value={{ size, type, fullWidth: Boolean(fullWidth), orientation }}>
+            <BaseTabs.List {...props} className={(state) => cx("group flex", orientation === "vertical" && "w-max flex-col", type === "button-border" && "gap-1 rounded-lg bg-secondary_alt p-1 ring-1 ring-secondary ring-inset", type === "button-minimal" && "gap-1 rounded-lg bg-secondary_alt ring-1 ring-secondary ring-inset", type === "underline" && "relative gap-4 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:bg-border-secondary", fullWidth && "w-full", typeof className === "function" ? className(state) : className)}>
+                {children ?? items?.map((item) => <Tab key={item.id} value={item.id} label={item.label ?? item.children}>{item.children ?? item.label}</Tab>)}
+            </BaseTabs.List>
+        </TabConfigContext.Provider>
     );
 };
 
@@ -59,7 +65,7 @@ interface TabProps extends Omit<ComponentProps<typeof BaseTabs.Tab>, "children" 
 }
 
 export const Tab = ({ id, value, label, children, badge, icon: Icon, className, ...props }: TabProps) => {
-    const { size, type, fullWidth } = TabConfigContext;
+    const { size, type, fullWidth } = useContext(TabConfigContext);
     return (
         <BaseTabs.Tab {...props} value={value ?? id} className={(state) => cx("z-10 flex h-max cursor-pointer items-center justify-center gap-2 rounded-md whitespace-nowrap text-quaternary transition duration-100 ease-linear", fullWidth && "w-full flex-1", sizes[size].base, type === "underline" ? sizes[size].underline : type === "line" ? sizes[size].line : sizes[size].button, tabStyle(type, state.active), typeof className === "function" ? className(state) : className)}>
             {isValidElement(Icon) && Icon}

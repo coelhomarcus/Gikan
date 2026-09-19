@@ -46,6 +46,11 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
 
     useEffect(() => setSelectedIndex(0), [query]);
     useEffect(() => setSelectedIndex((index) => Math.min(index, Math.max(results.all.length - 1, 0))), [results.all.length]);
+    useEffect(() => {
+        if (results.all[selectedIndex]) {
+            document.getElementById(resultDomId(results.all[selectedIndex]))?.scrollIntoView({ block: "nearest" });
+        }
+    }, [results.all, selectedIndex]);
 
     function openResult(result: SearchResult) {
         if (result.type === "project") {

@@ -74,6 +74,17 @@ body {
     font-kerning: normal;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
 /* Hide the default expand arrow on Safari.  */
 details summary::-webkit-details-marker {
     display: none;
@@ -98,6 +109,20 @@ input[type="number"] {
     color: var(--color-text-secondary);
 }
 
+.tiptap-editor .tiptap-toolbar {
+    border-bottom-color: var(--color-border-secondary);
+}
+
+.tiptap-editor .tiptap-toolbar + .ProseMirror {
+    min-height: 10rem;
+}
+
+.tiptap-editor-comment .tiptap-toolbar {
+    position: relative;
+    top: auto;
+    background: var(--color-bg-primary);
+}
+
 .tiptap-editor .ProseMirror:focus-visible {
     outline: 2px solid color-mix(in srgb, var(--color-border-brand) 70%, transparent);
     outline-offset: -2px;
@@ -106,6 +131,10 @@ input[type="number"] {
 .tiptap-editor-readonly .ProseMirror {
     min-height: 0;
     padding: 0;
+}
+
+.tiptap-editor-readonly .ProseMirror [data-type="taskItem"] > label {
+    pointer-events: none;
 }
 
 .tiptap-editor .ProseMirror > * + * {

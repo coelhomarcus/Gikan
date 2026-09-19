@@ -4,6 +4,8 @@ import type { Cycle } from "@/features/issues/api";
 import { useCreateCycle, useCycles, useDeleteCycle, useUpdateCycle } from "@/features/issues/hooks/use-issues";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Alert } from "@/components/base/feedback/alert";
+import { Input } from "@/components/base/input/input";
 import { Select } from "@/components/base/select/select";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -59,13 +61,10 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                         <p className="mt-1 text-sm text-tertiary">Plan a focused period of work for this project.</p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
-                        <label className="grid gap-1 text-xs text-tertiary">
-                            Name
-                            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Cycle name" className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
-                        </label>
+                        <Input label="Name" value={name} onChange={setName} placeholder="Cycle name" />
                         <Select
                             label="Status"
-                            size="sm"
+                            size="md"
                             items={Object.entries(statusLabels).map(([value, label]) => ({ id: value, label }))}
                             selectedKey={status}
                             onSelectionChange={(next) => setStatus((next ?? "planned") as Cycle["status"])}
@@ -74,16 +73,10 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                         </Select>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <label className="grid gap-1 text-xs text-tertiary">
-                            Starts
-                            <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
-                        </label>
-                        <label className="grid gap-1 text-xs text-tertiary">
-                            Ends
-                            <input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
-                        </label>
+                        <Input type="datetime-local" label="Starts" value={startsAt} onChange={setStartsAt} />
+                        <Input type="datetime-local" label="Ends" value={endsAt} onChange={setEndsAt} />
                     </div>
-                    {error && <p role="alert" className="text-sm text-error-primary">{error}</p>}
+                    {error && <Alert tone="error">{error}</Alert>}
                     <div><Button type="submit" isLoading={createCycle.isPending}>Create cycle</Button></div>
                 </form>
             )}
@@ -149,9 +142,9 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
             <div className="min-w-0 flex-1">
                 {isEditing ? (
                     <div className="grid gap-2 sm:grid-cols-3">
-                        <input value={name} onChange={(event) => setName(event.target.value)} aria-label={`${cycle.name} name`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-sm text-primary outline-none focus:border-brand sm:col-span-3" />
-                        <input type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} aria-label={`${cycle.name} starts`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand" />
-                        <input type="datetime-local" value={endsAt} onChange={(event) => setEndsAt(event.target.value)} aria-label={`${cycle.name} ends`} className="h-8 rounded-md border border-secondary bg-primary px-2 text-xs text-primary outline-none focus:border-brand" />
+                        <Input size="sm" value={name} onChange={setName} aria-label={`${cycle.name} name`} className="sm:col-span-3" />
+                        <Input size="sm" type="datetime-local" value={startsAt} onChange={setStartsAt} aria-label={`${cycle.name} starts`} />
+                        <Input size="sm" type="datetime-local" value={endsAt} onChange={setEndsAt} aria-label={`${cycle.name} ends`} />
                     </div>
                 ) : (
                     <>

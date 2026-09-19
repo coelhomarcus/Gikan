@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { lazy, Suspense } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
+import { Alert } from "@/components/base/feedback/alert";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { ControlledInput } from "@/components/form/controlled-input";
@@ -114,8 +115,8 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: ProjectDetail
                 )}
             />
 
-            {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
-            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
+            {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
+            {mutation.isSuccess && !formState.isDirty && <Alert tone="success">Project details saved.</Alert>}
 
             <div>
                 <Button type="submit" isLoading={mutation.isPending}>

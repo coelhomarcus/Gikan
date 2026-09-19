@@ -63,6 +63,14 @@ export const IssueCard = ({ issue, category, assignee, projectId, onClick }: Iss
             {...listeners}
             {...attributes}
             onClick={onClick}
+            onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onClick();
+                }
+            }}
+            role="button"
+            tabIndex={0}
             data-issue-id={issue.id}
             data-issue-context="true"
             data-project-id={projectId}

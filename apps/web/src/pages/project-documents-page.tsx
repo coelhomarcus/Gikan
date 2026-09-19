@@ -85,6 +85,7 @@ export const ProjectDocumentsPage = () => {
                 </div>
                 <div className="rounded-lg border border-secondary bg-primary">
                     <RichTextEditor
+                        variant="document"
                         content={content}
                         onChange={(nextContent) => {
                             isDirtyRef.current = true;

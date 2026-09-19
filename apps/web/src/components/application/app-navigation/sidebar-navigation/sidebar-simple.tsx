@@ -55,7 +55,7 @@ export const SidebarNavigationSimple = ({
               },
           }
         : {};
-    const MAIN_SIDEBAR_WIDTH = 232;
+    const MAIN_SIDEBAR_WIDTH = 240;
 
     const content = (
         <aside
@@ -65,24 +65,28 @@ export const SidebarNavigationSimple = ({
                 } as React.CSSProperties
             }
             className={cx(
-                "flex h-full w-full max-w-full flex-col justify-between overflow-auto bg-primary pt-3 lg:w-(--width) lg:pt-4",
+                "flex h-full w-full max-w-full flex-col overflow-hidden bg-primary pt-3 lg:w-(--width) lg:pt-4",
                 !hideBorder && "border-secondary md:border-r",
                 className,
             )}
         >
-            <div className="flex flex-col gap-4 px-3 lg:px-4">
-                <a href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-                    <GikanLogo className="h-6" />
-                </a>
+            <div className="flex min-h-0 flex-1 flex-col">
+                <div className="flex shrink-0 flex-col gap-4 px-3 lg:px-4">
+                    <a href="/" className="w-fit rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+                        <GikanLogo className="h-6" />
+                    </a>
 
-                {/* Mobile search input */}
-                <Input size="md" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="md:hidden" {...searchTriggerProps} />
+                    {/* Mobile search input */}
+                    <Input size="md" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="md:hidden" {...searchTriggerProps} />
 
-                {/* Desktop search input */}
-                <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="max-md:hidden" {...searchTriggerProps} />
+                    {/* Desktop search input */}
+                    <Input shortcut={searchShortcut} size="sm" aria-label="Search" placeholder="Search" icon={AppIcons.Search} className="max-md:hidden" {...searchTriggerProps} />
+                </div>
+
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                    {navSlot ?? <NavList activeUrl={activeUrl} items={items} />}
+                </div>
             </div>
-
-            {navSlot ?? <NavList activeUrl={activeUrl} items={items} />}
 
             <div className="mt-auto flex flex-col gap-2 px-3 py-3 lg:px-4 lg:py-4">
                 {footerItems.length > 0 && (

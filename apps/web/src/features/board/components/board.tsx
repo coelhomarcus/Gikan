@@ -16,7 +16,8 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { useLocation, useNavigate } from "react-router";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { LoadingState } from "@/components/feedback/loading-state";
+import { Alert } from "@/components/base/feedback/alert";
+import { Skeleton } from "@/components/base/feedback/skeleton";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import type { Issue } from "@/features/issues/api";
 import { useIssues, useUpdateIssue } from "@/features/issues/hooks/use-issues";
@@ -187,7 +188,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
     }
 
     if (columnsLoading || issuesLoading) {
-        return <LoadingState label="Loading board..." className="p-4" />;
+        return <BoardSkeleton />;
     }
 
     if (columnsError || issuesError) {
@@ -199,7 +200,7 @@ export const Board = ({ projectId }: { projectId: string }) => {
 
     return (
         <>
-            {moveError && <p role="alert" className="mb-3 rounded-md border border-error-subtle bg-error-primary px-3 py-2 text-sm text-error-primary">{moveError}</p>}
+            {moveError && <Alert tone="error" className="mb-3">{moveError}</Alert>}
             <DndContext
                 sensors={sensors}
                 collisionDetection={collisionDetection}
@@ -241,3 +242,12 @@ export const Board = ({ projectId }: { projectId: string }) => {
         </>
     );
 };
+
+function BoardSkeleton() {
+    return <div className="flex h-full min-w-max items-start gap-4" aria-label="Loading board" role="status">
+        {["one", "two", "three"].map((key) => <div key={key} className="flex h-full w-80 shrink-0 flex-col gap-3 rounded-lg bg-secondary p-2">
+            <div className="flex h-8 items-center justify-between px-1"><Skeleton className="h-3 w-28" /><Skeleton className="size-4 rounded-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-24 w-full rounded-md" /><Skeleton className="h-20 w-full rounded-md" /><Skeleton className="h-28 w-full rounded-md" /></div>
+        </div>)}
+    </div>;
+}

@@ -4,6 +4,7 @@ import { ArrowLeft, Calendar, CheckCircle, ExternalLink, Link2, Plus, Trash2, Us
 import { Link, useBeforeUnload, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Sheet } from "@/components/base/sheet/sheet";
 import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
 import { Select } from "@/components/base/select/select";
 import { ErrorMessage } from "@/components/feedback/error-message";
@@ -87,7 +88,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const titleVersion = useRef(0);
     const descriptionVersion = useRef(0);
     const titleRef = useRef<HTMLTextAreaElement>(null);
-    const peekRef = useRef<HTMLElement>(null);
+    const peekRef = useRef<HTMLDivElement>(null);
 
     useBeforeUnload((event) => {
         if (!titleDirty.current && !descriptionDirty.current && !comment.content?.length) return;
@@ -244,6 +245,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
 
                         <section className="mt-6 border-b border-secondary pb-6">
                             <RichTextEditor
+                                variant="description"
                                 content={description}
                                 onChange={(value) => {
                                     descriptionDirty.current = true;
@@ -352,12 +354,9 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     );
 
     return mode === "peek" ? (
-        <>
-            <div aria-hidden="true" className="fixed inset-0 z-30 bg-black/40" onMouseDown={() => onClose?.()} />
-            <aside ref={peekRef} tabIndex={-1} aria-label={`Issue ${issue.identifier}`} aria-modal="true" className="fixed inset-y-0 right-0 z-40 w-full border-l border-secondary bg-primary shadow-2xl outline-none sm:w-[min(52rem,calc(100vw-3rem))]">
-                {content}
-            </aside>
-        </>
+        <Sheet open onOpenChange={(open) => !open && onClose?.()} title={`Issue ${issue.identifier}`}>
+            <div ref={peekRef} tabIndex={-1} className="flex h-full min-h-0 flex-col outline-none">{content}</div>
+        </Sheet>
     ) : (
         <main className="h-full min-h-0 bg-primary">{content}</main>
     );
@@ -733,7 +732,7 @@ function IssueComments({
                         </div>
                         {editingId === entry.id ? (
                             <>
-                                <RichTextEditor content={editingContent} onChange={setEditingContent} />
+                                <RichTextEditor variant="comment" content={editingContent} onChange={setEditingContent} />
                                 <div className="mt-2 flex justify-end gap-2">
                                     <Button size="xs" color="tertiary" onClick={() => setEditingId(null)}>
                                         Cancel
@@ -755,7 +754,7 @@ function IssueComments({
                                 </div>
                             </>
                         ) : (
-                            <RichTextEditor content={entry.contentJson} editable={false} />
+                            <RichTextEditor variant="comment" content={entry.contentJson} editable={false} />
                         )}
                         {entry.authorId === currentUserId && editingId !== entry.id && (
                             <div className="mt-2 flex gap-3">
@@ -788,7 +787,7 @@ function IssueComments({
                     </article>
                 ))}
                 <div className="rounded-lg border border-secondary">
-                    <RichTextEditor content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder="Leave a comment..." />
+                    <RichTextEditor variant="comment" content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder="Leave a comment..." />
                     <div className="flex justify-end border-t border-secondary p-2">
                         <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length || isSubmitting} isLoading={isSubmitting} onClick={onSubmit}>
                             Comment
@@ -823,14 +822,7 @@ function formatDate(value: string) {
 }
 
 function IssuePeekState({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {
-    return (
-        <>
-            <div aria-hidden="true" className="fixed inset-0 z-30 bg-black/40" onMouseDown={() => onClose?.()} />
-            <aside role="dialog" aria-modal="true" aria-label="Issue panel" className="fixed inset-y-0 right-0 z-40 flex w-full items-start border-l border-secondary bg-primary shadow-2xl sm:w-[min(52rem,calc(100vw-3rem))]">
-                <div className="w-full">{children}</div>
-            </aside>
-        </>
-    );
+    return <Sheet open onOpenChange={(open) => !open && onClose?.()} title="Issue panel"><div className="flex h-full min-h-0 flex-col">{children}</div></Sheet>;
 }
 
 function errorMessage(reason: unknown, fallback = "Could not save the issue.") {

@@ -31,11 +31,11 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
             <Modal className="max-w-5xl">
                 <Dialog>
                     <div className="flex max-h-[min(88vh,760px)] w-full min-w-0 flex-col overflow-hidden rounded-xl bg-primary shadow-xl ring-1 ring-secondary">
-                        <div className="flex shrink-0 items-start justify-between gap-4 p-6 pb-0">
+                        <div className="flex shrink-0 items-start justify-between gap-4 p-4 pb-0 sm:p-6 sm:pb-0">
                             <h2 className="text-lg font-semibold text-primary">{project ? `${project.name} · Settings` : "Project settings"}</h2>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
-                        <div className="flex min-h-0 min-w-0 flex-1 p-6 pt-4">
+                        <div className="flex min-h-0 min-w-0 flex-1 p-4 pt-4 sm:p-6 sm:pt-4">
                             <Tabs selectedKey={activeTab} onSelectionChange={(key) => setActiveTab(String(key))} className="min-h-0 min-w-0 flex-1 md:flex-row">
                                 <Select
                                     className="mb-4 md:hidden"
@@ -66,19 +66,19 @@ export const ProjectSettingsModal = ({ projectId, onClose }: ProjectSettingsModa
                                     ]}
                                 />
                                 <div className="min-h-0 min-w-0 flex-1 overflow-y-auto md:pl-6">
-                                    <Tabs.Panel id="general" className="w-full pt-0">
+                                    <Tabs.Panel id="general" className="flex w-full min-w-0 flex-col pt-0">
                                         <ProjectDetailsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
-                                    <Tabs.Panel id="columns" className="w-full pt-0">
+                                    <Tabs.Panel id="columns" className="flex w-full min-w-0 flex-col pt-0">
                                         <ColumnsPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
-                                    <Tabs.Panel id="members" className="w-full pt-0">
+                                    <Tabs.Panel id="members" className="flex w-full min-w-0 flex-col pt-0">
                                         <MembersPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
-                                    <Tabs.Panel id="categories" className="w-full pt-0">
+                                    <Tabs.Panel id="categories" className="flex w-full min-w-0 flex-col pt-0">
                                         <CategoriesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
-                                    <Tabs.Panel id="cycles" className="w-full pt-0">
+                                    <Tabs.Panel id="cycles" className="flex w-full min-w-0 flex-col pt-0">
                                         <CyclesPanel projectId={projectId} isProjectOwner={!!isProjectOwner} />
                                     </Tabs.Panel>
                                 </div>

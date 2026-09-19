@@ -212,7 +212,7 @@ export const Button = ({
         >
             {/* Leading icon */}
             {isValidElement(IconLeading) && IconLeading}
-            {isReactComponent(IconLeading) && <IconLeading data-icon="leading" className={styles.common.icon} />}
+            {isReactComponent(IconLeading) && <IconLeading data-icon="inline-start" className={styles.common.icon} />}
 
             {loading && (
                 <svg
@@ -245,7 +245,7 @@ export const Button = ({
 
             {/* Trailing icon */}
             {isValidElement(IconTrailing) && IconTrailing}
-            {isReactComponent(IconTrailing) && <IconTrailing data-icon="trailing" className={styles.common.icon} />}
+            {isReactComponent(IconTrailing) && <IconTrailing data-icon="inline-end" className={styles.common.icon} />}
         </Component>
     );
 };

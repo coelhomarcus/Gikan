@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { Dialog, Modal, ModalOverlay } from "@/components/application/modals/modal";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
+import { Alert } from "@/components/base/feedback/alert";
 import { CloseButton } from "@/components/base/buttons/close-button";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { AUTH_QUERY_KEY, updateProfile } from "@/features/auth/api";
@@ -69,7 +70,7 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
 
                             <ControlledInput control={control} name="name" label="Name" isRequired />
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <p className="text-sm font-medium text-secondary">Username</p>
                                     <p className="mt-1.5 text-sm text-tertiary">@{user.username}</p>
@@ -80,8 +81,8 @@ export const UserSettingsModal = ({ onClose }: UserSettingsModalProps) => {
                                 </div>
                             </div>
 
-                            {formState.errors.root && <p className="text-sm text-error-primary">{formState.errors.root.message}</p>}
-                            {mutation.isSuccess && !formState.isDirty && <p className="text-sm text-success-primary">Saved!</p>}
+                            {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
+                            {mutation.isSuccess && !formState.isDirty && <Alert tone="success">Profile saved.</Alert>}
 
                             <div className="flex justify-end">
                                 <Button type="submit" isLoading={mutation.isPending}>

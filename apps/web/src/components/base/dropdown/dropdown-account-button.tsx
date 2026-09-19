@@ -13,7 +13,7 @@ export const DropdownAccountButton = () => {
 
     return (
         <Menu.Root>
-            <Menu.Trigger render={<Button size="sm" className="group" color="secondary" iconTrailing={(props) => <ChevronDown data-icon="trailing" {...props} className="size-4! stroke-[2.25px]!" />}>Account</Button>} />
+            <Menu.Trigger render={<Button size="sm" className="group" color="secondary" iconTrailing={(props) => <ChevronDown data-icon="inline-end" {...props} className="size-4! stroke-[2.25px]!" />}>Account</Button>} />
             <Menu.Portal>
                 <Menu.Positioner align="end" sideOffset={4}>
                     <Menu.Popup className="z-50 w-60 rounded-lg bg-primary p-1 shadow-lg ring-1 ring-secondary_alt">

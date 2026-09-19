@@ -10,7 +10,7 @@ interface TopbarProps {
 
 export const Topbar = ({ title, actions, onBack }: TopbarProps) => {
     return (
-        <header className="flex h-11 shrink-0 items-center justify-between gap-3 border-b border-secondary px-3 lg:px-4">
+        <header className="flex h-12 shrink-0 items-center justify-between gap-3 border-b border-secondary px-4 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-2">
                 {onBack && <ButtonUtility icon={AppIcons.Back} size="sm" color="tertiary" tooltip="Go back" onClick={onBack} />}
                 <div className="min-w-0 truncate text-sm font-semibold text-primary">{title}</div>

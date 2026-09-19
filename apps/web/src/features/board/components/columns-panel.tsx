@@ -3,6 +3,8 @@ import { ArrowLeft, ArrowRight, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
+import { Alert } from "@/components/base/feedback/alert";
+import { Input } from "@/components/base/input/input";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
@@ -78,17 +80,14 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: ColumnsPanelProps) =
                         <p className="mt-1 text-sm text-tertiary">Add a status without leaving Settings.</p>
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                        <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs text-tertiary">
-                            Name
-                            <input value={newName} onChange={(event) => { setError(null); setNewName(event.target.value); }} placeholder="Status name" className="h-9 rounded-md border border-secondary bg-primary px-2.5 text-sm text-primary outline-none focus:border-brand" />
-                        </label>
+                        <Input label="Name" value={newName} onChange={(value) => { setError(null); setNewName(value); }} placeholder="Status name" className="min-w-0 flex-1" />
                         <ColumnColorPicker label="Color" value={newColor} onChange={setNewColor} />
                         <Button type="submit" iconLeading={Plus} isLoading={createColumn.isPending}>Add</Button>
                     </div>
                 </form>
             )}
 
-            {error && <p role="alert" className="text-sm text-error-primary">{error}</p>}
+            {error && <Alert tone="error">{error}</Alert>}
             {!columns || columns.length === 0 ? (
                 <EmptyState title="No statuses yet" description={isProjectOwner ? "Create a status above to start organizing issues." : "This project does not have any statuses yet."} />
             ) : (
@@ -142,7 +141,7 @@ function StatusRow({ column, index, count, isProjectOwner, isPending, onMove, on
                 {isProjectOwner ? (
                     <form className="flex min-w-0 flex-1 items-center gap-2" onSubmit={submitRename}>
                         <span className="shrink-0 text-sm text-tertiary">{index + 1}.</span>
-                        <input value={name} disabled={isPending} onChange={(event) => setName(event.target.value)} aria-label={`Status ${column.name}`} className="min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-1.5 py-1 text-sm font-medium text-primary outline-none focus:border-secondary focus:bg-primary disabled:opacity-60" />
+                        <Input size="sm" value={name} isDisabled={isPending} onChange={setName} aria-label={`Status ${column.name}`} className="min-w-0 flex-1" wrapperClassName="bg-transparent shadow-none ring-transparent focus-within:ring-brand" inputClassName="font-medium" />
                         <Button type="submit" size="xs" color="tertiary" isDisabled={isPending || name.trim() === column.name}>Save</Button>
                     </form>
                 ) : (

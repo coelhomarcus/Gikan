@@ -1,6 +1,6 @@
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
-import { LoadingState } from "@/components/feedback/loading-state";
+import { Skeleton } from "@/components/base/feedback/skeleton";
 import { Topbar } from "@/components/layout/topbar";
 import { CreateProjectModal } from "@/features/projects/components/create-project-modal";
 import { ProjectCard } from "@/features/projects/components/project-card";
@@ -13,7 +13,7 @@ export const ProjectsPage = () => {
         <div className="flex h-full min-h-0 flex-col">
             <Topbar title="Projects" actions={<CreateProjectModal />} />
             <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
-                {isLoading && <LoadingState label="Loading projects..." className="py-3" />}
+                {isLoading && <ProjectListSkeleton />}
 
                 {isError && <ErrorMessage message="Could not load your projects. Try refreshing the page." />}
 
@@ -40,3 +40,16 @@ export const ProjectsPage = () => {
         </div>
     );
 };
+
+function ProjectListSkeleton() {
+    return <div className="overflow-hidden rounded-lg border border-secondary" aria-label="Loading projects" role="status">
+        <div className="hidden h-9 border-b border-secondary bg-secondary sm:block" />
+        <div className="divide-y divide-secondary">
+            {["one", "two", "three"].map((key) => <div key={key} className="flex min-h-16 items-center gap-4 px-3 py-3">
+                <Skeleton className="size-8 shrink-0 rounded-md" />
+                <div className="min-w-0 flex-1 space-y-2"><Skeleton className="h-3 w-40" /><Skeleton className="h-3 w-64 max-w-full" /></div>
+                <Skeleton className="hidden h-3 w-20 sm:block" />
+            </div>)}
+        </div>
+    </div>;
+}
