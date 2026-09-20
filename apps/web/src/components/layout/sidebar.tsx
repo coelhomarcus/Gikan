@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { AddOutline, ChevronDownOutline, ChevronRightOutline, LabelsOutline, MembersOutline, StateOutline } from "@makeplane/propel/icons";
 import { Link, useLocation, useNavigate } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
@@ -21,11 +21,12 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const projectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
     const { data: columns } = useColumns(projectId);
     const { data: documents } = useDocuments(projectId);
-    const [creating, setCreating] = useState(false);
+    const [creatingProjectId, setCreatingProjectId] = useState<string | null>(null);
     const [expanded, setExpanded] = useState(() => localStorage.getItem("gikan-projects-expanded") !== "false");
     const settings = location.pathname === "/settings/profile";
     const projectSettings = location.pathname.includes("/settings/");
     const navClass = "flex min-h-7 items-center gap-2 rounded-md px-2 py-1 text-sm text-secondary hover:bg-layer-transparent-hover";
+    useEffect(() => setCreatingProjectId(null), [projectId]);
     const views: Array<[string, string, AppIcon]> = [
         ["", "Overview", AppIcons.Overview],
         ["/issues", "Issues", AppIcons.Issues],
@@ -79,8 +80,8 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                     </>
                 ) : (
                     <>
-                        {projectId && columns?.[0] && (
-                            <Button color="secondary" className="mb-3 w-full justify-start" iconLeading={AddOutline} onClick={() => setCreating(true)}>
+                        {projectId && (
+                            <Button color="secondary" className="mb-3 w-full justify-start" iconLeading={AddOutline} onClick={() => setCreatingProjectId(projectId)}>
                                 New issue
                             </Button>
                         )}
@@ -159,13 +160,13 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                     </>
                 )}
             </div>
-            {creating && columns?.[0] && (
+            {creatingProjectId === projectId && projectId && columns?.[0] && (
                 <IssueQuickCreateModal
                     projectId={projectId}
                     columnId={columns[0].id}
-                    onClose={() => setCreating(false)}
+                    onClose={() => setCreatingProjectId(null)}
                     onCreated={(identifier) => {
-                        setCreating(false);
+                        setCreatingProjectId(null);
                         navigate(`/projects/${projectId}/issues/${identifier}`);
                     }}
                 />
