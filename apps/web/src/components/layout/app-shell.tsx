@@ -44,7 +44,7 @@ export const AppShell = () => {
             event.preventDefault();
             setSearchOpen(true);
         },
-        { enableOnFormTags: true },
+        { enableOnFormTags: true, enableOnContentEditable: true, eventListenerOptions: { capture: true } },
     );
     function toggleSidebar() {
         if (window.matchMedia("(max-width: 767px)").matches) setMobileOpen((open) => !open);

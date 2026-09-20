@@ -181,6 +181,16 @@ test("a successful document save preserves the live editor selection and subsequ
     await expect(paragraphEditor).toHaveText("Keep editing here while saving.");
 });
 
+test("the global search shortcut opens while the document editor is focused", async ({ page }) => {
+    await openDocument(page, documentWith(paragraph("Keep writing here")));
+    const editor = page.getByRole("textbox", { name: "Document content" });
+    await editor.locator(":scope > p").click();
+    await expect(editor).toBeFocused();
+
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(page.getByRole("combobox", { name: "Search projects and issues" })).toBeVisible();
+});
+
 test("slash inserts an editable table between neighboring document blocks", async ({ page }) => {
     await openDocument(page, documentWith(paragraph("Before table"), paragraph("Table block"), paragraph("After table")));
     const editor = page.getByRole("textbox", { name: "Document content" });
