@@ -40,7 +40,13 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
         <div className={compact ? "board-toolbar min-w-0" : "shrink-0 border-b border-subtle"}>
             <div className={compact ? "flex items-center gap-2" : "flex min-h-11 flex-wrap items-center gap-2 px-4 py-2"}>
                 <Popover.Root>
-                    <Popover.Trigger render={<Button aria-label="Filters" color={compact ? "secondary" : "tertiary"} iconLeading={FilterOutline} />}>{compact ? "" : "Filters"}{count ? ` · ${count}` : ""}</Popover.Trigger>
+                    {compact && count === 0 ? (
+                        <Popover.Trigger render={<Button aria-label="Filters" color="secondary" iconLeading={FilterOutline} />} />
+                    ) : (
+                        <Popover.Trigger render={<Button aria-label="Filters" color={compact ? "secondary" : "tertiary"} iconLeading={FilterOutline} />}>
+                            {!compact ? "Filters" : null}{count ? ` · ${count}` : ""}
+                        </Popover.Trigger>
+                    )}
                     <Popover.Portal>
                         <Popover.Positioner sideOffset={8} align="start" className="z-30">
                             <Popover.Popup className={popup}>

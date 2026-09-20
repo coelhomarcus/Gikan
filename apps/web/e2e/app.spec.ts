@@ -9,6 +9,10 @@ test("dark theme, URL filters, and issue peek preserve the current workspace", a
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
     await expect(page.getByText("Build the project workspace")).toBeVisible();
 
+    const filterButton = page.getByRole("button", { name: "Filters" });
+    const searchButton = page.getByRole("button", { name: "Search issues" });
+    expect((await filterButton.boundingBox())?.width).toBe((await searchButton.boundingBox())?.width);
+
     await page.getByRole("button", { name: "Search issues" }).click();
     await page.getByPlaceholder("Search issues").fill("refine");
     await expect(page).toHaveURL(/q=refine/);
