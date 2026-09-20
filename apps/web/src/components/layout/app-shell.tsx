@@ -105,7 +105,7 @@ export const AppShell = () => {
                             aria-current={settings ? "page" : undefined}
                         >
                             <AppIcons.Settings className="size-5" />
-                            {t("nav.settings")}
+                            {t("nav.config")}
                         </Link>
                     </nav>
                     <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border border-subtle bg-surface-1" data-app-content>
