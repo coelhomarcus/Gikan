@@ -408,13 +408,13 @@ function PropertySelect({
 }: {
     label: string;
     value: string;
-    options: Array<{ value: string; label: string }>;
+    options: Array<{ value: string; label: string; avatarUrl?: string | null }>;
     onChange: (value: string) => void;
     className?: string;
     isDisabled?: boolean;
     searchable?: boolean;
 }) {
-    const items = options.map((option) => ({ id: option.value, label: option.label }));
+    const items = options.map((option) => ({ id: option.value, label: option.label, avatarUrl: option.avatarUrl ?? undefined }));
     if (searchable) {
         return (
             <ComboBox
@@ -461,7 +461,7 @@ function IssueProperties({
     issue: IssueDetail;
     projectIssues?: Array<{ id: string; identifier: string; title: string }>;
     columns?: Array<{ id: string; name: string; color?: string | null }>;
-    members?: Array<{ id: string; name: string }>;
+    members?: Array<{ id: string; name: string; avatarUrl?: string | null }>;
     categories?: Array<{ id: string; name: string; color?: string | null }>;
     cycles?: Array<{ id: string; name: string }>;
     save: (input: UpdateIssueInput) => void;
@@ -497,7 +497,7 @@ function IssueProperties({
                 className="w-full"
                 value={issue.assigneeId ?? ""}
                 label="Assignee"
-                options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name }))]}
+                options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))]}
                 searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ assigneeId: value || null })}
@@ -549,9 +549,10 @@ function IssueProperties({
 
 /** Plane side-peek uses a single property list with 30px controls and 12px row gaps. */
 function PeekProperties({ issue, projectIssues, columns, members, categories, cycles, save, error, isPending }: Parameters<typeof IssueProperties>[0]) {
+    const assignee = members?.find((member) => member.id === issue.assigneeId);
     const rows = [
         { label: "Status", displayLabel: "State", Icon: StateOutline, value: issue.columnId, options: (columns ?? []).map((c) => ({ value: c.id, label: c.name })), change: (value: string) => save({ columnId: value }), decoration: <StateIcon name={columns?.find((c) => c.id === issue.columnId)?.name ?? ""} color={columns?.find((c) => c.id === issue.columnId)?.color} /> },
-        { label: "Assignee", Icon: AssigneeOutline, value: issue.assigneeId ?? "", options: [{ value: "", label: "Unassigned" }, ...(members ?? []).map((m) => ({ value: m.id, label: m.name }))], change: (value: string) => save({ assigneeId: value || null }), searchable: true, decoration: issue.assigneeId ? <IssueAvatar name={members?.find((m) => m.id === issue.assigneeId)?.name ?? ""} /> : null },
+        { label: "Assignee", Icon: AssigneeOutline, value: issue.assigneeId ?? "", options: [{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))], change: (value: string) => save({ assigneeId: value || null }), searchable: true, decoration: issue.assigneeId ? <IssueAvatar name={assignee?.name ?? ""} avatarUrl={assignee?.avatarUrl} /> : null },
         { label: "Priority", Icon: PriorityOutline, value: issue.priority, options: ["low", "medium", "high"].map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1) })), change: (value: string) => save({ priority: value as "low" | "medium" | "high" }), decoration: <PriorityIcon priority={issue.priority} /> },
         { label: "Created by", Icon: AssigneeOutline, readonly: issue.createdBy.name, decoration: <IssueAvatar name={issue.createdBy.name} avatarUrl={issue.createdBy.avatarUrl} /> },
         { label: "Estimate", Icon: EstimateOutline, value: String(issue.estimate ?? ""), options: [{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((n) => ({ value: String(n), label: `${n} points` }))], change: (value: string) => save({ estimate: value ? Number(value) : null }) },

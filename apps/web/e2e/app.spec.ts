@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { columns, mockApi, projectId } from "./fixtures";
+import { columns, mockApi, projectId, timestamp, user } from "./fixtures";
 
 test("dark theme, URL filters, and issue peek preserve the current workspace", async ({ page }) => {
     await mockApi(page);
@@ -25,6 +25,34 @@ test("dark theme, URL filters, and issue peek preserve the current workspace", a
     await page.keyboard.press("Escape");
     await expect(page).toHaveURL(/\/issues\?q=refine$/);
     await expect(page.locator('[data-issue-identifier="PLAT-2"]')).toBeFocused();
+});
+
+test("Peek Assignee property shows the selected member's profile photo", async ({ page }) => {
+    await mockApi(page);
+    await page.route(`**/api/projects/${projectId}/members`, (route) =>
+        route.fulfill({
+            json: {
+                members: [{ ...user, avatarUrl: "https://avatars.test/alex.png", role: "owner", joinedAt: timestamp }],
+            },
+        }),
+    );
+    await page.route("https://avatars.test/alex.png", (route) =>
+        route.fulfill({
+            status: 200,
+            contentType: "image/png",
+            body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/6N8AAAAASUVORK5CYII=", "base64"),
+        }),
+    );
+    await page.goto(`/projects/${projectId}/issues`);
+    await page.locator('[data-issue-identifier="PLAT-2"]').click();
+
+    const peek = page.getByRole("dialog", { name: "Issue PLAT-2" });
+    const assignee = peek.getByRole("combobox", { name: "Assignee" });
+    await assignee.click();
+    await page.getByRole("option", { name: user.name }).click();
+
+    const assigneeRow = peek.locator(".peek-property-row").filter({ hasText: "Assignee" });
+    await expect(assigneeRow.locator("img")).toHaveAttribute("src", "https://avatars.test/alex.png");
 });
 
 test("list and board switch without dropping query state; settings routes load", async ({ page }) => {
