@@ -6,6 +6,7 @@ import type { Location } from "react-router";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { Skeleton } from "@/components/base/feedback/skeleton";
@@ -305,41 +306,47 @@ function IssueRow({
     onSelect: () => void;
 }) {
     return (
-        <Link
-            to={`/projects/${projectId}/issues/${issue.identifier}`}
-            state={{ backgroundLocation }}
-            tabIndex={0}
+        <div
+            className="group/issue relative"
             data-issue-id={issue.id}
             data-issue-context="true"
             data-project-id={projectId}
             data-issue-identifier={issue.identifier}
             data-issue-title={issue.title}
-            onFocus={onSelect}
-            className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-subtle px-4 py-2 text-left transition-colors last:border-0 hover:bg-layer-1-hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-strong max-sm:grid-cols-1 max-sm:gap-2 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
-                selected ? "bg-surface-2" : ""
-            }`}
         >
-            <span className="flex min-w-0 items-center gap-2">
-                <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
-                <span className="w-16 shrink-0 text-xs text-tertiary">
-                    {issue.identifier}
+            <Link
+                to={`/projects/${projectId}/issues/${issue.identifier}`}
+                state={{ backgroundLocation }}
+                tabIndex={0}
+                onFocus={onSelect}
+                className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-subtle px-4 py-2 text-left transition-colors last:border-0 hover:bg-layer-1-hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-strong max-sm:grid-cols-1 max-sm:gap-2 max-sm:pr-12 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
+                    selected ? "bg-surface-2" : ""
+                }`}
+            >
+                <span className="flex min-w-0 items-center gap-2">
+                    <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
+                    <span className="w-16 shrink-0 text-xs text-tertiary">{issue.identifier}</span>
+                    <span className="min-w-0 truncate text-sm text-primary">{issue.title}</span>
+                    <span className="ml-auto hidden shrink-0 text-[11px] text-tertiary max-sm:block">{column?.name}</span>
                 </span>
-                <span className="min-w-0 truncate text-sm text-primary">{issue.title}</span>
-                <span className="ml-auto hidden shrink-0 text-[11px] text-tertiary max-sm:block">{column?.name}</span>
-            </span>
-            <span className="truncate text-xs text-secondary max-sm:hidden">{column?.name ?? "Unknown"}</span>
-            <span className="max-sm:hidden"><ImportanceBadge importance={issue.priority} /></span>
-            <span className="flex min-w-0 items-center gap-2 text-xs text-tertiary max-sm:hidden">
-                {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-subtle" />}
-                <span className="truncate">{member?.name ?? "Unassigned"}</span>
-            </span>
-            <span className="hidden truncate text-xs text-tertiary lg:block">{category?.name ?? "—"}</span>
-            <span className="hidden truncate text-xs text-tertiary lg:block">{cycle?.name ?? "—"}</span>
-            <span className="hidden text-right font-mono text-xs text-tertiary lg:block">{issue.estimate ?? "—"}</span>
-            <span className="hidden truncate text-[11px] text-tertiary max-sm:block">
-                {[category?.name, cycle?.name, `${issue.priority} priority`].filter(Boolean).join(" · ")}
-            </span>
-        </Link>
+                <span className="truncate text-xs text-secondary max-sm:hidden">{column?.name ?? "Unknown"}</span>
+                <span className="max-sm:hidden"><ImportanceBadge importance={issue.priority} /></span>
+                <span className="flex min-w-0 items-center gap-2 text-xs text-tertiary max-sm:hidden">
+                    {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-subtle" />}
+                    <span className="truncate">{member?.name ?? "Unassigned"}</span>
+                </span>
+                <span className="hidden truncate text-xs text-tertiary lg:block">{category?.name ?? "—"}</span>
+                <span className="hidden truncate text-xs text-tertiary lg:block">{cycle?.name ?? "—"}</span>
+                <span className="hidden text-right font-mono text-xs text-tertiary lg:block">{issue.estimate ?? "—"}</span>
+                <span className="hidden truncate text-[11px] text-tertiary max-sm:block">
+                    {[category?.name, cycle?.name, `${issue.priority} priority`].filter(Boolean).join(" · ")}
+                </span>
+            </Link>
+            <ContextMenuButton
+                entity={{ type: "issue", projectId, identifier: issue.identifier, title: issue.title }}
+                className="absolute top-1/2 right-1 -translate-y-1/2 bg-surface-1"
+            />
+        </div>
     );
 }
 

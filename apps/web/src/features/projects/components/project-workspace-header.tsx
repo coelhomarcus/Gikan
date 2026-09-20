@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
 import { Topbar } from "@/components/layout/topbar";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjects } from "@/features/projects/hooks/use-projects";
 import { ProjectIcon } from "./project-icon";
@@ -26,10 +27,22 @@ export function ProjectWorkspaceHeader({
         <Topbar
             title={
                 <span className="flex min-w-0 items-center gap-2">
+                    <span
+                        className="flex min-w-0 items-center gap-2"
+                        data-project-context="true"
+                        data-project-id={projectId}
+                        data-project-name={project?.name ?? "Project"}
+                        data-project-issue-key={project?.issueKey ?? ""}
+                    >
                     <ProjectIcon icon={project?.icon} className="size-4 shrink-0 text-tertiary" />
-                    <Link to={`/projects/${projectId}`} className="truncate text-secondary hover:text-primary">
+                    <Link
+                        to={`/projects/${projectId}`}
+                        className="truncate text-secondary hover:text-primary"
+                    >
                         {project?.name ?? "Project"}
                     </Link>
+                    {project && <ContextMenuButton entity={{ type: "project", projectId, name: project.name, issueKey: project.issueKey }} className="size-7" />}
+                    </span>
                     <span className="text-placeholder">/</span>
                     <span>{title}</span>
                 </span>

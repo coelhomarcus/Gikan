@@ -14,6 +14,7 @@ import { ComboBox, ComboBoxItem } from "@/components/base/select/combobox";
 import { Select } from "@/components/base/select/select";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { useColumns } from "@/features/board/hooks/use-board";
@@ -603,16 +604,29 @@ function IssueSubIssues({ issue, columns }: { issue: NonNullable<ReturnType<type
             </div>
             <div className="divide-y divide-subtle rounded-lg border border-subtle">
                 {issue.children.map((child) => (
-                    <Link
+                    <div
                         key={child.id}
-                        to={`/projects/${issue.projectId}/issues/${issue.project.issueKey}-${child.number}`}
-                        className="flex items-center gap-3 px-3 py-2 text-sm hover:bg-surface-2"
+                        className="flex min-w-0 items-center"
+                        data-issue-id={child.id}
+                        data-issue-context="true"
+                        data-project-id={issue.projectId}
+                        data-issue-identifier={`${issue.project.issueKey}-${child.number}`}
+                        data-issue-title={child.title}
                     >
-                        <span className="font-mono text-xs text-accent-primary">
-                            {issue.project.issueKey}-{child.number}
-                        </span>
-                        <span className="text-primary">{child.title}</span>
-                    </Link>
+                        <Link
+                            to={`/projects/${issue.projectId}/issues/${issue.project.issueKey}-${child.number}`}
+                            className="flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-sm hover:bg-surface-2"
+                        >
+                            <span className="font-mono text-xs text-accent-primary">
+                                {issue.project.issueKey}-{child.number}
+                            </span>
+                            <span className="truncate text-primary">{child.title}</span>
+                        </Link>
+                        <ContextMenuButton
+                            entity={{ type: "issue", projectId: issue.projectId, identifier: `${issue.project.issueKey}-${child.number}`, title: child.title }}
+                            className="mr-1"
+                        />
+                    </div>
                 ))}
             </div>
         </section>
@@ -665,17 +679,29 @@ function IssueRelations({
             <SectionTitle title="Relations" icon={Link2} />
             <div className="divide-y divide-subtle rounded-lg border border-subtle">
                 {relations.map((relation) => (
-                    <div key={relation.id} className="flex items-center gap-3 px-3 py-2 text-sm">
+                    <div
+                        key={relation.id}
+                        className="flex items-center gap-3 px-3 py-2 text-sm"
+                    >
                         <span className="shrink-0 text-xs text-tertiary">{relation.type.replace("_", " ")}</span>
                         <Link
                             to={`/projects/${relation.target.projectId || projectId}/issues/${relation.target.project.issueKey}-${relation.target.number}`}
                             className="flex min-w-0 flex-1 items-center gap-2 hover:text-accent-primary"
+                            data-issue-id={relation.target.id}
+                            data-issue-context="true"
+                            data-project-id={relation.target.projectId || projectId}
+                            data-issue-identifier={`${relation.target.project.issueKey}-${relation.target.number}`}
+                            data-issue-title={relation.target.title}
                         >
                             <span className="font-mono text-xs text-accent-primary">
                                 {relation.target.project.issueKey}-{relation.target.number}
                             </span>
                             <span className="truncate text-primary">{relation.target.title}</span>
                         </Link>
+                        <ContextMenuButton
+                            entity={{ type: "issue", projectId: relation.target.projectId || projectId, identifier: `${relation.target.project.issueKey}-${relation.target.number}`, title: relation.target.title }}
+                            className="mr-1"
+                        />
                         <ButtonUtility icon={Trash2} size="xs" color="tertiary" className="text-danger-primary hover:text-danger-secondary" tooltip="Remove relation" onClick={() => onDelete(relation.id)} isDisabled={isPending} />
                     </div>
                 ))}

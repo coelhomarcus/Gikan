@@ -72,30 +72,55 @@ export const issues = ["Build the project workspace", "Refine the issue list", "
 /** In-memory HTTP fixtures; never touches the running API or its database. */
 export async function mockApi(
     page: Page,
-    options: { authenticated?: boolean; empty?: boolean; admin?: boolean; errorPath?: string; errorMethod?: string; documentContent?: TiptapDocument } = {},
+    options: {
+        authenticated?: boolean;
+        empty?: boolean;
+        admin?: boolean;
+        projectOwner?: boolean;
+        issueReferences?: boolean;
+        documentAuthorId?: string;
+        errorPath?: string;
+        errorMethod?: string;
+        documentContent?: TiptapDocument;
+    } = {},
 ) {
     let authenticated = options.authenticated ?? true;
     const currentUser = { ...user, isAdmin: options.admin ?? true };
     const currentProject = { ...project };
     const currentIssues = structuredClone(options.empty ? [] : issues);
+    if (options.issueReferences && currentIssues.length > 1) currentIssues[1]!.parentIssueId = currentIssues[0]!.id;
     const currentColumns = structuredClone(columns);
     const currentCategories = structuredClone([category]);
     const currentCycles = structuredClone([cycle]);
-    const members: Array<Record<string, unknown>> = [{ ...currentUser, role: options.admin === false ? "member" : "owner", joinedAt: timestamp }];
+    const members: Array<Record<string, unknown>> = [{ ...currentUser, role: options.admin === false && !options.projectOwner ? "member" : "owner", joinedAt: timestamp }];
     const documents = [
         {
             id: documentId,
             projectId,
             title: "Overview notes",
             contentJson: structuredClone(options.documentContent ?? documentJson),
-            createdBy: userId,
+            createdBy: options.documentAuthorId ?? userId,
             createdAt: timestamp,
             updatedAt: timestamp,
             revision: 1,
         },
     ];
     const comments: Record<string, unknown>[] = [];
-    const relations: Record<string, unknown>[] = [];
+    const relations: Record<string, unknown>[] = options.issueReferences && currentIssues[2]
+        ? [{
+              id: "relation-seed",
+              sourceIssueId: currentIssues[0]!.id,
+              targetIssueId: currentIssues[2]!.id,
+              type: "related",
+              target: {
+                  id: currentIssues[2]!.id,
+                  number: currentIssues[2]!.number,
+                  title: currentIssues[2]!.title,
+                  projectId,
+                  project: { issueKey: currentProject.issueKey },
+              },
+          }]
+        : [];
     await page.clock.install({ time: new Date(timestamp) });
     await page.route("**/api/**", async (route) => {
         const request = route.request();
@@ -120,6 +145,7 @@ export async function mockApi(
         if (path === "/projects")
             return method === "POST" ? json({ project: { ...currentProject, ...body } }) : json({ projects: options.empty ? [] : [currentProject] });
         if (path === `/projects/${projectId}`) {
+            if (method === "DELETE") return route.fulfill({ status: 204 });
             if (method === "PATCH") Object.assign(currentProject, body);
             return json({ project: currentProject });
         }

@@ -7,6 +7,7 @@ import { Button } from "@/components/base/buttons/button";
 import { Skeleton } from "@/components/base/feedback/skeleton";
 import { Input } from "@/components/base/input/input";
 import { ErrorMessage } from "@/components/feedback/error-message";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { type DocumentPage, deleteDocument, getDocument } from "@/features/documents/api";
 import { DocumentEditor } from "@/features/documents/components/document-editor";
@@ -58,17 +59,30 @@ function DocumentList({ projectId }: { projectId: string }) {
                 ) : filtered?.length ? (
                     <div className="divide-y divide-subtle border-y border-subtle">
                         {filtered.map((page) => (
-                            <Link
+                            <div
                                 key={page.id}
-                                to={`/projects/${projectId}/documents/${page.id}`}
-                                className="flex items-center gap-3 rounded px-3 py-4 hover:bg-layer-1"
+                                className="group/page flex min-w-0 items-center rounded px-1 hover:bg-layer-1"
+                                data-document-context="true"
+                                data-project-id={projectId}
+                                data-document-id={page.id}
+                                data-document-title={page.title}
+                                data-document-author-id={page.createdBy}
                             >
-                                <FileText className="size-5 shrink-0 text-tertiary" />
-                                <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{page.title}</span>
-                                <span className="hidden text-xs text-tertiary sm:block">
-                                    Created {new Date(page.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                                </span>
-                            </Link>
+                                <Link
+                                    to={`/projects/${projectId}/documents/${page.id}`}
+                                    className="flex min-w-0 flex-1 items-center gap-3 px-2 py-4"
+                                >
+                                    <FileText className="size-5 shrink-0 text-tertiary" />
+                                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{page.title}</span>
+                                    <span className="hidden text-xs text-tertiary sm:block">
+                                        Created {new Date(page.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                    </span>
+                                </Link>
+                                <ContextMenuButton
+                                    entity={{ type: "document", projectId, documentId: page.id, title: page.title, authorId: page.createdBy }}
+                                    className="mr-2 opacity-100 md:opacity-0 md:group-hover/page:opacity-100 md:group-focus-within/page:opacity-100"
+                                />
+                            </div>
                         ))}
                     </div>
                 ) : (

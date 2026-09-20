@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { WarningTriangleOutline as AlertTriangle } from "@makeplane/propel/icons";
 import { Button } from "@/components/base/buttons/button";
@@ -8,26 +8,37 @@ import { ApiError } from "@/lib/api-client";
 import type { Project } from "../api";
 import { useDeleteProject } from "../hooks/use-projects";
 
-export function DeleteProjectDialog({ project }: { project: Project }) {
-    const [open, setOpen] = useState(false);
+interface DeleteProjectDialogProps {
+    project: Pick<Project, "id" | "name" | "issueKey">;
+    trigger?: ReactElement;
+    hideTrigger?: boolean;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
+}
+
+export function DeleteProjectDialog({ project, trigger, hideTrigger = false, open: controlledOpen, onOpenChange }: DeleteProjectDialogProps) {
+    const [internalOpen, setInternalOpen] = useState(false);
     const [name, setName] = useState("");
     const [confirmation, setConfirmation] = useState("");
     const mutation = useDeleteProject(project);
+    const open = controlledOpen ?? internalOpen;
+    function changeOpen(next: boolean) {
+        if (mutation.isPending) return;
+        if (controlledOpen === undefined) setInternalOpen(next);
+        onOpenChange?.(next);
+        if (next) {
+            setName("");
+            setConfirmation("");
+            mutation.reset();
+        }
+    }
     const canDelete = name === project.name && confirmation === "delete my project";
     return (
         <Dialog.Root
             open={open}
-            onOpenChange={(next) => {
-                if (mutation.isPending) return;
-                setOpen(next);
-                if (next) {
-                    setName("");
-                    setConfirmation("");
-                    mutation.reset();
-                }
-            }}
+            onOpenChange={changeOpen}
         >
-            <Dialog.Trigger render={<Button color="secondary-destructive" size="lg" />}>Delete project</Dialog.Trigger>
+            {!hideTrigger && <Dialog.Trigger render={trigger ?? <Button color="secondary-destructive" size="lg" />}>Delete project</Dialog.Trigger>}
             <Dialog.Portal>
                 <Dialog.Backdrop className="fixed inset-0 z-50 bg-overlay/70" />
                 <Dialog.Viewport className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
@@ -36,7 +47,7 @@ export function DeleteProjectDialog({ project }: { project: Project }) {
                             className="flex flex-col gap-6"
                             onSubmit={(event) => {
                                 event.preventDefault();
-                                if (canDelete && !mutation.isPending) mutation.mutate();
+                                if (canDelete && !mutation.isPending) mutation.mutate(undefined, { onSuccess: () => changeOpen(false) });
                             }}
                         >
                             <div className="flex items-start gap-4">
@@ -66,7 +77,7 @@ export function DeleteProjectDialog({ project }: { project: Project }) {
                                 </Alert>
                             )}
                             <div className="flex justify-end gap-2">
-                                <Button color="secondary" size="lg" isDisabled={mutation.isPending} onClick={() => setOpen(false)}>
+                                <Button color="secondary" size="lg" isDisabled={mutation.isPending} onClick={() => changeOpen(false)}>
                                     Cancel
                                 </Button>
                                 <Button type="submit" color="primary-destructive" size="lg" isDisabled={!canDelete} isLoading={mutation.isPending}>

@@ -33,6 +33,12 @@ export async function clearDocumentSession(userId: string, projectId: string, do
     sessions.delete(key);
     await draftStore.remove(key);
 }
+export async function pauseDocumentSession(userId: string, projectId: string, documentId: string) {
+    const session = sessions.get(keyOf(userId, projectId, documentId));
+    if (!session) return undefined;
+    await session.pause();
+    return () => session.resume();
+}
 export async function clearDocumentDrafts(userId: string, projectId?: string) {
     const prefix = `${userId}:${projectId ? `${projectId}:` : ""}`;
     for (const [key, session] of sessions)

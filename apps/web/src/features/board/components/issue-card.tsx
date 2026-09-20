@@ -2,6 +2,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useLocation } from "react-router";
 import { AssigneeOutline, EstimateOutline } from "@makeplane/propel/icons";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import type { Issue, IssuePerson } from "@/features/issues/api";
 import { cx } from "@/utils/cx";
 import { CycleIcon, IssueAvatar, PriorityIcon, StateIcon } from "./issue-property-icons";
@@ -38,7 +39,7 @@ interface IssueCardProps extends IssueCardContentProps {
 }
 
 export const IssueCard = ({ issue, category, assignee, column, cycle, projectId, onClick }: IssueCardProps) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id });
+    const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } = useSortable({ id: issue.id });
 
     const location = useLocation();
     const selected = location.pathname.endsWith(`/issues/${issue.identifier}`);
@@ -48,29 +49,36 @@ export const IssueCard = ({ issue, category, assignee, column, cycle, projectId,
         <div
             ref={setNodeRef}
             style={style}
-            {...listeners}
-            {...attributes}
-            onClick={onClick}
-            onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    onClick();
-                } else listeners?.onKeyDown?.(event);
-            }}
-            role="button"
-            tabIndex={0}
             data-issue-id={issue.id}
-            data-issue-context="true"
-            data-project-id={projectId}
-            data-issue-identifier={issue.identifier}
-            data-issue-title={issue.title}
-            className={cx(
-                "mb-3 block cursor-pointer touch-none rounded-lg border border-subtle bg-layer-2 p-3 shadow-raised-100 outline-none transition duration-100 ease-linear hover:border-strong hover:shadow-raised-200 focus-visible:ring-1 focus-visible:ring-accent-strong",
-                selected && "border-accent-strong",
-                isDragging && "z-10 opacity-50",
-            )}
+            className={cx("relative mb-3", isDragging && "z-10 opacity-50")}
         >
-            <IssueCardContent issue={issue} category={category} assignee={assignee} column={column} cycle={cycle} />
+            <button
+                ref={setActivatorNodeRef}
+                type="button"
+                {...attributes}
+                {...listeners}
+                data-issue-context="true"
+                data-project-id={projectId}
+                data-issue-identifier={issue.identifier}
+                data-issue-title={issue.title}
+                onClick={onClick}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        onClick();
+                    } else listeners?.onKeyDown?.(event);
+                }}
+                className={cx(
+                    "block w-full cursor-pointer touch-none rounded-lg border border-subtle bg-layer-2 p-3 pr-10 text-left shadow-raised-100 outline-none transition duration-100 ease-linear hover:border-strong hover:shadow-raised-200 focus-visible:ring-1 focus-visible:ring-accent-strong md:pr-3",
+                    selected && "border-accent-strong",
+                )}
+            >
+                <IssueCardContent issue={issue} category={category} assignee={assignee} column={column} cycle={cycle} />
+            </button>
+            <ContextMenuButton
+                entity={{ type: "issue", projectId, identifier: issue.identifier, title: issue.title }}
+                className="absolute top-1 right-1 z-10 rounded-md bg-layer-2"
+            />
         </div>
     );
 };

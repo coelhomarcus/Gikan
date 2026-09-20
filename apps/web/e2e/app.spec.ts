@@ -97,6 +97,127 @@ test("mobile navigation opens as an accessible dark drawer", async ({ page }) =>
     await expect(openNavigation).toBeFocused();
 });
 
+test("project and issue context menus support pointer and keyboard access", async ({ page }) => {
+    await mockApi(page, { admin: false });
+    await page.goto(`/projects/${projectId}/issues`);
+
+    const sidebarProject = page.locator('aside[aria-label="Project navigation"] [data-project-context]').first();
+    await sidebarProject.click({ button: "right" });
+    const projectMenu = page.getByRole("menu", { name: "project actions" });
+    await expect(projectMenu.getByRole("menuitem", { name: "Open project" })).toBeVisible();
+    await expect(projectMenu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
+    await expect(projectMenu.getByRole("menuitem", { name: "Copy project link" })).toBeVisible();
+    await expect(projectMenu.getByRole("menuitem", { name: "Project settings" })).toBeVisible();
+    await expect(projectMenu.getByRole("menuitem", { name: "Delete project" })).toHaveCount(0);
+    await page.keyboard.press("Escape");
+
+    await sidebarProject.getByRole("link", { name: "Platform" }).focus();
+    await page.keyboard.press("Shift+F10");
+    await expect(projectMenu).toBeVisible();
+    await page.getByRole("menuitem", { name: "Project settings" }).click();
+    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/settings/general`));
+
+    await page.goto(`/projects/${projectId}/issues`);
+    const breadcrumbProject = page.locator("header [data-project-context]");
+    await breadcrumbProject.click({ button: "right" });
+    await expect(page.getByRole("menu", { name: "project actions" }).getByRole("menuitem", { name: "Project settings" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    const issue = page.locator('[data-issue-context][data-issue-identifier="PLAT-1"]');
+    await issue.focus();
+    await page.keyboard.press("ContextMenu");
+    await expect(page.getByRole("menu", { name: "issue actions" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await issue.click({ button: "right" });
+    const issueMenu = page.getByRole("menu", { name: "issue actions" });
+    await expect(issueMenu.getByRole("menuitem", { name: "Open issue" })).toBeVisible();
+    await expect(issueMenu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
+    await expect(issueMenu.getByRole("menuitem", { name: "Copy issue identifier" })).toBeVisible();
+    await expect(issueMenu.getByRole("menuitem", { name: "Copy issue link" })).toBeVisible();
+    await expect(issueMenu.getByRole("menuitem", { name: "Copy issue content" })).toBeVisible();
+    await expect(issueMenu.getByRole("menuitem", { name: "Delete issue" })).toBeVisible();
+});
+
+test("project cards expose the same actions and owners confirm deletion by project name and phrase", async ({ page }) => {
+    await mockApi(page, { admin: false, projectOwner: true });
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://127.0.0.1:5173" });
+    await page.goto("/");
+    const projectCard = page.locator("main [data-project-context]").first();
+    await projectCard.click({ button: "right" });
+    const menu = page.getByRole("menu", { name: "project actions" });
+    await expect(menu.getByRole("menuitem", { name: "Open project" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Copy project link" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Project settings" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Delete project" })).toBeVisible();
+    await menu.getByRole("menuitem", { name: "Copy project link" }).click();
+    await expect(page.getByRole("status")).toHaveText("Link copied");
+    await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(`http://127.0.0.1:5173/projects/${projectId}`);
+
+    await page.evaluate(() => {
+        const target = window as Window & { contextMenuOpenedUrls?: string[] };
+        target.contextMenuOpenedUrls = [];
+        window.open = ((url?: string | URL) => {
+            target.contextMenuOpenedUrls?.push(String(url));
+            return null;
+        }) as typeof window.open;
+    });
+    await projectCard.click({ button: "right" });
+    await page.getByRole("menuitem", { name: "Open in new tab" }).click();
+    await expect.poll(() => page.evaluate(() => (window as Window & { contextMenuOpenedUrls?: string[] }).contextMenuOpenedUrls)).toEqual([
+        `/projects/${projectId}`,
+    ]);
+
+    await projectCard.click({ button: "right" });
+    await menu.getByRole("menuitem", { name: "Delete project" }).click();
+
+    const confirmation = page.getByRole("dialog", { name: "Delete project" });
+    await expect(confirmation.getByLabel("Enter the project name")).toBeVisible();
+    await confirmation.getByLabel("Enter the project name").fill("Platform");
+    await confirmation.getByLabel("To confirm, type “delete my project”").fill("delete my project");
+    const response = page.waitForResponse((item) => item.request().method() === "DELETE" && item.url().endsWith(`/projects/${projectId}`));
+    await confirmation.getByRole("button", { name: "Delete project" }).click();
+    expect((await response).status()).toBe(204);
+    await expect(confirmation).toBeHidden();
+});
+
+test("sub-issue and related issue links expose issue actions and deletion failures stay local", async ({ page }) => {
+    await mockApi(page, { admin: false, issueReferences: true, errorPath: "/issues/PLAT-1", errorMethod: "DELETE" });
+    await page.goto(`/projects/${projectId}/issues/PLAT-1`);
+
+    const subIssue = page.locator('[data-issue-context][data-issue-identifier="PLAT-2"]');
+    await expect(subIssue).toBeVisible();
+    await subIssue.click({ button: "right" });
+    await expect(page.getByRole("menu", { name: "issue actions" }).getByRole("menuitem", { name: "Copy issue identifier" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    const relatedIssue = page.locator('[data-issue-context][data-issue-identifier="PLAT-3"]');
+    await expect(relatedIssue).toBeVisible();
+    await relatedIssue.click({ button: "right" });
+    await expect(page.getByRole("menu", { name: "issue actions" }).getByRole("menuitem", { name: "Open issue" })).toBeVisible();
+    await page.keyboard.press("Escape");
+
+    await page.goto(`/projects/${projectId}/issues`);
+    const parentCard = page.locator('[data-issue-context][data-issue-identifier="PLAT-1"]');
+    await parentCard.click({ button: "right" });
+    await page.getByRole("menuitem", { name: "Delete issue" }).click();
+    const confirmation = page.getByRole("dialog", { name: "Delete issue?" });
+    await confirmation.getByRole("button", { name: "Delete issue" }).click();
+    await expect(confirmation.getByRole("alert")).toHaveText("Simulated service failure");
+});
+
+test("mobile issue cards expose the shared context actions without opening or dragging the issue", async ({ page }) => {
+    await mockApi(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`/projects/${projectId}/issues`);
+
+    const actionButton = page.getByRole("button", { name: "More actions for PLAT-1" });
+    await expect(actionButton).toBeVisible();
+    await actionButton.click();
+    await expect(page.getByRole("menu", { name: "issue actions" }).getByRole("menuitem", { name: "Copy issue content" })).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/issues$`));
+});
+
 test("creates an issue and saves an edited title from its peek view", async ({ page }) => {
     await mockApi(page);
     await page.goto(`/projects/${projectId}/issues`);

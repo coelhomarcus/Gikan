@@ -6,6 +6,7 @@ import { Button } from "@/components/base/buttons/button";
 import { ButtonUtility } from "@/components/base/buttons/button-utility";
 import { AppIcons } from "@/components/foundations/icons";
 import type { AppIcon } from "@/components/foundations/icons";
+import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useDocuments } from "@/features/documents/hooks/use-documents";
@@ -108,15 +109,27 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                         </button>
                         {expanded &&
                             (projects ?? []).map((project) => (
-                                <div key={project.id} className="mb-1">
-                                    <Link
-                                        to={`/projects/${project.id}`}
-                                        className={`${navClass} font-medium ${projectId === project.id ? "text-primary" : ""}`}
+                                <div key={project.id} className="group/project mb-1">
+                                    <div
+                                        className="flex min-w-0 items-center"
+                                        data-project-context="true"
+                                        data-project-id={project.id}
+                                        data-project-name={project.name}
+                                        data-project-issue-key={project.issueKey}
                                     >
-                                        <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-tertiary" />
-                                        <span className="truncate">{project.name}</span>
-                                        <ChevronRightOutline className={`ml-auto size-3 shrink-0 ${projectId === project.id ? "rotate-90" : ""}`} />
-                                    </Link>
+                                        <Link
+                                            to={`/projects/${project.id}`}
+                                            className={`${navClass} min-w-0 flex-1 font-medium ${projectId === project.id ? "text-primary" : ""}`}
+                                        >
+                                            <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-tertiary" />
+                                            <span className="truncate">{project.name}</span>
+                                            <ChevronRightOutline className={`ml-auto size-3 shrink-0 ${projectId === project.id ? "rotate-90" : ""}`} />
+                                        </Link>
+                                        <ContextMenuButton
+                                            entity={{ type: "project", projectId: project.id, name: project.name, issueKey: project.issueKey }}
+                                            className="opacity-100 md:opacity-0 md:group-hover/project:opacity-100 md:group-focus-within/project:opacity-100"
+                                        />
+                                    </div>
                                     {projectId === project.id && (
                                         <nav aria-label={`${project.name} views`} className="ml-4 border-l border-subtle pl-2">
                                             {views.map(([suffix, label, Icon]) => {
@@ -136,15 +149,28 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                                         </Link>
                                                         {suffix === "/documents" &&
                                                             documents?.map((page) => (
-                                                                <Link
+                                                                <div
                                                                     key={page.id}
-                                                                    to={`/projects/${projectId}/documents/${page.id}`}
-                                                                    className={`${navClass} ml-4 ${location.pathname.endsWith(`/documents/${page.id}`) ? "bg-layer-1 text-primary" : ""}`}
-                                                                    aria-current={location.pathname.endsWith(`/documents/${page.id}`) ? "page" : undefined}
+                                                                    className="ml-4 flex min-w-0 items-center"
+                                                                    data-document-context="true"
+                                                                    data-project-id={project.id}
+                                                                    data-document-id={page.id}
+                                                                    data-document-title={page.title}
+                                                                    data-document-author-id={page.createdBy}
                                                                 >
-                                                                    <AppIcons.Documents className="size-3 shrink-0" />
-                                                                    <span className="truncate">{page.title}</span>
-                                                                </Link>
+                                                                    <Link
+                                                                        to={`/projects/${projectId}/documents/${page.id}`}
+                                                                        className={`${navClass} min-w-0 flex-1 ${location.pathname.endsWith(`/documents/${page.id}`) ? "bg-layer-1 text-primary" : ""}`}
+                                                                        aria-current={location.pathname.endsWith(`/documents/${page.id}`) ? "page" : undefined}
+                                                                    >
+                                                                        <AppIcons.Documents className="size-3 shrink-0" />
+                                                                        <span className="truncate">{page.title}</span>
+                                                                    </Link>
+                                                                    <ContextMenuButton
+                                                                        entity={{ type: "document", projectId: project.id, documentId: page.id, title: page.title, authorId: page.createdBy }}
+                                                                        className="size-7 opacity-100 md:opacity-0 md:group-hover/project:opacity-100 md:group-focus-within/project:opacity-100"
+                                                                    />
+                                                                </div>
                                                             ))}
                                                     </Fragment>
                                                 );

@@ -191,6 +191,69 @@ test("the global search shortcut opens while the document editor is focused", as
     await expect(page.getByRole("combobox", { name: "Search projects and issues" })).toBeVisible();
 });
 
+test("document page context menu exposes link actions and preserves its existing delete confirmation", async ({ page }) => {
+    await mockApi(page, { admin: false });
+    await page.goto(`/projects/${projectId}/documents`);
+    const documentRow = page.locator("[data-document-context]").first();
+    await documentRow.click({ button: "right" });
+
+    const menu = page.getByRole("menu", { name: "document actions" });
+    await expect(menu.getByRole("menuitem", { name: "Open page" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Copy page link" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Delete page" })).toBeVisible();
+    await menu.getByRole("menuitem", { name: "Delete page" }).click();
+
+    const confirmation = page.getByRole("dialog", { name: "Delete page?" });
+    await expect(confirmation).toBeVisible();
+    await confirmation.getByRole("button", { name: "Cancel" }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(documentRow).toBeVisible();
+});
+
+test("document links in the project sidebar respect page deletion permissions", async ({ page }) => {
+    await mockApi(page, { admin: false, documentAuthorId: "other-user" });
+    await page.goto(`/projects/${projectId}/documents`);
+    const sidebarPage = page.locator('aside [data-document-context]').first();
+    await expect(sidebarPage).toBeVisible();
+    await sidebarPage.click({ button: "right" });
+
+    const menu = page.getByRole("menu", { name: "document actions" });
+    await expect(menu.getByRole("menuitem", { name: "Open page" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Copy page link" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Delete page" })).toHaveCount(0);
+});
+
+test("document editor keeps the browser context menu instead of opening entity actions", async ({ page }) => {
+    await mockApi(page);
+    await page.goto(`/projects/${projectId}/documents/${documentId}`);
+    const editor = page.locator(".ProseMirror[contenteditable='true']");
+    await expect(editor).toBeVisible();
+    await editor.click({ button: "right" });
+    await expect(page.getByRole("menu", { name: "document actions" })).toHaveCount(0);
+});
+
+test("failed context deletion resumes the document session and keeps the editor draft", async ({ page }) => {
+    await mockApi(page, { admin: false, errorPath: `/projects/${projectId}/documents/${documentId}`, errorMethod: "DELETE" });
+    await page.goto(`/projects/${projectId}/documents/${documentId}`);
+    const editor = page.getByRole("textbox", { name: "Document content" });
+    await editor.fill("Keep this local draft after a failed delete.");
+    await expect(page.getByText("Unsaved changes", { exact: true })).toBeVisible();
+
+    await page.locator("[data-document-context]").first().click({ button: "right" });
+    await page.getByRole("menuitem", { name: "Delete page" }).click();
+    const confirmation = page.getByRole("dialog", { name: "Delete page?" });
+    await confirmation.getByRole("button", { name: "Delete page" }).click();
+
+    await expect(confirmation.getByRole("alert")).toHaveText("Simulated service failure");
+    await confirmation.getByRole("button", { name: "Cancel" }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(editor).toBeVisible();
+    await expect(editor).toContainText("Keep this local draft after a failed delete.");
+    await expect(page.getByText("Unsaved changes", { exact: true })).toBeVisible();
+});
+
 test("slash inserts an editable table between neighboring document blocks", async ({ page }) => {
     await openDocument(page, documentWith(paragraph("Before table"), paragraph("Table block"), paragraph("After table")));
     const editor = page.getByRole("textbox", { name: "Document content" });
