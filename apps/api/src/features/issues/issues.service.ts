@@ -1,10 +1,30 @@
-import type { CreateIssueCommentInput, CreateIssueInput, CreateIssueRelationInput, IssueListQuery, UpdateIssueCommentInput, UpdateIssueInput } from "@gikan/shared";
+import type { CreateIssueCommentInput, CreateIssueInput, CreateIssueRelationInput, IssueListQuery, TiptapDocument, UpdateIssueCommentInput, UpdateIssueInput } from "@gikan/shared";
 import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, categories, issueActivities, issueComments, issueRelations, issues, projectCycles, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
 const EMPTY_DOCUMENT = { type: "doc" as const, content: [] };
+
+function validateIssueImageUrls(document?: TiptapDocument) {
+    if (!document) return;
+    const visit = (nodes: unknown[]) => {
+        for (const candidate of nodes) {
+            if (!candidate || typeof candidate !== "object") continue;
+            const node = candidate as { type?: unknown; attrs?: { src?: unknown }; content?: unknown[] };
+            if (node.type === "image" && typeof node.attrs?.src === "string" && node.attrs.src.trim()) {
+                try {
+                    const url = new URL(node.attrs.src);
+                    if (!(["http:", "https:"].includes(url.protocol))) throw new Error();
+                } catch {
+                    throw new HttpError(400, "Issue image URLs must use HTTP or HTTPS");
+                }
+            }
+            if (Array.isArray(node.content)) visit(node.content);
+        }
+    };
+    visit(document.content ?? []);
+}
 
 function parseIdentifier(identifier: string): { key: string; number: number } | null {
     const match = /^([A-Z0-9]{2,8})-(\d+)$/.exec(identifier.toUpperCase());
@@ -120,6 +140,7 @@ export async function listIssues(projectId: string, query: IssueListQuery) {
 }
 
 export async function createIssue(projectId: string, input: CreateIssueInput, actorId: string) {
+    validateIssueImageUrls(input.descriptionJson);
     await ensureProjectMember(actorId, projectId);
     if (input.parentIssueId) await ensureParentIsValid(input.parentIssueId, undefined, projectId);
     await ensureColumnInProject(input.columnId, projectId);
@@ -156,13 +177,26 @@ export async function createIssue(projectId: string, input: CreateIssueInput, ac
 export async function updateIssue(identifier: string, input: UpdateIssueInput, actorId: string) {
     const current = await getIssueOrThrow(identifier);
     await ensureProjectMember(actorId, current.projectId);
+    validateIssueImageUrls(input.descriptionJson);
     if (input.columnId) await ensureColumnInProject(input.columnId, current.projectId);
     if (input.assigneeId) await ensureAssigneeInProject(input.assigneeId, current.projectId);
     if (input.categoryId) await ensureCategoryInProject(input.categoryId, current.projectId);
     if (input.cycleId) await ensureCycleInProject(input.cycleId, current.projectId);
     if (input.parentIssueId) await ensureParentIsValid(input.parentIssueId, current.id, current.projectId);
 
-    const [updated] = await db.update(issues).set({ ...input, updatedAt: new Date() }).where(eq(issues.id, current.id)).returning();
+    const { expectedDescriptionRevision, ...values } = input;
+    const writesDescription = values.descriptionJson !== undefined;
+    const [updated] = await db.update(issues)
+        .set({
+            ...values,
+            ...(writesDescription ? { descriptionRevision: sql`${issues.descriptionRevision} + 1` } : {}),
+            updatedAt: new Date(),
+        })
+        .where(writesDescription
+            ? and(eq(issues.id, current.id), eq(issues.descriptionRevision, expectedDescriptionRevision!))
+            : eq(issues.id, current.id))
+        .returning();
+    if (!updated && writesDescription) throw new HttpError(409, "This issue description was updated elsewhere. Your draft has been kept.");
     if (!updated) throw new HttpError(404, "Issue not found");
 
     const activityMap = [

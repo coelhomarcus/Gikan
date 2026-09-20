@@ -10,6 +10,7 @@ export const user = {
     name: "Alex Morgan",
     username: "alex",
     email: "alex@example.test",
+    locale: "en" as const,
     avatarUrl: null,
     isAdmin: true,
     createdAt: timestamp,
@@ -84,6 +85,9 @@ export async function mockApi(
         documentContent?: TiptapDocument;
     } = {},
 ) {
+    await page.addInitScript(() => {
+        try { localStorage.setItem("gikan.locale.anonymous", "en"); } catch { /* The script will run again on the first app origin. */ }
+    });
     let authenticated = options.authenticated ?? true;
     const currentUser = { ...user, isAdmin: options.admin ?? true };
     const currentProject = { ...project };

@@ -197,10 +197,10 @@ test("document page context menu exposes link actions and preserves its existing
     const documentRow = page.locator("[data-document-context]").first();
     await documentRow.click({ button: "right" });
 
-    const menu = page.getByRole("menu", { name: "document actions" });
-    await expect(menu.getByRole("menuitem", { name: "Open page" })).toBeVisible();
+    const menu = page.getByRole("menu", { name: "Actions" });
+    await expect(menu.getByRole("menuitem", { name: "Open", exact: true })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
-    await expect(menu.getByRole("menuitem", { name: "Copy page link" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Delete page" })).toBeVisible();
     await menu.getByRole("menuitem", { name: "Delete page" }).click();
 
@@ -218,10 +218,10 @@ test("document links in the project sidebar respect page deletion permissions", 
     await expect(sidebarPage).toBeVisible();
     await sidebarPage.click({ button: "right" });
 
-    const menu = page.getByRole("menu", { name: "document actions" });
-    await expect(menu.getByRole("menuitem", { name: "Open page" })).toBeVisible();
+    const menu = page.getByRole("menu", { name: "Actions" });
+    await expect(menu.getByRole("menuitem", { name: "Open", exact: true })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Open in new tab" })).toBeVisible();
-    await expect(menu.getByRole("menuitem", { name: "Copy page link" })).toBeVisible();
+    await expect(menu.getByRole("menuitem", { name: "Copy link" })).toBeVisible();
     await expect(menu.getByRole("menuitem", { name: "Delete page" })).toHaveCount(0);
 });
 
@@ -231,7 +231,7 @@ test("document editor keeps the browser context menu instead of opening entity a
     const editor = page.locator(".ProseMirror[contenteditable='true']");
     await expect(editor).toBeVisible();
     await editor.click({ button: "right" });
-    await expect(page.getByRole("menu", { name: "document actions" })).toHaveCount(0);
+    await expect(page.getByRole("menu")).toHaveCount(0);
 });
 
 test("failed context deletion resumes the document session and keeps the editor draft", async ({ page }) => {

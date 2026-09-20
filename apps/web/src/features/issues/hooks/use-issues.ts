@@ -7,7 +7,9 @@ import type {
     UpdateIssueInput,
 } from "@gikan/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Issue } from "../api";
+import type { Issue, IssueDetail } from "../api";
+import { issueDescriptionDrafts } from "../lib/issue-description-drafts";
+import { useAuth } from "@/features/auth/hooks/use-auth";
 import {
     createIssue,
     createIssueComment,
@@ -28,6 +30,7 @@ import type { CreateCycleInput, UpdateCycleInput } from "@gikan/shared";
 
 export const issuesKey = (projectId: string, query: IssueListQuery = { orderBy: "position" }) => ["projects", projectId, "issues", query] as const;
 export const issueKey = (identifier: string) => ["issues", identifier] as const;
+type IssueUpdateField = Exclude<keyof UpdateIssueInput, "expectedDescriptionRevision">;
 
 export function useIssues(projectId: string, query: IssueListQuery = { orderBy: "position" }) {
     return useQuery({ queryKey: issuesKey(projectId, query), queryFn: () => listIssues(projectId, query), enabled: !!projectId });
@@ -50,21 +53,60 @@ export function useUpdateIssue(projectId: string) {
     return useMutation({
         mutationFn: ({ identifier, input }: { identifier: string; input: UpdateIssueInput }) => updateIssue(identifier, input),
         onMutate: async ({ identifier, input }) => {
-            await queryClient.cancelQueries({ queryKey: ["projects", projectId, "issues"] });
+            const { expectedDescriptionRevision: _expectedDescriptionRevision, ...inputValues } = input;
+            const optimisticValues: Partial<Pick<Issue, IssueUpdateField>> = inputValues;
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: ["projects", projectId, "issues"] }),
+                queryClient.cancelQueries({ queryKey: issueKey(identifier) }),
+            ]);
             const previous = queryClient.getQueriesData<Issue[]>({ queryKey: ["projects", projectId, "issues"] });
+            const previousDetail = queryClient.getQueryData<IssueDetail>(issueKey(identifier));
 
             for (const [queryKey] of previous) {
                 queryClient.setQueryData<Issue[]>(queryKey, (current) =>
-                    current?.map((issue) => (issue.identifier === identifier ? { ...issue, ...input } : issue)),
+                    current?.map((issue) => (issue.identifier === identifier ? { ...issue, ...optimisticValues } : issue)),
                 );
             }
+            queryClient.setQueryData<IssueDetail>(issueKey(identifier), (current) => current ? { ...current, ...optimisticValues } : current);
 
-            return { previous };
+            return { previous, previousDetail, optimisticValues };
         },
-        onError: (_error, _variables, context) => {
-            context?.previous.forEach(([queryKey, previousIssues]) => queryClient.setQueryData(queryKey, previousIssues));
+        onError: (_error, variables, context) => {
+            if (!context) return;
+            const fields = Object.keys(context.optimisticValues) as IssueUpdateField[];
+            context.previous.forEach(([queryKey, previousIssues]) => {
+                queryClient.setQueryData<Issue[]>(queryKey, (current) => {
+                    if (!current || !previousIssues) return current;
+                    return current.map((issue) => {
+                        if (issue.identifier !== variables.identifier) return issue;
+                        const previousIssue = previousIssues.find((entry) => entry.identifier === variables.identifier);
+                        if (!previousIssue) return issue;
+                        const rollback: Partial<Pick<Issue, IssueUpdateField>> = {};
+                        for (const field of fields) {
+                            if (Object.is(issue[field], context.optimisticValues[field])) {
+                                (rollback as Record<string, unknown>)[field] = previousIssue[field as keyof Issue];
+                            }
+                        }
+                        return { ...issue, ...rollback };
+                    });
+                });
+            });
+            if (context.previousDetail) {
+                queryClient.setQueryData<IssueDetail>(issueKey(variables.identifier), (current) => {
+                    if (!current) return current;
+                    const rollback: Partial<Pick<IssueDetail, IssueUpdateField>> = {};
+                    for (const field of fields) {
+                        if (Object.is(current[field], context.optimisticValues[field])) {
+                            (rollback as Record<string, unknown>)[field] = context.previousDetail?.[field];
+                        }
+                    }
+                    return { ...current, ...rollback };
+                });
+            }
         },
         onSuccess: (issue) => {
+            const { createdBy: _createdBy, ...updatedFields } = issue;
+            queryClient.setQueryData<IssueDetail>(issueKey(issue.identifier), (current) => current ? { ...current, ...updatedFields } : current);
             queryClient.invalidateQueries({ queryKey: ["projects", projectId, "issues"] });
             queryClient.invalidateQueries({ queryKey: issueKey(issue.identifier) });
         },
@@ -74,7 +116,18 @@ export function useUpdateIssue(projectId: string) {
 
 export function useDeleteIssue(projectId: string) {
     const queryClient = useQueryClient();
-    return useMutation({ mutationFn: deleteIssue, onSuccess: () => queryClient.invalidateQueries({ queryKey: ["projects", projectId, "issues"] }) });
+    const { user } = useAuth();
+    return useMutation({
+        mutationFn: deleteIssue,
+        onSuccess: async (_result, identifier) => {
+            const detail = queryClient.getQueryData<IssueDetail>(issueKey(identifier));
+            const lists = queryClient.getQueriesData<Issue[]>({ queryKey: ["projects", projectId, "issues"] });
+            const issue = detail ?? lists.flatMap(([, entries]) => entries ?? []).find((entry) => entry.identifier === identifier);
+            if (user && issue) await issueDescriptionDrafts.clearIssue(user.id, issue.projectId, issue.id).catch(() => undefined);
+            queryClient.removeQueries({ queryKey: issueKey(identifier), exact: true });
+            await queryClient.invalidateQueries({ queryKey: ["projects", projectId, "issues"] });
+        },
+    });
 }
 
 export function useIssueComments(identifier: string | null) {

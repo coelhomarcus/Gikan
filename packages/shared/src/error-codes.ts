@@ -14,6 +14,7 @@ const messageCodes: Record<string, string> = {
     "You are not a member of this project": "errors.membershipRequired",
     "This page was updated elsewhere. Your draft has been kept.": "errors.saveConflict",
     "This page was updated elsewhere. Your draft has been kept": "errors.saveConflict",
+    "This issue description was updated elsewhere. Your draft has been kept.": "errors.issueDescriptionConflict",
     "Too many login attempts. Try again in a few minutes.": "errors.tooManyLoginAttempts",
     "Too many registration attempts. Try again later.": "errors.tooManyRegistrationAttempts",
     "You do not have permission to update this category": "errors.permissionDenied",
@@ -38,4 +39,3 @@ export function resolveApiError(message: string, status: number): { code: string
     if (status === 401) return { code: "errors.notAuthenticated" };
     return { code: "errors.requestFailed" };
 }
-

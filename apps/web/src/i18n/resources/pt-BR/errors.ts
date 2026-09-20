@@ -8,7 +8,7 @@ const errors = {
         projectKeyLocked: "O ID do projeto não pode ser alterado depois da criação da primeira tarefa", membershipRequired: "Você não é membro deste projeto",
         permissionDenied: "Você não tem permissão para realizar esta ação.", conflict: "Este item foi atualizado em outro lugar. Atualize e tente novamente.",
         tooManyLoginAttempts: "Muitas tentativas de acesso. Tente novamente em alguns minutos.", tooManyRegistrationAttempts: "Muitas tentativas de cadastro. Tente novamente mais tarde.",
-        saveConflict: "Esta página foi atualizada em outro lugar. Seu rascunho foi mantido.", screenFailureTitle: "Algo deu errado", screenFailureDescription: "O Gikan não conseguiu abrir esta tela. Recarregue a página ou volte aos projetos.", goToProjects: "Ir para projetos", reloadPage: "Recarregar página", notFoundTitle: "404 · Não encontrado", pageMissing: "Esta página não existe.", pageMissingDescription: "O link pode estar desatualizado ou a página pode ter sido movida.", goHome: "Ir para o início",
+        saveConflict: "Esta página foi atualizada em outro lugar. Seu rascunho foi mantido.", issueDescriptionConflict: "A descrição desta tarefa foi atualizada em outro lugar. Seu rascunho foi mantido.", screenFailureTitle: "Algo deu errado", screenFailureDescription: "O Gikan não conseguiu abrir esta tela. Recarregue a página ou volte aos projetos.", goToProjects: "Ir para projetos", reloadPage: "Recarregar página", notFoundTitle: "404 · Não encontrado", pageMissing: "Esta página não existe.", pageMissingDescription: "O link pode estar desatualizado ou a página pode ter sido movida.", goHome: "Ir para o início",
     } as const;
 
 export default errors;

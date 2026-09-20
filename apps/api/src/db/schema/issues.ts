@@ -25,6 +25,7 @@ export const issues = pgTable(
             .references(() => boardColumns.id, { onDelete: "cascade" }),
         title: text("title").notNull(),
         descriptionJson: jsonb("description_json").$type<TiptapDocument>().notNull(),
+        descriptionRevision: integer("description_revision").notNull().default(0),
         assigneeId: uuid("assignee_id").references(() => users.id, { onDelete: "set null" }),
         categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }),
         priority: issuePriorityEnum("priority").notNull().default("medium"),

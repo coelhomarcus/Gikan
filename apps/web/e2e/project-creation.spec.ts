@@ -30,7 +30,7 @@ test("new project modal validates fields, chooses a compact icon, and submits ex
     await page.getByLabel("Project ID").fill("GIKAN7");
 
     await page.getByRole("button", { name: "Choose project icon" }).click();
-    const search = page.getByRole("textbox", { name: "Search project icons" });
+    const search = page.getByRole("textbox", { name: "Search icons" });
     await expect(search).toBeFocused();
     await search.fill("rocket");
     await expect(page.getByRole("button", { name: "Use rocket icon" })).toBeVisible();

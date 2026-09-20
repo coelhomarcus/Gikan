@@ -2,7 +2,7 @@ import { boardColumns, categories, issueActivities, issueComments, issueRelation
 import { db } from "../../db";
 
 export interface DatabaseBackup {
-    version: 3;
+    version: 4;
     exportedAt: string;
     tables: {
         users: (typeof users.$inferSelect)[];
@@ -35,7 +35,7 @@ export async function createBackup(): Promise<DatabaseBackup> {
     ]);
 
     return {
-        version: 3,
+        version: 4,
         exportedAt: new Date().toISOString(),
         tables: {
             users: usersRows,

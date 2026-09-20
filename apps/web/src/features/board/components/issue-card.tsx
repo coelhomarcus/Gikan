@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useLocation } from "react-router";
@@ -19,10 +20,39 @@ interface IssueCardContentProps {
 
 const chip = "inline-flex h-5 max-w-full items-center gap-1.5 rounded-sm border border-strong px-1.5 text-body-xs-regular text-secondary";
 
+function firstIssueImage(document: Issue["descriptionJson"]): string | null {
+    const visit = (nodes: unknown[]): string | null => {
+        for (const candidate of nodes) {
+            if (!candidate || typeof candidate !== "object") continue;
+            const node = candidate as { type?: unknown; attrs?: { src?: unknown }; content?: unknown[] };
+            if (node.type === "image" && typeof node.attrs?.src === "string") {
+                try {
+                    const url = new URL(node.attrs.src);
+                    if (url.protocol === "http:" || url.protocol === "https:") return url.href;
+                } catch { /* Ignore malformed legacy image nodes. */ }
+            }
+            if (Array.isArray(node.content)) {
+                const nested = visit(node.content);
+                if (nested) return nested;
+            }
+        }
+        return null;
+    };
+    return visit(document.content ?? []);
+}
+
+function IssuePreviewImage({ src }: { src: string }) {
+    const [failed, setFailed] = useState(false);
+    if (failed) return null;
+    return <img src={src} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setFailed(true)} className="mb-2.5 block h-28 w-full rounded-md object-cover" />;
+}
+
 /** Shared with the drag overlay so picking up an issue preserves its geometry. */
 export const IssueCardContent = ({ issue, category, assignee, column, cycle }: IssueCardContentProps) => {
     const { t } = useTranslation();
+    const imagePreview = firstIssueImage(issue.descriptionJson);
     return <>
+        {imagePreview && <IssuePreviewImage key={imagePreview} src={imagePreview} />}
         <span className="block text-caption-sm-regular font-medium text-tertiary">{issue.identifier}</span>
         <p className="mt-2 line-clamp-1 text-body-sm-medium text-primary" title={issue.title}>{issue.title}</p>
         <div className="mt-2 flex flex-wrap items-center gap-2 pt-1.5 text-tertiary">

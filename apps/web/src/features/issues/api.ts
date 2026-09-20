@@ -26,6 +26,7 @@ export interface Issue {
     columnId: string;
     title: string;
     descriptionJson: TiptapDocument;
+    descriptionRevision: number;
     assigneeId: string | null;
     categoryId: string | null;
     priority: "low" | "medium" | "high";

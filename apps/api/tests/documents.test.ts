@@ -48,12 +48,13 @@ function sqlParameters(value: unknown): string[] {
   ];
 }
 
-test("document schemas keep existing JSON and normalize empty titles", () => {
+test("document schemas preserve existing JSON and allow localized empty-title fallback", () => {
   const parsed = createDocumentSchema.parse({
     title: "  ",
     contentJson: legacy,
   });
-  assert.equal(parsed.title, "Untitled");
+  // The service chooses the fallback title from the user's locale.
+  assert.equal(parsed.title, "");
   assert.deepEqual(parsed.contentJson, legacy);
   assert.equal(
     updateDocumentSchema.safeParse({
@@ -116,6 +117,7 @@ test("document lookup is scoped by both project and document", async () => {
 });
 
 test("a successful revision update increments revision and preserves the supplied content", async () => {
+  mock.method(db.query.users, "findFirst", async () => ({ locale: "en" }) as never);
   const replacement = {
     ...legacy,
     content: [
@@ -141,7 +143,7 @@ test("a successful revision update increments revision and preserves the supplie
         }),
       }) as never,
   );
-  const result = await updateDocument(projectId, documentId, {
+  const result = await updateDocument(projectId, documentId, authorId, {
     title: "Updated",
     contentJson: replacement,
     expectedRevision: 1,
@@ -152,6 +154,7 @@ test("a successful revision update increments revision and preserves the supplie
 });
 
 test("stale revisions return 409 while missing documents return 404", async () => {
+  mock.method(db.query.users, "findFirst", async () => ({ locale: "en" }) as never);
   mock.method(
     db,
     "update",
@@ -162,7 +165,7 @@ test("stale revisions return 409 while missing documents return 404", async () =
   );
   mock.method(db.query.projectDocuments, "findFirst", async () => page);
   await assert.rejects(
-    updateDocument(projectId, documentId, {
+    updateDocument(projectId, documentId, authorId, {
       title: "New",
       contentJson: legacy,
       expectedRevision: 1,
@@ -171,6 +174,7 @@ test("stale revisions return 409 while missing documents return 404", async () =
   );
 
   mock.restoreAll();
+  mock.method(db.query.users, "findFirst", async () => ({ locale: "en" }) as never);
   mock.method(
     db,
     "update",
@@ -181,7 +185,7 @@ test("stale revisions return 409 while missing documents return 404", async () =
   );
   mock.method(db.query.projectDocuments, "findFirst", async () => undefined);
   await assert.rejects(
-    updateDocument(projectId, documentId, {
+    updateDocument(projectId, documentId, authorId, {
       title: "New",
       contentJson: legacy,
       expectedRevision: 1,

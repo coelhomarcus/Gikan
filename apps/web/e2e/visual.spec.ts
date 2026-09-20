@@ -15,7 +15,7 @@ const views = [
     ["settings-states", `/projects/${projectId}/settings/states`, "States"],
     ["settings-members", `/projects/${projectId}/settings/members`, "Members"],
     ["settings-labels", `/projects/${projectId}/settings/labels`, "Labels"],
-    ["profile-settings", "/settings/profile", "Account settings / General"],
+    ["profile-settings", "/settings/profile", "Settings / General"],
 ] as const;
 
 test("capture stable dark Gikan route references at desktop widths", async ({ page }) => {
@@ -90,12 +90,12 @@ test("capture interactive menu, focus, hover, Peek, and mobile drawer states", a
 
     await page.keyboard.press("Escape");
     await page.locator('[data-issue-identifier="PLAT-1"]').click();
-    await expect(page.getByRole("dialog", { name: "Issue PLAT-1" })).toBeVisible();
+    await expect(page.getByRole("dialog", { name: "Issue title PLAT-1" })).toBeVisible();
     await page.screenshot({ path: "../../docs/visual/after/1440-900/issue-peek.png", animations: "disabled" });
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/projects/${projectId}/issues/list`);
-    await page.getByRole("button", { name: "Open navigation" }).click();
+    await page.locator("main header").getByRole("button", { name: "Expand navigation" }).click();
     await expect(page.getByRole("dialog", { name: "Navigation" })).toBeVisible();
     await page.screenshot({ path: "../../docs/visual/after/390-844/mobile-navigation-open.png", animations: "disabled" });
 });

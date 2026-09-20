@@ -13,6 +13,7 @@ import { requireProjectOwner } from "../src/middleware/project-membership.middle
 afterEach(() => mock.restoreAll());
 const collision = { code: "23505", constraint: "projects_issue_key_unique" };
 const creatorId = "creator";
+const mockProjectCreator = () => mock.method(db.query.users, "findFirst", async () => ({ locale: "en" }) as never);
 
 test("creation accepts a custom key, normalizes it, and keeps old clients compatible", () => {
     assert.equal(createProjectSchema.parse({ name: "My project", issueKey: " api2 " }).issueKey, "API2");
@@ -24,6 +25,7 @@ test("creation accepts a custom key, normalizes it, and keeps old clients compat
 });
 
 test("custom key is persisted verbatim without querying automatic suggestions", async () => {
+    mockProjectCreator();
     const inserts: Array<{ table: unknown; values: Record<string, unknown> | unknown[] }> = [];
     mock.method(db.query.projects, "findMany", async () => { throw new Error("Automatic allocation must not run"); });
     mock.method(db, "transaction", async (work: (tx: unknown) => Promise<unknown>) => work({
@@ -40,6 +42,7 @@ test("custom key is persisted verbatim without querying automatic suggestions", 
 });
 
 test("an explicit duplicate key returns 409 instead of silently suffixing it", async () => {
+    mockProjectCreator();
     const transaction = mock.method(db, "transaction", async () => { throw new Error("Query failed", { cause: collision }); });
     await assert.rejects(createProject({ name: "My project", issueKey: "CUSTOM" }, creatorId), (error: unknown) =>
         error instanceof HttpError && error.statusCode === 409 && error.message === "Project key is already in use");
@@ -47,6 +50,7 @@ test("an explicit duplicate key returns 409 instead of silently suffixing it", a
 });
 
 test("automatic keys retry with a fresh suggestion after a concurrent collision", async () => {
+    mockProjectCreator();
     let attempts = 0;
     mock.method(db.query.projects, "findMany", async () => attempts === 0 ? [{ issueKey: "MP" }] : [{ issueKey: "MP" }, { issueKey: "MP1" }]);
     mock.method(db, "transaction", async (work: (tx: unknown) => Promise<unknown>) => {
@@ -59,6 +63,7 @@ test("automatic keys retry with a fresh suggestion after a concurrent collision"
 });
 
 test("automatic allocation reports exhausted collisions as 409", async () => {
+    mockProjectCreator();
     mock.method(db.query.projects, "findMany", async () => []);
     const transaction = mock.method(db, "transaction", async () => { throw collision; });
     await assert.rejects(createProject({ name: "My project" }, creatorId), (error: unknown) => error instanceof HttpError && error.statusCode === 409);
@@ -66,6 +71,7 @@ test("automatic allocation reports exhausted collisions as 409", async () => {
 });
 
 test("unrelated database errors propagate without being retried as key conflicts", async () => {
+    mockProjectCreator();
     const unavailable = new Error("Database unavailable");
     const transaction = mock.method(db, "transaction", async () => { throw unavailable; });
     await assert.rejects(createProject({ name: "My project", issueKey: "CUSTOM" }, creatorId), (error) => error === unavailable);

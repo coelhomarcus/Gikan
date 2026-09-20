@@ -71,6 +71,13 @@
       "when": 1789921445820,
       "tag": "0009_add_user_locale",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789942872798,
+      "tag": "0010_gray_vance_astro",
+      "breakpoints": true
     }
   ]
 }

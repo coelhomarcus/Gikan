@@ -30,6 +30,7 @@ export const updateIssueSchema = z
     .object({
         title: z.string().trim().min(1).max(200).optional(),
         descriptionJson: tiptapDocumentSchema.optional(),
+        expectedDescriptionRevision: z.number().int().nonnegative().optional(),
         columnId: z.string().uuid().optional(),
         position: z.number().finite().optional(),
         categoryId: z.string().uuid().nullable().optional(),
@@ -39,7 +40,15 @@ export const updateIssueSchema = z
         cycleId: z.string().uuid().nullable().optional(),
         estimate: estimateSchema.nullable().optional(),
     })
-    .strict();
+    .strict()
+    .superRefine((value, context) => {
+        if (value.descriptionJson !== undefined && value.expectedDescriptionRevision === undefined) {
+            context.addIssue({ code: z.ZodIssueCode.custom, path: ["expectedDescriptionRevision"], message: "Expected description revision is required" });
+        }
+        if (value.descriptionJson === undefined && value.expectedDescriptionRevision !== undefined) {
+            context.addIssue({ code: z.ZodIssueCode.custom, path: ["expectedDescriptionRevision"], message: "Description revision requires a description update" });
+        }
+    });
 export type UpdateIssueInput = z.infer<typeof updateIssueSchema>;
 
 export const issueListQuerySchema = z.object({

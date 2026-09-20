@@ -42,6 +42,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                         {failed ? t("editor.imageCouldNotLoad") : t("editor.addImageUrl")}
                     </div>
                 )}
+                {editor.isEditable && <>
                 <Popover.Root
                     open={open}
                     onOpenChange={(value) => {
@@ -158,6 +159,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                         event.stopPropagation();
                     }}
                 />
+                </>}
             </figure>
         </NodeViewWrapper>
     );

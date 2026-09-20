@@ -16,7 +16,7 @@ test("capture the project creation dialog and compact icon selector on desktop a
 
     const iconTrigger = page.getByRole("button", { name: "Choose project icon" });
     await iconTrigger.click();
-    await expect(page.getByRole("textbox", { name: "Search project icons" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Search icons" })).toBeVisible();
     await page.screenshot({ path: path.join(outputDirectory, "project-create-icons-desktop.png"), animations: "disabled" });
 
     await page.keyboard.press("Escape");
@@ -24,8 +24,8 @@ test("capture the project creation dialog and compact icon selector on desktop a
     await page.getByLabel("Name").focus();
     await page.screenshot({ path: path.join(outputDirectory, "project-create-mobile.png"), animations: "disabled" });
     await iconTrigger.click();
-    await expect(page.getByRole("textbox", { name: "Search project icons" })).toBeVisible();
-    const popup = page.getByRole("textbox", { name: "Search project icons" }).locator("xpath=ancestor::div[contains(@class, 'rounded-lg')]");
+    await expect(page.getByRole("textbox", { name: "Search icons" })).toBeVisible();
+    const popup = page.getByRole("textbox", { name: "Search icons" }).locator("xpath=ancestor::div[contains(@class, 'rounded-lg')]");
     const bounds = await popup.boundingBox();
     expect(bounds?.x).toBeGreaterThanOrEqual(0);
     expect((bounds?.x ?? 0) + (bounds?.width ?? 0)).toBeLessThanOrEqual(390);

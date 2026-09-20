@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { TiptapDocument, UpdateIssueInput } from "@gikan/shared";
-import { ArrowLeft, ArrowRight, Calendar, CheckCircle, Copy, ExternalLink, Link2, Plus, Trash2, User, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Copy, ExternalLink, Link2, Plus, Trash2, X } from "lucide-react";
 import { Link, useBeforeUnload, useNavigate, useParams } from "react-router";
 import { AssigneeOutline, CyclesOutline, EstimateOutline, HistoryOutline, LabelsOutline, MoreHorizontalOutline, ParentOutline, PriorityOutline, StateOutline } from "@makeplane/propel/icons";
 import { Popover } from "@base-ui/react/popover";
@@ -22,6 +22,7 @@ import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { ApiError } from "@/lib/api-client";
 import {
+    useCreateIssue,
     useCreateIssueComment,
     useCreateIssueRelation,
     useCycles,
@@ -38,6 +39,7 @@ import {
 } from "../hooks/use-issues";
 import type { IssueDetail } from "../api";
 import { fetchIssueClipboardContent } from "../lib/issue-clipboard";
+import { issueDescriptionDrafts, issueDraftKey } from "../lib/issue-description-drafts";
 import { EMPTY_TIPTAP_DOCUMENT, RichTextEditor } from "./rich-text-editor";
 import { useTranslation } from "react-i18next";
 import type { TranslationKey } from "@/i18n/resources";
@@ -72,9 +74,10 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const { copy, copied } = useClipboard();
     const { data: issue, isLoading, isError } = useIssue(resolvedIdentifier);
     const updateIssue = useUpdateIssue(issue?.projectId ?? resolvedProjectId);
+    const createIssue = useCreateIssue(issue?.projectId ?? resolvedProjectId);
     const deleteIssue = useDeleteIssue(issue?.projectId ?? resolvedProjectId);
-    const { data: comments } = useIssueComments(issue?.identifier ?? resolvedIdentifier);
-    const { data: activity } = useIssueActivity(issue?.identifier ?? resolvedIdentifier);
+    const { data: comments, isLoading: commentsLoading, isError: commentsLoadFailed } = useIssueComments(issue?.identifier ?? resolvedIdentifier);
+    const { data: activity, isLoading: activityLoading, isError: activityLoadFailed } = useIssueActivity(issue?.identifier ?? resolvedIdentifier);
     const { data: relations } = useIssueRelations(issue?.identifier ?? resolvedIdentifier);
     const { data: projectIssues } = useIssues(issue?.projectId ?? resolvedProjectId);
     const { data: columns } = useColumns(issue?.projectId ?? resolvedProjectId);
@@ -93,6 +96,8 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const [comment, setComment] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     const [titleSaveError, setTitleSaveError] = useState<string | null>(null);
     const [descriptionSaveError, setDescriptionSaveError] = useState<string | null>(null);
+    const [descriptionStatus, setDescriptionStatus] = useState<"saved" | "unsaved" | "saving" | "offline" | "error" | "conflict">("saved");
+    const [discussionTab, setDiscussionTab] = useState<"comments" | "activity">("comments");
     const [propertySaveError, setPropertySaveError] = useState<string | null>(null);
     const [commentSaveError, setCommentSaveError] = useState<string | null>(null);
     const [isCopyingIssue, setIsCopyingIssue] = useState(false);
@@ -102,33 +107,187 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const descriptionDirty = useRef(false);
     const titleVersion = useRef(0);
     const descriptionVersion = useRef(0);
+    const descriptionRevision = useRef(0);
+    const latestDescription = useRef<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
+    const savedDescription = useRef<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
+    const descriptionSaveLoop = useRef<Promise<void> | null>(null);
+    const descriptionDraftKey = useRef<string | null>(null);
+    const descriptionDraftContext = useRef<{ key: string; userId: string; projectId: string; issueId: string } | null>(null);
+    const descriptionDraftRestoreIssue = useRef<string | null>(null);
+    const commentDraftRestoreIssue = useRef<string | null>(null);
+    const commentDraftOwner = useRef<string | null>(null);
+    const flushDescriptionRef = useRef<() => Promise<void>>(async () => undefined);
+    const persistDescriptionDraftRef = useRef<() => void>(() => undefined);
+    const persistCommentDraftRef = useRef<() => void>(() => undefined);
     const titleRef = useRef<HTMLTextAreaElement>(null);
     const peekRef = useRef<HTMLDivElement>(null);
 
     useBeforeUnload((event) => {
-        if (!titleDirty.current && !descriptionDirty.current && !comment.content?.length) return;
+        if (!titleDirty.current && !descriptionDirty.current && !hasMeaningfulTiptapContent(comment)) return;
         event.preventDefault();
         event.returnValue = "";
     });
 
     useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+                event.preventDefault();
+                void flushDescriptionRef.current();
+            }
+        };
+        const handleOnline = () => {
+            if (descriptionDirty.current) void flushDescriptionRef.current();
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("online", handleOnline);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("online", handleOnline);
+        };
+    }, []);
+
+    useEffect(() => {
         if (!issue) return;
         if (loadedIssueId.current !== issue.id) {
+            if (loadedIssueId.current) {
+                persistDescriptionDraftRef.current();
+                persistCommentDraftRef.current();
+            }
             loadedIssueId.current = issue.id;
             titleDirty.current = false;
             descriptionDirty.current = false;
-            titleVersion.current = 0;
             descriptionVersion.current = 0;
             setTitle(issue.title);
             setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
+            latestDescription.current = issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT;
+            savedDescription.current = issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT;
+            descriptionRevision.current = issue.descriptionRevision;
+            descriptionDraftKey.current = user?.id ? issueDraftKey(user.id, issue.projectId, issue.id) : null;
+            descriptionDraftContext.current = user?.id && descriptionDraftKey.current ? { key: descriptionDraftKey.current, userId: user.id, projectId: issue.projectId, issueId: issue.id } : null;
+            descriptionDraftRestoreIssue.current = null;
+            commentDraftRestoreIssue.current = null;
+            commentDraftOwner.current = null;
+            setComment(EMPTY_TIPTAP_DOCUMENT);
+            setCommentSaveError(null);
+            setTitleSaveError(null);
+            setDescriptionSaveError(null);
+            setPropertySaveError(null);
+            setIssueCopyError(false);
+            setDescriptionStatus("saved");
             setDescriptionEditing(false);
             setRelationsOpen(false);
+            try {
+                const storedTab = sessionStorage.getItem(`gikan-issue-discussion-tab:${issue.id}`);
+                setDiscussionTab(storedTab === "activity" ? "activity" : "comments");
+            } catch { setDiscussionTab("comments"); }
             return;
         }
 
+        if (descriptionDraftContext.current?.userId !== user?.id) {
+            persistDescriptionDraftRef.current();
+            persistCommentDraftRef.current();
+            const key = user?.id ? issueDraftKey(user.id, issue.projectId, issue.id) : null;
+            descriptionDraftKey.current = key;
+            descriptionDraftContext.current = user?.id && key ? { key, userId: user.id, projectId: issue.projectId, issueId: issue.id } : null;
+        }
+
         if (!titleDirty.current) setTitle(issue.title);
-        if (!descriptionDirty.current) setDescription(issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT);
-    }, [issue]);
+        if (!descriptionDirty.current && issue.descriptionRevision !== descriptionRevision.current) {
+            const nextDescription = issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT;
+            descriptionRevision.current = issue.descriptionRevision;
+            latestDescription.current = nextDescription;
+            savedDescription.current = nextDescription;
+            setDescription(nextDescription);
+            setDescriptionStatus("saved");
+        }
+    }, [issue, user?.id]);
+
+    useEffect(() => {
+        if (!issue || !user?.id || descriptionDraftRestoreIssue.current === issue.id) return;
+        descriptionDraftRestoreIssue.current = issue.id;
+        const key = issueDraftKey(user.id, issue.projectId, issue.id);
+        descriptionDraftKey.current = key;
+        let cancelled = false;
+        void issueDescriptionDrafts.get(key).then((draft) => {
+            if (cancelled || !draft?.descriptionJson || loadedIssueId.current !== issue.id || descriptionDirty.current) return;
+            if (JSON.stringify(draft.descriptionJson) === JSON.stringify(issue.descriptionJson)) {
+                void issueDescriptionDrafts.clearDescription(key).catch(() => undefined);
+                return;
+            }
+            latestDescription.current = draft.descriptionJson;
+            descriptionDirty.current = true;
+            descriptionVersion.current += 1;
+            setDescription(draft.descriptionJson);
+            if (draft.baseRevision === issue.descriptionRevision) {
+                setDescriptionStatus("unsaved");
+            } else {
+                setDescriptionStatus("conflict");
+                setDescriptionSaveError(t("issue.descriptionConflict"));
+            }
+        }).catch(() => undefined);
+        return () => {
+            cancelled = true;
+            if (descriptionDraftRestoreIssue.current === issue.id) descriptionDraftRestoreIssue.current = null;
+        };
+    }, [issue?.id, issue?.projectId, issue?.descriptionRevision, user?.id, t]);
+
+    useEffect(() => {
+        if (!issue || !user?.id || commentDraftRestoreIssue.current === issue.id) return;
+        commentDraftRestoreIssue.current = issue.id;
+        const key = issueDraftKey(user.id, issue.projectId, issue.id);
+        let cancelled = false;
+        void issueDescriptionDrafts.get(key).then((draft) => {
+            if (cancelled || loadedIssueId.current !== issue.id || commentDraftOwner.current) return;
+            setComment(draft?.commentJson ?? EMPTY_TIPTAP_DOCUMENT);
+            commentDraftOwner.current = issue.id;
+        }).catch(() => { if (!cancelled && loadedIssueId.current === issue.id) commentDraftOwner.current = issue.id; });
+        return () => {
+            cancelled = true;
+            if (commentDraftRestoreIssue.current === issue.id) commentDraftRestoreIssue.current = null;
+        };
+    }, [issue?.id, issue?.projectId, user?.id]);
+
+    useEffect(() => {
+        if (!issue || !descriptionDirty.current) return;
+        const draftTimer = window.setTimeout(() => {
+            const key = descriptionDraftKey.current;
+            if (!key || !user?.id) return;
+            void issueDescriptionDrafts.putDescription({
+                key,
+                userId: user.id,
+                projectId: issue.projectId,
+                issueId: issue.id,
+                baseRevision: descriptionRevision.current,
+                descriptionJson: latestDescription.current,
+                updatedAt: Date.now(),
+            }).catch(() => undefined);
+        }, 150);
+        const saveTimer = descriptionStatus === "conflict"
+            ? undefined
+            : window.setTimeout(() => { void flushDescriptionRef.current(); }, 1000);
+        return () => {
+            window.clearTimeout(draftTimer);
+            if (saveTimer !== undefined) window.clearTimeout(saveTimer);
+        };
+    }, [description, issue?.id, user?.id]);
+
+    useEffect(() => {
+        if (!issue || !user?.id || commentDraftOwner.current !== issue.id) return;
+        const timer = window.setTimeout(() => {
+            const key = issueDraftKey(user.id, issue.projectId, issue.id);
+            const content = hasMeaningfulTiptapContent(comment) ? comment : undefined;
+            const save = content
+                ? issueDescriptionDrafts.putComment({ key, userId: user.id, projectId: issue.projectId, issueId: issue.id, commentJson: content, updatedAt: Date.now() })
+                : issueDescriptionDrafts.clearComment(key);
+            void save.catch(() => undefined);
+        }, 150);
+        return () => window.clearTimeout(timer);
+    }, [comment, issue?.id, user?.id]);
+
+    useEffect(() => () => {
+        persistDescriptionDraftRef.current();
+        persistCommentDraftRef.current();
+    }, []);
 
     useEffect(() => {
         const titleElement = titleRef.current;
@@ -144,6 +303,81 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         return () => card?.removeAttribute("data-peek-selected");
     }, [mode, resolvedIdentifier]);
 
+    flushDescriptionRef.current = async () => {
+        if (!issue || !descriptionDirty.current) return;
+        if (descriptionSaveLoop.current) return descriptionSaveLoop.current;
+
+        const issueId = issue.id;
+        const draftKey = descriptionDraftKey.current;
+        const operation = (async () => {
+            while (descriptionDirty.current && loadedIssueId.current === issueId) {
+                const nextDescription = latestDescription.current;
+                if (JSON.stringify(nextDescription) === JSON.stringify(savedDescription.current)) {
+                    descriptionDirty.current = false;
+                    setDescriptionStatus("saved");
+                    if (draftKey) void issueDescriptionDrafts.clearDescription(draftKey).catch(() => undefined);
+                    break;
+                }
+                setDescriptionStatus("saving");
+                setDescriptionSaveError(null);
+                try {
+                    const updated = await updateIssue.mutateAsync({
+                        identifier: issue.identifier,
+                        input: { descriptionJson: nextDescription, expectedDescriptionRevision: descriptionRevision.current },
+                    });
+                    if (loadedIssueId.current !== issueId) {
+                        if (draftKey) void issueDescriptionDrafts.clearDescription(draftKey).catch(() => undefined);
+                        break;
+                    }
+                    descriptionRevision.current = updated.descriptionRevision;
+                    savedDescription.current = nextDescription;
+                    if (JSON.stringify(latestDescription.current) === JSON.stringify(nextDescription)) {
+                        descriptionDirty.current = false;
+                        setDescriptionStatus("saved");
+                        setDescriptionSaveError(null);
+                        if (draftKey) void issueDescriptionDrafts.clearDescription(draftKey).catch(() => undefined);
+                    } else {
+                        descriptionDirty.current = true;
+                        setDescriptionStatus("unsaved");
+                    }
+                } catch (reason) {
+                    if (loadedIssueId.current !== issueId) break;
+                    const conflict = reason instanceof ApiError && reason.status === 409;
+                    setDescriptionStatus(conflict ? "conflict" : !navigator.onLine ? "offline" : "error");
+                    setDescriptionSaveError(errorMessage(reason, t("issue.couldNotSaveIssue")));
+                    break;
+                }
+            }
+        })();
+        descriptionSaveLoop.current = operation;
+        try {
+            await operation;
+        } finally {
+            if (descriptionSaveLoop.current === operation) descriptionSaveLoop.current = null;
+            if (descriptionDirty.current && loadedIssueId.current !== issueId) queueMicrotask(() => void flushDescriptionRef.current());
+        }
+    };
+
+    persistDescriptionDraftRef.current = () => {
+        const context = descriptionDraftContext.current;
+        if (!context || !descriptionDirty.current) return;
+        void issueDescriptionDrafts.putDescription({
+            ...context,
+            baseRevision: descriptionRevision.current,
+            descriptionJson: latestDescription.current,
+            updatedAt: Date.now(),
+        }).catch(() => undefined);
+    };
+    persistCommentDraftRef.current = () => {
+        const context = descriptionDraftContext.current;
+        if (!context || commentDraftOwner.current !== context.issueId) return;
+        const content = hasMeaningfulTiptapContent(comment) ? comment : undefined;
+        const save = content
+            ? issueDescriptionDrafts.putComment({ ...context, commentJson: content, updatedAt: Date.now() })
+            : issueDescriptionDrafts.clearComment(context.key);
+        void save.catch(() => undefined);
+    };
+
     if (isLoading) {
         const state = <IssueLoadingSkeleton mode={mode} />;
         return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
@@ -154,10 +388,11 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     }
 
     const save = (input: UpdateIssueInput) => {
+        const actionIssueId = issue.id;
         setPropertySaveError(null);
         updateIssue.mutate(
             { identifier: issue.identifier, input },
-            { onError: (reason) => setPropertySaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))) },
+            { onError: (reason) => { if (loadedIssueId.current === actionIssueId) setPropertySaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))); } },
         );
     };
     const copyIssueContent = async () => {
@@ -176,6 +411,21 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             setIsCopyingIssue(false);
         }
     };
+    const selectDiscussionTab = (tab: "comments" | "activity") => {
+        setDiscussionTab(tab);
+        try { sessionStorage.setItem(`gikan-issue-discussion-tab:${issue.id}`, tab); } catch { /* Storage is optional. */ }
+    };
+    const handleDiscussionTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+        if (!(["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key))) return;
+        event.preventDefault();
+        const tabs = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("[role='tab']") ?? []);
+        if (!tabs.length) return;
+        const index = tabs.indexOf(event.currentTarget);
+        const next = event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : (index + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
+        tabs[next]?.focus();
+        const value = tabs[next]?.dataset.discussionTab;
+        if (value === "comments" || value === "activity") selectDiscussionTab(value);
+    };
     const content = (
         <div className={cx("flex h-full min-h-0 flex-col", mode === "peek" && "plane-issue-peek")}>
             <div className={cx("issue-view-header flex items-center justify-between gap-3 px-4 py-3", mode === "page" && "border-b border-subtle")}>
@@ -188,7 +438,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                     <span className="font-mono text-xs text-accent-primary">{issue.identifier}</span></>}
                 </div>
                 <div className="flex items-center gap-2">
-                    {mode === "peek" && <span className="text-body-xs-regular text-tertiary" role="status">{updateIssue.isPending ? t("issue.savingIssue") : titleDirty.current || descriptionDirty.current ? t("issue.unsavedIssue") : t("issue.savedIssue")}</span>}
+                    {mode === "peek" && <span className="text-body-xs-regular text-tertiary" role="status">{updateIssue.isPending || descriptionStatus === "saving" ? t("issue.savingIssue") : titleDirty.current || descriptionDirty.current ? t("issue.unsavedIssue") : t("issue.savedIssue")}</span>}
                     <ButtonUtility
                         icon={Link2}
                         size="sm"
@@ -252,16 +502,16 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                         { identifier: issue.identifier, input: { title: nextTitle } },
                                         {
                                             onSuccess: () => {
-                                                if (titleVersion.current === saveVersion) titleDirty.current = false;
+                                                if (loadedIssueId.current === issue.id && titleVersion.current === saveVersion) titleDirty.current = false;
                                             },
-                                            onError: (reason) => setTitleSaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))),
+                                            onError: (reason) => { if (loadedIssueId.current === issue.id) setTitleSaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))); },
                                         },
                                     );
                                 } else {
                                     titleDirty.current = false;
                                 }
                             }}
-                            className={cx("w-full resize-none overflow-hidden border-0 bg-transparent text-primary outline-none placeholder:text-tertiary focus-visible:ring-1 focus-visible:ring-accent-strong", mode === "peek" ? "block text-body-md-regular leading-tight" : "min-h-8 text-2xl leading-8 font-semibold")}
+                            className="min-h-8 w-full resize-none overflow-hidden border-0 bg-transparent text-[22px] leading-[30px] font-semibold text-primary outline-none placeholder:text-tertiary focus-visible:ring-1 focus-visible:ring-accent-strong md:text-2xl md:leading-8"
                             aria-label={t("issue.title")}
                         />
                         {titleSaveError && <p role="alert" className="mt-1 text-xs text-danger-primary">{titleSaveError}</p>}
@@ -279,37 +529,70 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 onChange={(value) => {
                                     descriptionDirty.current = true;
                                     descriptionVersion.current += 1;
-                                    setDescriptionSaveError(null);
+                                    latestDescription.current = value;
+                                    if (descriptionStatus !== "conflict") {
+                                        setDescriptionStatus("unsaved");
+                                        setDescriptionSaveError(null);
+                                    }
                                     setDescription(value);
                                 }}
                                 mentionItems={(members ?? []).map((member) => ({ id: member.id, label: member.username, description: member.name }))}
                                 placeholder={t("issue.describeIssue")}
                             />
                             </div>
-                            {(mode === "page" || descriptionEditing) && <div className="mt-2 flex justify-end">
-                                <Button
-                                    size="xs"
-                                    color="tertiary"
-                                    isDisabled={!descriptionDirty.current || JSON.stringify(description) === JSON.stringify(issue.descriptionJson)}
-                                    onClick={() =>
-                                        (() => {
-                                            const saveVersion = descriptionVersion.current;
-                                            updateIssue.mutate(
-                                                { identifier: issue.identifier, input: { descriptionJson: description } },
-                                                {
-                                                    onSuccess: () => {
-                                                        if (descriptionVersion.current === saveVersion) { descriptionDirty.current = false; setDescriptionEditing(false); }
-                                                    },
-                                                    onError: (reason) => setDescriptionSaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))),
-                                                },
-                                            );
-                                        })()
-                                    }
-                                >
+                            {(mode === "page" || descriptionEditing) && <div className="mt-2 flex items-center justify-end gap-3">
+                                <span className="text-xs text-tertiary" role="status" aria-live="polite">
+                                    {descriptionStatus === "saving" ? t("issue.savingDescription")
+                                        : descriptionStatus === "saved" ? t("issue.descriptionSaved")
+                                            : descriptionStatus === "offline" ? t("issue.descriptionOffline")
+                                                : descriptionStatus === "conflict" ? t("issue.descriptionConflict")
+                                                    : descriptionStatus === "error" ? t("issue.descriptionSaveFailed")
+                                                        : descriptionDirty.current ? t("issue.descriptionUnsaved") : ""}
+                                </span>
+                                <Button size="sm" color="primary" isLoading={descriptionStatus === "saving"} isDisabled={!descriptionDirty.current || descriptionStatus === "conflict"} onClick={async () => {
+                                    await flushDescriptionRef.current();
+                                    if (!descriptionDirty.current) setDescriptionEditing(false);
+                                }}>
                                     {t("issue.saveDescription")}
                                 </Button>
                             </div>}
                             {descriptionSaveError && <p role="alert" className="mt-2 text-right text-xs text-danger-primary">{descriptionSaveError}</p>}
+                    {descriptionStatus === "conflict" && <div className="mt-3 flex flex-wrap items-center justify-end gap-2 rounded-md border border-fg-warning-primary/40 bg-warning-primary/10 p-3">
+                                <Button size="xs" color="tertiary" onClick={() => {
+                                    const current = issue.descriptionJson ?? EMPTY_TIPTAP_DOCUMENT;
+                                    descriptionDirty.current = false;
+                                    descriptionRevision.current = issue.descriptionRevision;
+                                    latestDescription.current = current;
+                                    savedDescription.current = current;
+                                    setDescription(current);
+                                    setDescriptionStatus("saved");
+                                    setDescriptionSaveError(null);
+                                    const key = descriptionDraftKey.current;
+                                    if (key) void issueDescriptionDrafts.clearDescription(key).catch(() => undefined);
+                                }}>{t("issue.useSavedDescription")}</Button>
+                                <Button size="xs" color="primary" isLoading={createIssue.isPending} onClick={async () => {
+                                    try {
+                                        const suffix = ` (${t("issue.draftCopySuffix")})`;
+                                        const baseTitle = title.trim() || issue.title;
+                                        const created = await createIssue.mutateAsync({
+                                            columnId: issue.columnId,
+                                            title: `${baseTitle.slice(0, 200 - suffix.length)}${suffix}`,
+                                            descriptionJson: latestDescription.current,
+                                            assigneeId: issue.assigneeId,
+                                            categoryId: issue.categoryId,
+                                            priority: issue.priority,
+                                            cycleId: issue.cycleId,
+                                            estimate: issue.estimate,
+                                        });
+                                        const key = descriptionDraftKey.current;
+                                        if (key) void issueDescriptionDrafts.clearDescription(key).catch(() => undefined);
+                                        descriptionDirty.current = false;
+                                        navigate(`/projects/${created.projectId}/issues/${created.identifier}`);
+                                    } catch (reason) {
+                                        setDescriptionSaveError(errorMessage(reason, t("issue.couldNotSaveIssue")));
+                                    }
+                                }}>{t("issue.createIssueFromDraft")}</Button>
+                            </div>}
                         </section>
 
                         {mode === "peek" && <>
@@ -330,43 +613,59 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             onDelete={(relationId) => deleteRelation.mutate(relationId)}
                         />}
                         {mode === "peek" && <PeekProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} isPending={updateIssue.isPending} />}
-                        {mode === "peek" && <h2 className="mt-6 mb-4 text-h6-medium text-primary">{t("issue.activity")}</h2>}
-                        <IssueActivity hideHeading={mode === "peek"} activity={activity ?? []} columns={columns ?? []} members={members ?? []} categories={categories ?? []} cycles={cycles ?? []} projectIssues={projectIssues ?? []} />
-                        <IssueComments compact={mode === "peek"}
+                        <section className="mt-8 border-t border-subtle pt-5">
+                            <div role="tablist" aria-label={t("issue.discussion")} className="flex items-center gap-5 border-b border-subtle">
+                                <button type="button" role="tab" id={`issue-discussion-${issue.id}-comments`} aria-controls={`issue-discussion-${issue.id}-panel`} data-discussion-tab="comments" tabIndex={discussionTab === "comments" ? 0 : -1} aria-selected={discussionTab === "comments"} onKeyDown={handleDiscussionTabKeyDown} className={cx("border-b-2 px-0.5 pb-3 text-sm font-medium", discussionTab === "comments" ? "border-accent-primary text-primary" : "border-transparent text-tertiary hover:text-secondary")} onClick={() => selectDiscussionTab("comments")}>{t("issue.comments")} <span className="ml-1 text-xs text-tertiary">{comments?.length ?? 0}</span></button>
+                                <button type="button" role="tab" id={`issue-discussion-${issue.id}-activity`} aria-controls={`issue-discussion-${issue.id}-panel`} data-discussion-tab="activity" tabIndex={discussionTab === "activity" ? 0 : -1} aria-selected={discussionTab === "activity"} onKeyDown={handleDiscussionTabKeyDown} className={cx("border-b-2 px-0.5 pb-3 text-sm font-medium", discussionTab === "activity" ? "border-accent-primary text-primary" : "border-transparent text-tertiary hover:text-secondary")} onClick={() => selectDiscussionTab("activity")}>{t("issue.activity")} <span className="ml-1 text-xs text-tertiary">{activity?.length ?? 0}</span></button>
+                            </div>
+                        </section>
+                        <div role="tabpanel" id={`issue-discussion-${issue.id}-panel`} aria-labelledby={`issue-discussion-${issue.id}-${discussionTab}`}>
+                        {discussionTab === "activity" ? <IssueActivity activity={activity ?? []} isLoading={activityLoading} isError={activityLoadFailed} columns={columns ?? []} members={members ?? []} categories={categories ?? []} cycles={cycles ?? []} projectIssues={projectIssues ?? []} /> : <IssueComments
+                            compact={mode === "peek"}
                             comments={comments ?? []}
+                            isLoading={commentsLoading}
+                            loadFailed={commentsLoadFailed}
                             currentUserId={user?.id}
                             value={comment}
-                            onChange={setComment}
+                            onChange={(value) => {
+                                commentDraftOwner.current = issue.id;
+                                setComment(value);
+                            }}
                             isSubmitting={createComment.isPending || updateComment.isPending || deleteComment.isPending}
                             error={commentSaveError}
                             onSubmit={async () => {
+                                if (!hasMeaningfulTiptapContent(comment)) return;
+                                const submittedIssueId = issue.id;
                                 setCommentSaveError(null);
                                 try {
                                     await createComment.mutateAsync({ contentJson: comment });
-                                    setComment(EMPTY_TIPTAP_DOCUMENT);
+                                    if (loadedIssueId.current === submittedIssueId) setComment(EMPTY_TIPTAP_DOCUMENT);
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotAddComment")));
+                                    if (loadedIssueId.current === submittedIssueId) setCommentSaveError(errorMessage(reason, t("issue.couldNotAddComment")));
                                 }
                             }}
                             onDelete={async (commentId) => {
+                                const actionIssueId = issue.id;
                                 setCommentSaveError(null);
                                 try {
                                     await deleteComment.mutateAsync(commentId);
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotDeleteComment")));
+                                    if (loadedIssueId.current === actionIssueId) setCommentSaveError(errorMessage(reason, t("issue.couldNotDeleteComment")));
                                     throw reason;
                                 }
                             }}
                             onEdit={async (commentId, contentJson) => {
+                                const actionIssueId = issue.id;
                                 setCommentSaveError(null);
                                 try {
                                     await updateComment.mutateAsync({ commentId, input: { contentJson } });
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotUpdateComment")));
+                                    if (loadedIssueId.current === actionIssueId) setCommentSaveError(errorMessage(reason, t("issue.couldNotUpdateComment")));
                                     throw reason;
                                 }
                             }}
-                        />
+                        />}
+                        </div>
 
                         {mode === "page" && <div className="flex justify-end border-t border-subtle pt-4">
                             <ConfirmDialog
@@ -749,9 +1048,10 @@ function IssueRelations({
     );
 }
 
-function IssueActivity({ hideHeading = false, activity, columns, members, categories, cycles, projectIssues }: {
-    hideHeading?: boolean;
-    activity: Array<{ id: string; type: string; createdAt: string; actor: { name: string }; payload: Record<string, unknown> }>;
+function IssueActivity({ activity, isLoading, isError, columns, members, categories, cycles, projectIssues }: {
+    activity: Array<{ id: string; type: string; createdAt: string; actor: { name: string; avatarUrl: string | null }; payload: Record<string, unknown> }>;
+    isLoading: boolean;
+    isError: boolean;
     columns: Array<{ id: string; name: string }>;
     members: Array<{ id: string; name: string }>;
     categories: Array<{ id: string; name: string }>;
@@ -759,21 +1059,25 @@ function IssueActivity({ hideHeading = false, activity, columns, members, catego
     projectIssues: Array<{ id: string; identifier: string; title: string }>;
 }) {
     const { t, i18n } = useTranslation();
-    if (!activity.length) return null;
     return (
-        <section className="border-t border-subtle pt-5">
-            {!hideHeading && <SectionTitle title={t("issue.activity")} icon={Calendar} />}
-            <div className="flex flex-col gap-3">
+        <section className="pt-4">
+            {isLoading ? <div className="space-y-3 py-3" role="status" aria-label={t("issue.loadingActivity")}><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-4/5" /></div>
+                : isError ? <p className="py-6 text-center text-sm text-danger-primary" role="alert">{t("issue.couldNotLoadActivity")}</p>
+                    : activity.length === 0 ? <p className="py-8 text-center text-sm text-tertiary">{t("issue.noActivity")}</p> : <div className="divide-y divide-subtle">
                 {activity.map((entry) => (
-                    <div key={entry.id} className="flex items-center gap-2 text-sm text-tertiary">
-                        <span className="font-medium text-secondary">{entry.actor.name}</span>
-                        <span>{activityLabelKeys[entry.type] ? t(activityLabelKeys[entry.type]) : entry.type}{formatActivityChange(entry.payload, { columns, members, categories, cycles, projectIssues }, t)}</span>
-                        <span className="ml-auto text-xs">{formatDistanceToNow(entry.createdAt, i18n.language)}</span>
+                    <div key={entry.id} className="flex items-start gap-3 py-3 text-sm text-tertiary">
+                        <IssueAvatar name={entry.actor.name} avatarUrl={entry.actor.avatarUrl} className="mt-0.5 size-6 text-xs" />
+                        <div className="min-w-0 flex-1"><span className="font-medium text-secondary">{entry.actor.name}</span> <span>{activityLabelKeys[entry.type] ? t(activityLabelKeys[entry.type]) : entry.type}{formatActivityChange(entry.payload, { columns, members, categories, cycles, projectIssues }, t)}</span></div>
+                        <time className="shrink-0 text-xs" title={formatFullIssueDate(entry.createdAt, i18n.language)} dateTime={entry.createdAt}>{formatDistanceToNow(entry.createdAt, i18n.language)}</time>
                     </div>
                 ))}
-            </div>
+            </div>}
         </section>
     );
+}
+
+function formatFullIssueDate(value: string, locale: string) {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function formatActivityChange(payload: Record<string, unknown>, lookups: {
@@ -799,6 +1103,8 @@ function formatActivityChange(payload: Record<string, unknown>, lookups: {
 function IssueComments({
     compact = false,
     comments,
+    isLoading,
+    loadFailed,
     currentUserId,
     value,
     onChange,
@@ -809,7 +1115,9 @@ function IssueComments({
     onEdit,
 }: {
     compact?: boolean;
-    comments: Array<{ id: string; contentJson: TiptapDocument; authorId: string; author: { name: string; avatarUrl: string | null }; createdAt: string }>;
+    comments: Array<{ id: string; contentJson: TiptapDocument; authorId: string; author: { name: string; username?: string; avatarUrl: string | null }; createdAt: string; updatedAt: string }>;
+    isLoading: boolean;
+    loadFailed: boolean;
     currentUserId?: string;
     value: TiptapDocument;
     onChange: (value: TiptapDocument) => void;
@@ -823,14 +1131,18 @@ function IssueComments({
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     return (
-        <section className={compact ? "peek-comments" : "border-t border-subtle pt-5"}>
-            {!compact && <SectionTitle title={t("issue.comments")} icon={User} />}
+        <section className={cx("pt-4", compact && "peek-comments")}>
             <div className="flex flex-col gap-4">
-                {comments.map((entry) => (
-                    <article key={entry.id} className="rounded-lg border border-subtle p-4">
-                        <div className="mb-2 flex items-center justify-between gap-3 text-xs text-tertiary">
-                            <span className="font-medium text-secondary">{entry.author.name}</span>
-                            <span>{formatDistanceToNow(entry.createdAt, i18n.language)}</span>
+                {isLoading ? <div className="space-y-3" role="status" aria-label={t("issue.loadingComments")}><Skeleton className="h-20 w-full" /><Skeleton className="h-20 w-full" /></div>
+                    : loadFailed ? <p className="py-5 text-center text-sm text-danger-primary" role="alert">{t("issue.couldNotLoadComments")}</p>
+                        : comments.length === 0 ? <p className="py-3 text-sm text-tertiary">{t("issue.noComments")}</p> : comments.map((entry) => (
+                    <article key={entry.id} className="rounded-lg border border-subtle bg-layer-1/50 p-4">
+                        <div className="mb-3 flex items-center gap-3 text-xs text-tertiary">
+                            <IssueAvatar name={entry.author.name} avatarUrl={entry.author.avatarUrl} className="size-8 text-xs" />
+                            <div className="flex min-w-0 flex-1 flex-col">
+                                <span className="truncate font-medium text-secondary">{entry.author.name}{entry.author.username ? <span className="ml-1 font-normal text-tertiary">@{entry.author.username}</span> : null}</span>
+                                <time title={formatFullIssueDate(entry.createdAt, i18n.language)} dateTime={entry.createdAt}>{formatDistanceToNow(entry.createdAt, i18n.language)}{new Date(entry.updatedAt).getTime() > new Date(entry.createdAt).getTime() ? ` · ${t("issue.edited")}` : ""}</time>
+                            </div>
                         </div>
                         {editingId === entry.id ? (
                             <>
@@ -888,10 +1200,10 @@ function IssueComments({
                         )}
                     </article>
                 ))}
-                <div className="rounded-lg border border-subtle">
+                <div className="rounded-lg border border-subtle bg-layer-1/50">
                     <RichTextEditor toolbar={!compact} variant="comment" content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder={t("issue.leaveComment")} />
                     <div className="flex justify-end border-t border-subtle p-2">
-                        <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length || isSubmitting} isLoading={isSubmitting} onClick={onSubmit}>
+                        <Button size="sm" iconLeading={Plus} isDisabled={!hasMeaningfulTiptapContent(value) || isSubmitting} isLoading={isSubmitting} onClick={onSubmit}>
                             {t("issue.commentAction")}
                         </Button>
                     </div>
@@ -922,6 +1234,17 @@ function formatDistanceToNow(value: string, locale: string) {
 
 function formatDate(value: string, locale: string) {
     return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+}
+
+function hasMeaningfulTiptapContent(document: TiptapDocument) {
+    const visit = (nodes: unknown[]): boolean => nodes.some((candidate) => {
+        if (!candidate || typeof candidate !== "object") return false;
+        const node = candidate as { type?: unknown; text?: unknown; content?: unknown[] };
+        if (node.type === "text" && typeof node.text === "string" && node.text.trim().length > 0) return true;
+        if (["image", "horizontalRule", "hardBreak", "mention"].includes(String(node.type))) return true;
+        return Array.isArray(node.content) && visit(node.content);
+    });
+    return visit(document.content ?? []);
 }
 
 function IssuePeekState({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {

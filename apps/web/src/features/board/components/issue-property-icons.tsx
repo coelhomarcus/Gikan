@@ -6,6 +6,7 @@
  */
 import { SignalHigh, SignalMedium, SignalLow } from "lucide-react";
 import { CyclesOutline } from "@makeplane/propel/icons";
+import { cx } from "@/utils/cx";
 
 /** State groups are presentation only; Gikan continues to store project columns. */
 export function StateIcon({ name, color, className = "size-3.5" }: { name: string; color?: string | null; className?: string }) {
@@ -23,8 +24,8 @@ export function PriorityIcon({ priority, withContainer = false }: { priority: st
     return withContainer ? <span title={`${priority} priority`} className="flex size-5 shrink-0 items-center justify-center rounded-sm border bg-layer-2 p-0.5" style={{ borderColor: `var(--priority-${priority})` }}>{icon}</span> : icon;
 }
 
-export function IssueAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
-    return <span title={name} className="inline-flex size-[18px] shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] text-white" style={{ backgroundColor: "#92346f" }}>
+export function IssueAvatar({ name, avatarUrl, className }: { name: string; avatarUrl?: string | null; className?: string }) {
+    return <span title={name} className={cx("inline-flex size-[18px] shrink-0 items-center justify-center overflow-hidden rounded-full text-[10px] text-white", className)} style={{ backgroundColor: "#92346f" }}>
         {avatarUrl ? <img src={avatarUrl} alt={name} className="size-full object-cover" /> : name.charAt(0).toUpperCase()}
     </span>;
 }

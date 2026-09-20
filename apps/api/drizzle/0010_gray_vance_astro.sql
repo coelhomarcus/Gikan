@@ -1,0 +1,1 @@
+ALTER TABLE "issues" ADD COLUMN "description_revision" integer DEFAULT 0 NOT NULL;

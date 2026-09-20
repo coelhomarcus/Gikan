@@ -6,6 +6,7 @@ import { AppIcons } from "@/components/foundations/icons";
 import { AUTH_QUERY_KEY, logout } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { clearDocumentDrafts } from "@/features/documents/sessions";
+import { issueDescriptionDrafts } from "@/features/issues/lib/issue-description-drafts";
 import { useTranslation } from "react-i18next";
 
 export function SidebarAccount() {
@@ -17,9 +18,9 @@ export function SidebarAccount() {
         mutationFn: logout,
         onSuccess: async () => {
             if (user)
-                await clearDocumentDrafts(user.id).catch(() => {
+                await Promise.all([clearDocumentDrafts(user.id), issueDescriptionDrafts.clearUser(user.id)]).catch(() => {
                     // Authentication still ends if browser storage is unavailable.
-                    console.warn("Could not clear local document storage during sign out.");
+                    console.warn("Could not clear local editor storage during sign out.");
                 });
             queryClient.setQueryData(AUTH_QUERY_KEY, null);
             queryClient.removeQueries({ predicate: (query) => query.queryKey[0] !== AUTH_QUERY_KEY[0] });

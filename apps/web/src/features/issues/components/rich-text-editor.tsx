@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { TiptapDocument } from "@gikan/shared";
-import { Bold, Check, CheckSquare, Code2, Heading2, Italic, Link2, List, ListOrdered, Minus, MoreHorizontal, Quote, Strikethrough } from "lucide-react";
+import { Bold, Check, CheckSquare, Code2, Heading2, ImagePlus, Italic, Link2, List, ListOrdered, Minus, MoreHorizontal, Quote, Strikethrough } from "lucide-react";
 import Link from "@tiptap/extension-link";
 import Mention from "@tiptap/extension-mention";
 import TaskItem from "@tiptap/extension-task-item";
@@ -21,6 +21,8 @@ import { cx } from "@/utils/cx";
 import { useTranslation } from "react-i18next";
 import type { TranslationKey } from "@/i18n/resources";
 import i18n from "@/i18n/i18n";
+import { DocumentImage } from "@/features/documents/components/document-image";
+import "./issue-rich-text-editor.css";
 
 export const EMPTY_TIPTAP_DOCUMENT: TiptapDocument = { type: "doc", content: [] };
 
@@ -45,6 +47,7 @@ function SuggestionMenu<T extends { id: string; label: string; description?: str
         "bullet-list": ["editor.bulletList", "editor.createSimpleList"], "ordered-list": ["editor.numberedList", "editor.createNumberedList"],
         "task-list": ["editor.todoList", "editor.trackChecklist"], quote: ["editor.quote", "editor.highlightQuote"],
         code: ["editor.codeBlock", "editor.addFormattedCode"], divider: ["editor.divider", "editor.separateSections"],
+        image: ["editor.image", "editor.insertImageUrl"],
     };
     return (
         <div role="listbox" aria-label={t("editor.editorSuggestions")} className="min-w-60 overflow-hidden rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl">
@@ -68,23 +71,51 @@ function createSuggestionRenderer<T extends { id: string; label: string; descrip
     let selectedIndex = 0;
     let currentItems: T[] = [];
     let selectItem: ((item: T) => void) | null = null;
+    let currentRect: (() => DOMRect | null) | null = null;
+    let positionFrame: number | null = null;
+
+    const reposition = () => {
+        if (positionFrame !== null) cancelAnimationFrame(positionFrame);
+        positionFrame = requestAnimationFrame(() => {
+            positionFrame = null;
+            if (!popup || !currentRect) return;
+            const rect = currentRect();
+            if (!rect || rect.bottom < 0 || rect.top > window.innerHeight || rect.right < 0 || rect.left > window.innerWidth) {
+                popup.style.visibility = "hidden";
+                return;
+            }
+            const bounds = popup.getBoundingClientRect();
+            const margin = 12;
+            const maxLeft = Math.max(margin, window.innerWidth - bounds.width - margin);
+            const left = Math.min(maxLeft, Math.max(margin, rect.left));
+            let top = rect.bottom + 6;
+            if (top + bounds.height > window.innerHeight - margin) top = rect.top - bounds.height - 6;
+            const maxTop = Math.max(margin, window.innerHeight - bounds.height - margin);
+            top = Math.min(maxTop, Math.max(margin, top));
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.style.maxWidth = `calc(100vw - ${margin * 2}px)`;
+            popup.style.maxHeight = `calc(100vh - ${margin * 2}px)`;
+            popup.style.overflowY = "auto";
+            popup.style.visibility = "visible";
+        });
+    };
 
     const render = (props: SuggestionProps<T, T>) => {
         currentItems = props.items;
         selectedIndex = Math.min(selectedIndex, Math.max(0, currentItems.length - 1));
         selectItem = props.command;
+        currentRect = props.clientRect ?? null;
         if (!popup) {
             popup = document.createElement("div");
             popup.className = "fixed z-[100]";
             document.body.appendChild(popup);
             root = createRoot(popup);
+            window.addEventListener("scroll", reposition, true);
+            window.addEventListener("resize", reposition);
         }
         root?.render(<SuggestionMenu items={currentItems} selectedIndex={selectedIndex} onSelect={(item) => selectItem?.(item)} />);
-        const rect = props.clientRect?.();
-        if (rect && popup) {
-            popup.style.left = `${rect.left}px`;
-            popup.style.top = `${rect.bottom + 6}px`;
-        }
+        reposition();
     };
 
     return {
@@ -109,6 +140,11 @@ function createSuggestionRenderer<T extends { id: string; label: string; descrip
             return event.key === "Escape";
         },
         onExit: () => {
+            window.removeEventListener("scroll", reposition, true);
+            window.removeEventListener("resize", reposition);
+            if (positionFrame !== null) cancelAnimationFrame(positionFrame);
+            positionFrame = null;
+            currentRect = null;
             root?.unmount();
             popup?.remove();
             root = null;
@@ -129,7 +165,7 @@ function createMentionSuggestion(items: MentionItem[]) {
 
 const SLASH_PLUGIN_KEY = new PluginKey("gikan-slash-commands");
 
-function createSlashSuggestion() {
+function createSlashSuggestion(includeImages: boolean) {
     const commands: SlashItem[] = [
         { id: "paragraph", label: "Text", description: "Start with a plain paragraph", icon: Heading2, run: (editor) => editor.chain().setParagraph().run() },
         { id: "heading", label: "Heading", description: "Add a section heading", icon: Heading2, run: (editor) => editor.chain().toggleHeading({ level: 2 }).run() },
@@ -139,7 +175,9 @@ function createSlashSuggestion() {
         { id: "quote", label: "Quote", description: "Highlight a quotation", icon: Quote, run: (editor) => editor.chain().toggleBlockquote().run() },
         { id: "code", label: "Code block", description: "Add formatted code", icon: Code2, run: (editor) => editor.chain().toggleCodeBlock().run() },
         { id: "divider", label: "Divider", description: "Separate sections", icon: Minus, run: (editor) => editor.chain().setHorizontalRule().run() },
+        { id: "image", label: "Image", description: "Add an image from a URL", icon: ImagePlus, run: (editor) => editor.chain().setImage({ src: "", alt: "" }).run() },
     ];
+    const availableCommands = includeImages ? commands : commands.filter((command) => command.id !== "image");
     return Extension.create({
         name: "slashCommands",
         addProseMirrorPlugins() {
@@ -153,9 +191,10 @@ function createSlashSuggestion() {
                         "bullet-list": ["editor.bulletList", "editor.createSimpleList"], "ordered-list": ["editor.numberedList", "editor.createNumberedList"],
                         "task-list": ["editor.todoList", "editor.trackChecklist"], quote: ["editor.quote", "editor.highlightQuote"],
                         code: ["editor.codeBlock", "editor.addFormattedCode"], divider: ["editor.divider", "editor.separateSections"],
+                        image: ["editor.image", "editor.insertImageUrl"],
                     };
                     const translatedQuery = query.toLowerCase();
-                    return commands.filter((command) => {
+                    return availableCommands.filter((command) => {
                         const text = keys[command.id]?.map((key) => i18n.t(key)).join(" ") ?? "";
                         return `${command.label} ${command.description} ${text}`.toLowerCase().includes(translatedQuery);
                     });
@@ -211,7 +250,8 @@ export const RichTextEditor = ({ content, editable = true, onChange, placeholder
             TaskItem.configure({ nested: true }),
             Placeholder.configure({ placeholder: () => placeholderRef.current ?? i18n.t("editor.writeSomething") }),
             Mention.configure({ HTMLAttributes: { class: "mention" }, suggestion: mentionSuggestion }),
-            ...(editable ? [createSlashSuggestion()] : []),
+            ...(variant === "description" ? [DocumentImage] : []),
+            ...(editable ? [createSlashSuggestion(variant === "description")] : []),
         ],
         onUpdate: ({ editor: currentEditor }) => {
             if (syncingRef.current) return;
@@ -238,7 +278,7 @@ export const RichTextEditor = ({ content, editable = true, onChange, placeholder
     }, [editor, t]);
 
     return <div className={cx("tiptap-editor", editable && "min-h-32", !editable && "tiptap-editor-readonly", `tiptap-editor-${variant}`, className)}>
-        {editable && toolbar && editor && <RichTextToolbar editor={editor} />}
+        {editable && toolbar && editor && <RichTextToolbar editor={editor} showImages={variant === "description"} />}
         {editable && editor && <RichTextBubbleMenu editor={editor} />}
         <EditorContent editor={editor} />
     </div>;
@@ -248,7 +288,7 @@ function FormatButton({ icon: Icon, label, active, onClick }: { icon: ButtonProp
     return <ButtonUtility icon={Icon} size="xs" color={active ? "secondary" : "tertiary"} tooltip={label} aria-label={label} aria-pressed={active} onClick={onClick} />;
 }
 
-function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof useEditor>> }) {
+function RichTextToolbar({ editor, showImages }: { editor: NonNullable<ReturnType<typeof useEditor>>; showImages: boolean }) {
     const { t } = useTranslation();
     const [isLinkEditorOpen, setIsLinkEditorOpen] = useState(false);
     const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -269,6 +309,7 @@ function RichTextToolbar({ editor }: { editor: NonNullable<ReturnType<typeof use
         </ToggleGroupRoot>
         <span className="mx-1 h-5 w-px bg-border-secondary" aria-hidden="true" />
         <FormatButton icon={Heading2} label={t("editor.headingFormat")} active={editor.isActive("heading", { level: 2 })} onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} />
+        {showImages && <FormatButton icon={ImagePlus} label={t("editor.insertImageUrl")} onClick={() => editor.chain().focus().setImage({ src: "", alt: "" }).run()} />}
         <BasePopover.Root open={isLinkEditorOpen} onOpenChange={setIsLinkEditorOpen}>
             <BasePopover.Trigger
                 render={<button type="button" aria-label={t("editor.linkAction")} aria-pressed={editor.isActive("link")} className={cx("inline-flex size-7 items-center justify-center rounded-md text-tertiary outline-accent-strong transition-colors hover:bg-layer-1-hover hover:text-primary", editor.isActive("link") && "bg-surface-2 text-primary")} onClick={toggleLink} />}
