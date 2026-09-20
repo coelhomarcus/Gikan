@@ -141,7 +141,7 @@ function localizeCommand(item: EditorCommand): EditorCommand {
     const keys = commandKeys[item.id];
     if (!keys) return item;
     const headingLevel = item.id.startsWith("heading-") ? Number(item.id.slice(-1)) : undefined;
-    const translate = (key: TranslationKey, options?: Record<string, string | number>) => i18n.t(key as string, options) as string;
+    const translate = i18n.getFixedT(null, "translation") as unknown as (key: TranslationKey, options?: Record<string, string | number>) => string;
     const label = headingLevel ? translate(keys[0], { level: headingLevel }) : translate(keys[0]);
     return { ...item, label, detail: translate(keys[1]), group: translate(keys[2]) };
 }
