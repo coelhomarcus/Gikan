@@ -3,8 +3,26 @@ import type { Editor, JSONContent } from "@tiptap/react";
 
 /** Convert a whole block without dropping the inline content of its list items. */
 export function convertDocumentBlock(editor: Editor, position: number, type: string) {
-    const block = editor.state.doc.nodeAt(position);
+    let block: Node | null = null;
+    let blockPosition = 0;
+    for (let index = 0; index < editor.state.doc.childCount; index++) {
+        const candidate = editor.state.doc.child(index);
+        if (blockPosition === position) {
+            block = candidate;
+            break;
+        }
+        blockPosition += candidate.nodeSize;
+    }
     if (!block || ["image", "table", "horizontalRule"].includes(block.type.name)) return;
+    if (block.isTextblock && (type === "text" || type.startsWith("heading-"))) {
+        const replacement =
+            type === "text"
+                ? editor.schema.nodes.paragraph.create(null, block.content)
+                : editor.schema.nodes.heading.create({ level: Number(type.at(-1)) }, block.content);
+        editor.view.dispatch(editor.state.tr.replaceWith(position, position + block.nodeSize, replacement).scrollIntoView());
+        editor.view.focus();
+        return;
+    }
     const paragraphs: JSONContent[] = [];
     const collect = (node: Node) => {
         if (node.isTextblock) {

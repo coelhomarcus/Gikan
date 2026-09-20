@@ -349,6 +349,23 @@
     font-size: 13px;
     cursor: pointer;
 }
+.document-command-group {
+    padding: 8px 10px 4px;
+    color: var(--txt-placeholder);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 16px;
+}
+.document-command-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.document-command-detail {
+    padding-left: 24px;
+    color: var(--txt-tertiary);
+    font-size: 12px;
+}
 .document-editor button:focus-visible,
 .document-format-menu button:focus-visible,
 .document-popover button:focus-visible {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { Image } from "@tiptap/extension-image";
 import { type NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
@@ -6,14 +6,21 @@ import { ImageIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
 
-function ImageBlock({ node, updateAttributes, selected, editor }: NodeViewProps) {
+function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
     const [failed, setFailed] = useState(false);
     const [open, setOpen] = useState(!node.attrs.src);
     const [url, setUrl] = useState<string>(node.attrs.src ?? "");
     const [alt, setAlt] = useState<string>(node.attrs.alt ?? "");
     const [error, setError] = useState("");
     const [preview, setPreview] = useState<number | null>(null);
+    const resizeCleanup = useRef<(() => void) | null>(null);
+    const hasCurrentNode = () => {
+        if (editor.isDestroyed) return false;
+        const position = getPos();
+        return typeof position === "number" && editor.state.doc.nodeAt(position)?.type === node.type;
+    };
     useEffect(() => setFailed(false), [node.attrs.src]);
+    useEffect(() => () => resizeCleanup.current?.(), []);
     const width = Math.max(10, Math.min(100, Number(preview ?? node.attrs.widthPercent) || 100));
     return (
         <NodeViewWrapper className="document-image group" contentEditable={false} data-selected={selected || undefined}>
@@ -47,6 +54,11 @@ function ImageBlock({ node, updateAttributes, selected, editor }: NodeViewProps)
                     <Popover.Trigger
                         className="shadow-sm absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary"
                         aria-label="Edit image"
+                        data-node-view-control=""
+                        onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }}
                     >
                         <Pencil className="size-4" />
                     </Popover.Trigger>
@@ -58,6 +70,7 @@ function ImageBlock({ node, updateAttributes, selected, editor }: NodeViewProps)
                                     className="space-y-3"
                                     onSubmit={(event) => {
                                         event.preventDefault();
+                                        if (!hasCurrentNode()) return;
                                         try {
                                             const parsed = new URL(url.trim());
                                             if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
@@ -86,34 +99,61 @@ function ImageBlock({ node, updateAttributes, selected, editor }: NodeViewProps)
                     aria-valuemax={100}
                     aria-valuenow={Math.round(width)}
                     className="document-image-resize"
+                    data-node-view-control=""
                     onKeyDown={(event) => {
-                        if (!["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+                        if (!["ArrowLeft", "ArrowRight"].includes(event.key) || !hasCurrentNode()) return;
                         event.preventDefault();
                         updateAttributes({ widthPercent: Math.max(10, Math.min(100, width + (event.key === "ArrowRight" ? 5 : -5))) });
                     }}
                     onPointerDown={(event) => {
+                        if (event.button !== 0 || !hasCurrentNode()) return;
                         event.preventDefault();
+                        event.stopPropagation();
                         const control = event.currentTarget,
                             figure = control.parentElement!;
                         const containerWidth = figure.parentElement!.clientWidth,
                             startX = event.clientX,
                             startWidth = figure.clientWidth;
+                        if (containerWidth <= 0) return;
                         let nextWidth = width;
-                        control.setPointerCapture(event.pointerId);
+                        const pointerId = event.pointerId;
+                        control.setPointerCapture(pointerId);
+                        let finish: (e: PointerEvent) => void = () => undefined;
+                        let cancel: (e: PointerEvent) => void = () => undefined;
                         const move = (e: PointerEvent) => {
+                            if (e.pointerId !== pointerId) return;
                             nextWidth = Math.max(10, Math.min(100, ((startWidth + e.clientX - startX) / containerWidth) * 100));
                             setPreview(nextWidth);
                         };
-                        const end = () => {
+                        const cleanup = () => {
                             control.removeEventListener("pointermove", move);
-                            control.removeEventListener("pointerup", end);
-                            control.removeEventListener("pointercancel", end);
-                            updateAttributes({ widthPercent: nextWidth });
+                            control.removeEventListener("pointerup", finish);
+                            control.removeEventListener("pointercancel", cancel);
+                            control.removeEventListener("lostpointercapture", cancel);
+                            if (control.hasPointerCapture(pointerId)) control.releasePointerCapture(pointerId);
+                            if (resizeCleanup.current === cleanup) resizeCleanup.current = null;
+                        };
+                        finish = (e: PointerEvent) => {
+                            if (e.pointerId !== pointerId) return;
+                            cleanup();
+                            if (hasCurrentNode()) updateAttributes({ widthPercent: nextWidth });
+                            setPreview(null);
+                        };
+                        cancel = (e: PointerEvent) => {
+                            if (e.pointerId !== pointerId) return;
+                            cleanup();
                             setPreview(null);
                         };
                         control.addEventListener("pointermove", move);
-                        control.addEventListener("pointerup", end);
-                        control.addEventListener("pointercancel", end);
+                        control.addEventListener("pointerup", finish);
+                        control.addEventListener("pointercancel", cancel);
+                        control.addEventListener("lostpointercapture", cancel);
+                        resizeCleanup.current?.();
+                        resizeCleanup.current = cleanup;
+                    }}
+                    onMouseDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
                     }}
                 />
             </figure>
@@ -132,6 +172,8 @@ export const DocumentImage = Image.extend({
         };
     },
     addNodeView() {
-        return ReactNodeViewRenderer(ImageBlock);
+        return ReactNodeViewRenderer(ImageBlock, {
+            stopEvent: ({ event }) => event.target instanceof Element && event.target.closest("[data-node-view-control]") !== null,
+        });
     },
 }).configure({ allowBase64: false });

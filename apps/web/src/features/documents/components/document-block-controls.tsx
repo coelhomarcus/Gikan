@@ -1,36 +1,63 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Popover } from "@base-ui/react/popover";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
-import { TextSelection } from "@tiptap/pm/state";
+import { TextSelection, type Transaction } from "@tiptap/pm/state";
 import { type Editor, useEditorState } from "@tiptap/react";
 import { GripVertical, Plus } from "lucide-react";
 import { convertDocumentBlock } from "./block-conversion";
 import { blockCommands } from "./editor-suggestions";
+
+function getTopLevelBlock(editor: Editor, position: number) {
+    if (!Number.isInteger(position) || position < 0 || position >= editor.state.doc.content.size) return null;
+    let pos = 0;
+    for (let index = 0; index < editor.state.doc.childCount; index++) {
+        const node = editor.state.doc.child(index);
+        if (pos === position) return { pos, node };
+        pos += node.nodeSize;
+    }
+    return null;
+}
 
 export function moveDocumentBlock(editor: Editor, position: number, direction: -1 | 1) {
     const blocks: { pos: number; size: number }[] = [];
     editor.state.doc.forEach((node, pos) => blocks.push({ pos, size: node.nodeSize }));
     const index = blocks.findIndex((block) => block.pos === position),
         target = blocks[index + direction];
-    const node = editor.state.doc.nodeAt(position);
+    const current = getTopLevelBlock(editor, position),
+        node = current?.node;
     if (!target || !node || index < 0) return;
     const insertion = direction < 0 ? target.pos : target.pos + target.size - node.nodeSize;
     const tr = editor.state.tr.delete(position, position + node.nodeSize).insert(insertion, node);
-    tr.setSelection(TextSelection.near(tr.doc.resolve(Math.min(insertion + 1, tr.doc.content.size))));
+    if (insertion < 0 || insertion + 1 > tr.doc.content.size) return;
+    tr.setSelection(TextSelection.near(tr.doc.resolve(insertion + 1)));
     editor.view.dispatch(tr.scrollIntoView());
     editor.view.focus();
 }
 
-function BlockActions({ editor, position, onOpenChange }: { editor: Editor; position: number; onOpenChange: (open: boolean) => void }) {
+function BlockActions({
+    editor,
+    position,
+    getPosition,
+    onOpenChange,
+}: {
+    editor: Editor;
+    position: number;
+    getPosition: () => number;
+    onOpenChange: (open: boolean) => void;
+}) {
     const [open, setOpen] = useState(false);
     const setMenuOpen = (value: boolean) => {
         setOpen(value);
         onOpenChange(value);
         editor.commands.setMeta("lockDragHandle", value);
     };
-    const node = editor.state.doc.nodeAt(position);
+    const currentPosition = getPosition;
+    const getNode = () => getTopLevelBlock(editor, currentPosition())?.node;
+    const node = getNode();
     const add = () => {
-        const end = position + (node?.nodeSize ?? 0);
+        const node = getNode();
+        if (!node) return;
+        const end = currentPosition() + node.nodeSize;
         editor
             .chain()
             .focus()
@@ -59,34 +86,40 @@ function BlockActions({ editor, position, onOpenChange }: { editor: Editor; posi
                                 <button
                                     className="document-menu-item"
                                     onClick={() => {
+                                        const node = getNode();
                                         if (node)
                                             editor
                                                 .chain()
                                                 .focus()
-                                                .insertContentAt(position + node.nodeSize, node.toJSON())
+                                                .insertContentAt(currentPosition() + node.nodeSize, node.toJSON())
                                                 .run();
                                     }}
                                 >
                                     Duplicate
                                 </button>
-                                <button className="document-menu-item" disabled={position === 0} onClick={() => moveDocumentBlock(editor, position, -1)}>
+                                <button
+                                    className="document-menu-item"
+                                    disabled={position === 0}
+                                    onClick={() => moveDocumentBlock(editor, currentPosition(), -1)}
+                                >
                                     Move up
                                 </button>
                                 <button
                                     className="document-menu-item"
                                     disabled={!node || position + node.nodeSize === editor.state.doc.content.size}
-                                    onClick={() => moveDocumentBlock(editor, position, 1)}
+                                    onClick={() => moveDocumentBlock(editor, currentPosition(), 1)}
                                 >
                                     Move down
                                 </button>
                                 <button
                                     className="document-menu-item text-danger-primary"
                                     onClick={() => {
-                                        if (node)
+                                        const currentNode = getNode();
+                                        if (currentNode)
                                             editor
                                                 .chain()
                                                 .focus()
-                                                .deleteRange({ from: position, to: position + node.nodeSize })
+                                                .deleteRange({ from: currentPosition(), to: currentPosition() + currentNode.nodeSize })
                                                 .run();
                                     }}
                                 >
@@ -100,7 +133,7 @@ function BlockActions({ editor, position, onOpenChange }: { editor: Editor; posi
                                                 key={command.id}
                                                 className="document-menu-item"
                                                 onClick={() => {
-                                                    convertDocumentBlock(editor, position, command.id);
+                                                    convertDocumentBlock(editor, currentPosition(), command.id);
                                                 }}
                                             >
                                                 {command.label}
@@ -118,8 +151,27 @@ function BlockActions({ editor, position, onOpenChange }: { editor: Editor; posi
 }
 
 export function DocumentBlockControls({ editor }: { editor: Editor }) {
-    const [hoverPosition, setHoverPosition] = useState(0);
+    const [hoverPosition, setHoverPosition] = useState(-1);
+    const hoverPositionRef = useRef(-1);
     const [open, setOpen] = useState(false);
+    useEffect(() => {
+        const onTransaction = ({ transaction }: { transaction: Transaction }) => {
+            if (!transaction.docChanged || hoverPositionRef.current < 0) return;
+            const mapped = transaction.mapping.mapResult(hoverPositionRef.current, 1);
+            const next = mapped.deleted || mapped.deletedAcross ? null : getTopLevelBlock(editor, mapped.pos);
+            const position = next?.pos ?? -1;
+            hoverPositionRef.current = position;
+            setHoverPosition(position);
+        };
+        editor.on("transaction", onTransaction);
+        return () => {
+            editor.off("transaction", onTransaction);
+        };
+    }, [editor]);
+    const updateHoverPosition = (position: number) => {
+        hoverPositionRef.current = position;
+        setHoverPosition(position);
+    };
     const cursorPosition = useEditorState({
         editor,
         selector: ({ editor: current }) => (current.state.selection.$from.depth ? current.state.selection.$from.before(1) : current.state.selection.from),
@@ -131,15 +183,27 @@ export function DocumentBlockControls({ editor }: { editor: Editor }) {
                 className="document-drag-handle"
                 computePositionConfig={{ placement: "left-start", strategy: "absolute" }}
                 onNodeChange={({ pos }) => {
-                    if (!open && pos >= 0) setHoverPosition(pos);
+                    if (open) return;
+                    const block = getTopLevelBlock(editor, pos);
+                    updateHoverPosition(block?.pos ?? -1);
                 }}
             >
-                <div className="flex items-center">
-                    <BlockActions editor={editor} position={hoverPosition} onOpenChange={setOpen} />
-                </div>
+                {hoverPosition >= 0 && (
+                    <div className="flex items-center">
+                        <BlockActions editor={editor} position={hoverPosition} getPosition={() => hoverPositionRef.current} onOpenChange={setOpen} />
+                    </div>
+                )}
             </DragHandle>
             <div className="document-touch-controls flex items-center gap-1" aria-label="Current block">
-                <BlockActions editor={editor} position={cursorPosition} onOpenChange={setOpen} />
+                <BlockActions
+                    editor={editor}
+                    position={cursorPosition}
+                    getPosition={() => {
+                        const selection = editor.state.selection.$from;
+                        return selection.depth ? selection.before(1) : selection.pos;
+                    }}
+                    onOpenChange={setOpen}
+                />
             </div>
         </>
     );

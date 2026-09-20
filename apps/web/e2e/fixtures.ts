@@ -1,3 +1,4 @@
+import type { TiptapDocument } from "@gikan/shared";
 import type { Page } from "@playwright/test";
 
 export const documentId = "77777777-7777-4777-8777-777777777777";
@@ -45,7 +46,7 @@ export const cycle = {
     startsAt: "2026-09-14T00:00:00Z",
     endsAt: "2026-09-28T00:00:00Z",
 };
-const documentJson = { type: "doc" as const, content: [{ type: "paragraph", content: [{ type: "text", text: "Make every detail count." }] }] };
+const documentJson: TiptapDocument = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Make every detail count." }] }] };
 export const issues = ["Build the project workspace", "Refine the issue list", "Update navigation and search", "Document the design system"].map(
     (title, i) => ({
         id: `66666666-6666-4666-8666-66666666666${i}`,
@@ -71,7 +72,7 @@ export const issues = ["Build the project workspace", "Refine the issue list", "
 /** In-memory HTTP fixtures; never touches the running API or its database. */
 export async function mockApi(
     page: Page,
-    options: { authenticated?: boolean; empty?: boolean; admin?: boolean; errorPath?: string; errorMethod?: string } = {},
+    options: { authenticated?: boolean; empty?: boolean; admin?: boolean; errorPath?: string; errorMethod?: string; documentContent?: TiptapDocument } = {},
 ) {
     let authenticated = options.authenticated ?? true;
     const currentUser = { ...user, isAdmin: options.admin ?? true };
@@ -86,7 +87,7 @@ export async function mockApi(
             id: documentId,
             projectId,
             title: "Overview notes",
-            contentJson: documentJson,
+            contentJson: structuredClone(options.documentContent ?? documentJson),
             createdBy: userId,
             createdAt: timestamp,
             updatedAt: timestamp,

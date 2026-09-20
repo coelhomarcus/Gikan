@@ -1,9 +1,23 @@
-import { flushSync } from "react-dom";
 import { autoUpdate, computePosition, flip, offset, shift, size } from "@floating-ui/dom";
 import { PluginKey } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
 import type { SuggestionProps } from "@tiptap/suggestion";
 import { exitSuggestion } from "@tiptap/suggestion";
+import {
+    Code2,
+    Heading1,
+    Heading2,
+    Heading3,
+    Image as ImageIcon,
+    List,
+    ListChecks,
+    ListOrdered,
+    type LucideIcon,
+    Minus,
+    Quote,
+    Table2,
+    Type,
+} from "lucide-react";
 import { type Root, createRoot } from "react-dom/client";
 
 export const documentSlashKey = new PluginKey("document-slash");
@@ -12,121 +26,193 @@ export interface EditorCommand {
     id: string;
     label: string;
     detail?: string;
-    run?: (editor: Editor) => void;
+    group?: string;
+    aliases?: string[];
+    run?: (editor: Editor, range: { from: number; to: number }) => void;
 }
 export const blockCommands: EditorCommand[] = [
     {
         id: "text",
         label: "Text",
         detail: "Plain paragraph",
-        run: (e) => {
-            e.chain().focus().setParagraph().run();
-        },
+        group: "Text",
+        aliases: ["paragraph", "plain"],
+        run: (e, range) => e.chain().focus().deleteRange(range).setParagraph().run(),
     },
     ...([1, 2, 3] as const).map((level) => ({
         id: `heading-${level}`,
         label: `Heading ${level}`,
         detail: "Section heading",
-        run: (e: Editor) => {
-            e.chain().focus().setHeading({ level }).run();
-        },
+        group: "Text",
+        aliases: [`h${level}`, `heading${level}`],
+        run: (e: Editor, range: { from: number; to: number }) => e.chain().focus().deleteRange(range).setHeading({ level }).run(),
     })),
     {
         id: "bullet",
         label: "Bullet list",
-        run: (e) => {
-            e.chain().focus().toggleBulletList().run();
-        },
+        detail: "Unordered list",
+        group: "Lists",
+        aliases: ["bullets", "unordered", "ul"],
+        run: (e, range) => e.chain().focus().deleteRange(range).toggleBulletList().run(),
     },
     {
         id: "numbered",
         label: "Numbered list",
-        run: (e) => {
-            e.chain().focus().toggleOrderedList().run();
-        },
+        detail: "Ordered list",
+        group: "Lists",
+        aliases: ["ordered", "number", "ol"],
+        run: (e, range) => e.chain().focus().deleteRange(range).toggleOrderedList().run(),
     },
     {
         id: "task",
         label: "To-do list",
-        run: (e) => {
-            e.chain().focus().toggleTaskList().run();
-        },
+        detail: "Checklist",
+        group: "Lists",
+        aliases: ["todo", "task list", "checklist"],
+        run: (e, range) => e.chain().focus().deleteRange(range).toggleTaskList().run(),
     },
     {
         id: "quote",
         label: "Quote",
-        run: (e) => {
-            e.chain().focus().toggleBlockquote().run();
-        },
+        detail: "Block quote",
+        group: "Blocks",
+        aliases: ["blockquote", "citation"],
+        run: (e, range) => e.chain().focus().deleteRange(range).toggleBlockquote().run(),
     },
     {
         id: "code",
         label: "Code block",
-        run: (e) => {
-            e.chain().focus().toggleCodeBlock().run();
-        },
+        detail: "Preformatted text",
+        group: "Blocks",
+        aliases: ["pre", "codeblock"],
+        run: (e, range) => e.chain().focus().deleteRange(range).toggleCodeBlock().run(),
     },
     {
         id: "divider",
         label: "Divider",
-        run: (e) => {
-            e.chain().focus().setHorizontalRule().run();
-        },
+        detail: "Horizontal rule",
+        group: "Blocks",
+        aliases: ["horizontal rule", "hr", "separator"],
+        run: (e, range) => e.chain().focus().deleteRange(range).setHorizontalRule().run(),
     },
     {
         id: "image",
         label: "Image",
         detail: "Insert an image URL",
-        run: (e) => {
-            e.chain().focus().setImage({ src: "", alt: "" }).run();
-        },
+        group: "Media",
+        aliases: ["img", "picture", "photo"],
+        run: (e, range) => e.chain().focus().deleteRange(range).setImage({ src: "", alt: "" }).run(),
     },
     {
         id: "table",
         label: "Table",
         detail: "3 × 3 with a header row",
-        run: (e) => {
-            e.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-        },
+        group: "Media",
+        aliases: ["grid"],
+        run: (e, range) => e.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
     },
 ];
+
+export function filterBlockCommands(query: string) {
+    const normalizedQuery = query.trim().toLowerCase();
+    if (!normalizedQuery) return blockCommands;
+    return blockCommands.filter((item) => [item.label, item.detail, ...(item.aliases ?? [])].filter(Boolean).join(" ").toLowerCase().includes(normalizedQuery));
+}
+
+export function executeBlockCommand(editor: Editor, item: EditorCommand, range: { from: number; to: number }) {
+    const { selection, doc } = editor.state;
+    if (editor.isDestroyed || !selection.empty || range.from < 0 || range.to < range.from || range.to > doc.content.size) return;
+    if (selection.from !== range.to || !doc.textBetween(range.from, range.to, "\n", "\n").startsWith("/")) return;
+    item.run?.(editor, range);
+}
+
+const commandIcons: Record<string, LucideIcon> = {
+    text: Type,
+    "heading-1": Heading1,
+    "heading-2": Heading2,
+    "heading-3": Heading3,
+    bullet: List,
+    numbered: ListOrdered,
+    task: ListChecks,
+    quote: Quote,
+    code: Code2,
+    divider: Minus,
+    image: ImageIcon,
+    table: Table2,
+};
 
 /** Floating UI owns geometry; the portal is outside the document's scrolling surface. */
 export function documentSuggestions(pluginKey: PluginKey) {
     let element: HTMLDivElement | undefined, root: Root | undefined, cleanup: (() => void) | undefined;
+    let removeTransactionListener: (() => void) | undefined;
     let props: SuggestionProps<EditorCommand> | undefined;
     let index = 0;
+    let lastQuery = "";
+    let generation = 0;
+    const currentProps = (next: SuggestionProps<EditorCommand>) => {
+        if (pluginKey !== documentSlashKey) return next;
+        const live = pluginKey.getState(next.editor.state);
+        if (!live?.active) return next;
+        return {
+            ...next,
+            range: live.range,
+            query: live.query ?? "",
+            text: live.text ?? "",
+            items: filterBlockCommands(live.query ?? ""),
+            clientRect: () => {
+                if (next.editor.isDestroyed) return null;
+                try {
+                    const { left, top, right, bottom } = next.editor.view.coordsAtPos(next.editor.state.selection.from);
+                    return new DOMRect(left, top, right - left, bottom - top);
+                } catch {
+                    return null;
+                }
+            },
+            command: (item: EditorCommand) => {
+                const current = pluginKey.getState(next.editor.state);
+                if (current?.active) executeBlockCommand(next.editor, item, current.range);
+            },
+        };
+    };
     const render = () => {
         if (!props || !root) return;
         const current = props;
-        flushSync(() =>
-            root!.render(
-                <div role="listbox" aria-label="Editor commands" className="document-command-list">
-                    {current.items.length === 0 && <p className="px-3 py-3 text-sm text-tertiary">No results</p>}
-                    {current.items.map((item, i) => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            role="option"
-                            aria-selected={index === i}
-                            className={`document-command ${index === i ? "bg-layer-2-hover" : ""}`}
-                            onPointerMove={() => {
-                                if (index !== i) {
-                                    index = i;
-                                    render();
-                                }
-                            }}
-                            onMouseDown={(event) => {
-                                event.preventDefault();
-                                current.command(item);
-                            }}
-                        >
-                            <span>{item.label}</span>
-                            {item.detail && <span className="text-xs text-tertiary">{item.detail}</span>}
-                        </button>
-                    ))}
-                </div>,
-            ),
+        const list = current.items;
+        root.render(
+            <div role="listbox" aria-label={pluginKey === documentMentionKey ? "Mention suggestions" : "Editor commands"} className="document-command-list">
+                {list.length === 0 && <p className="px-3 py-3 text-sm text-tertiary">No results</p>}
+                {list.map((item, i) => {
+                    const Icon = commandIcons[item.id];
+                    const previous = list[i - 1];
+                    return (
+                        <div key={item.id}>
+                            {item.group && item.group !== previous?.group && <p className="document-command-group">{item.group}</p>}
+                            <button
+                                type="button"
+                                role="option"
+                                aria-selected={index === i}
+                                className={`document-command ${index === i ? "bg-layer-2-hover" : ""}`}
+                                onPointerMove={() => {
+                                    if (index !== i) {
+                                        index = i;
+                                        render();
+                                    }
+                                }}
+                                onMouseDown={(event) => {
+                                    event.preventDefault();
+                                    current.command(item);
+                                }}
+                            >
+                                <span className="document-command-heading">
+                                    {Icon && <Icon aria-hidden="true" className="size-4 shrink-0 text-tertiary" />}
+                                    <span>{item.label}</span>
+                                </span>
+                                {item.detail && <span className="document-command-detail">{item.detail}</span>}
+                            </button>
+                        </div>
+                    );
+                })}
+            </div>,
         );
         const selected = element?.querySelector<HTMLElement>('[aria-selected="true"]');
         if (element && selected) {
@@ -167,8 +253,16 @@ export function documentSuggestions(pluginKey: PluginKey) {
     };
     return {
         onStart(next: SuggestionProps<EditorCommand>) {
-            props = next;
+            removeTransactionListener?.();
+            cleanup?.();
+            if (root) {
+                root.unmount();
+                element?.remove();
+            }
+            generation++;
+            props = currentProps(next);
             index = 0;
+            lastQuery = props.query;
             element = document.createElement("div");
             element.className = "document-suggestions";
             // If this editor is later used inside a dialog, keep its popup in the active focus scope.
@@ -177,10 +271,35 @@ export function documentSuggestions(pluginKey: PluginKey) {
             render();
             cleanup = autoUpdate(next.editor.view.dom, element, position);
             window.visualViewport?.addEventListener("resize", position);
+            if (pluginKey === documentSlashKey) {
+                const syncLiveSlash = () => {
+                    if (!props) return;
+                    const live = pluginKey.getState(next.editor.state);
+                    if (!live?.active) return;
+                    const updated = currentProps(props);
+                    if (updated.query === props.query && updated.range.from === props.range.from && updated.range.to === props.range.to) return;
+                    if (updated.query !== lastQuery) {
+                        lastQuery = updated.query;
+                        index = 0;
+                    }
+                    props = updated;
+                    index = Math.min(index, Math.max(0, props.items.length - 1));
+                    render();
+                    position();
+                };
+                next.editor.on("transaction", syncLiveSlash);
+                removeTransactionListener = () => {
+                    next.editor.off("transaction", syncLiveSlash);
+                };
+            }
         },
         onUpdate(next: SuggestionProps<EditorCommand>) {
-            props = next;
-            index = Math.min(index, Math.max(0, next.items.length - 1));
+            props = currentProps(next);
+            if (lastQuery !== props.query) {
+                lastQuery = props.query;
+                index = 0;
+            }
+            index = Math.min(index, Math.max(0, props.items.length - 1));
             render();
             position();
         },
@@ -190,9 +309,14 @@ export function documentSuggestions(pluginKey: PluginKey) {
                 exitSuggestion(props.editor.view, pluginKey);
                 return true;
             }
-            if (["ArrowDown", "ArrowUp"].includes(event.key)) {
+            if (["ArrowDown", "ArrowUp"].includes(event.key) && props.items.length > 0) {
                 index = (index + (event.key === "ArrowDown" ? 1 : -1) + props.items.length) % Math.max(1, props.items.length);
                 render();
+                return true;
+            }
+            if (event.key === "Tab" && props.items[index]) {
+                event.preventDefault();
+                props.command(props.items[index]);
                 return true;
             }
             if (event.key === "Enter" && props.items[index]) {
@@ -201,15 +325,24 @@ export function documentSuggestions(pluginKey: PluginKey) {
             }
             return false;
         },
-        onExit() {
-            cleanup?.();
-            window.visualViewport?.removeEventListener("resize", position);
-            const previousRoot = root;
-            queueMicrotask(() => previousRoot?.unmount());
-            element?.remove();
-            props = undefined;
-            root = undefined;
-            element = undefined;
+        onExit(next: SuggestionProps<EditorCommand>) {
+            const exitingGeneration = generation;
+            queueMicrotask(() => {
+                // Tiptap 3 view updates are async. A stale stop may arrive after a
+                // newer transaction has already reactivated this suggestion.
+                if (exitingGeneration !== generation || (!next.editor.isDestroyed && pluginKey.getState(next.editor.state)?.active)) return;
+                removeTransactionListener?.();
+                removeTransactionListener = undefined;
+                cleanup?.();
+                window.visualViewport?.removeEventListener("resize", position);
+                const previousRoot = root;
+                element?.remove();
+                props = undefined;
+                root = undefined;
+                element = undefined;
+                lastQuery = "";
+                previousRoot?.unmount();
+            });
         },
     };
 }

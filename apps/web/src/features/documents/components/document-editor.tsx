@@ -13,7 +13,7 @@ import { DocumentBlockControls } from "./document-block-controls";
 import "./document-editor.css";
 import { DocumentFormatMenu } from "./document-format-menu";
 import { DocumentImage } from "./document-image";
-import { type EditorCommand, blockCommands, documentMentionKey, documentSlashKey, documentSuggestions } from "./editor-suggestions";
+import { type EditorCommand, documentMentionKey, documentSlashKey, documentSuggestions, executeBlockCommand, filterBlockCommands } from "./editor-suggestions";
 
 const SlashCommands = Extension.create({
     name: "documentSlashCommands",
@@ -23,10 +23,13 @@ const SlashCommands = Extension.create({
                 editor: this.editor,
                 pluginKey: documentSlashKey,
                 char: "/",
-                items: ({ query }) => blockCommands.filter((item) => `${item.label} ${item.detail ?? ""}`.toLowerCase().includes(query.toLowerCase())),
+                items: ({ query }) => filterBlockCommands(query),
+                allow: ({ state }) => {
+                    const allowed = state.selection.empty && !state.selection.$from.parent.type.spec.code;
+                    return allowed;
+                },
                 command: ({ editor, range, props }) => {
-                    editor.chain().focus().deleteRange(range).run();
-                    props.run?.(editor);
+                    executeBlockCommand(editor, props, range);
                 },
                 render: () => documentSuggestions(documentSlashKey),
             }),
@@ -36,17 +39,21 @@ const SlashCommands = Extension.create({
 
 export function DocumentEditor({
     content,
+    contentKey,
     onChange,
     members,
     disabled = false,
 }: {
     content: TiptapDocument;
+    /** Changes only when a saved/external revision replaces the active document. */
+    contentKey: number;
     onChange: (content: TiptapDocument) => void;
     members: { id: string; name: string }[];
     disabled?: boolean;
 }) {
     const onChangeRef = useRef(onChange),
-        membersRef = useRef(members);
+        membersRef = useRef(members),
+        appliedContentKey = useRef(contentKey);
     onChangeRef.current = onChange;
     membersRef.current = members;
     const editor = useEditor({
@@ -81,8 +88,10 @@ export function DocumentEditor({
         editor?.setEditable(!disabled, false);
     }, [editor, disabled]);
     useEffect(() => {
-        if (editor && JSON.stringify(content) !== JSON.stringify(editor.getJSON())) editor.commands.setContent(content, { emitUpdate: false });
-    }, [content, editor]);
+        if (!editor || appliedContentKey.current === contentKey) return;
+        appliedContentKey.current = contentKey;
+        if (JSON.stringify(content) !== JSON.stringify(editor.getJSON())) editor.commands.setContent(content, { emitUpdate: false });
+    }, [content, contentKey, editor]);
     // Native ProseMirror dragging supplies the drop cursor; keep long pages scrolling near the edges.
     useEffect(() => {
         if (!editor) return;
@@ -125,8 +134,8 @@ export function DocumentEditor({
         >
             {editor && !disabled && (
                 <>
-                    <DocumentBlockControls editor={editor} />
-                    <DocumentFormatMenu editor={editor} />
+                    <DocumentBlockControls key={`blocks:${contentKey}`} editor={editor} />
+                    <DocumentFormatMenu key={`format:${contentKey}`} editor={editor} />
                 </>
             )}
             <EditorContent editor={editor} className="document-editor-content" />

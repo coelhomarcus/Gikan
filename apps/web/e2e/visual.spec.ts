@@ -15,7 +15,7 @@ const views = [
     ["settings-states", `/projects/${projectId}/settings/states`, "States"],
     ["settings-members", `/projects/${projectId}/settings/members`, "Members"],
     ["settings-labels", `/projects/${projectId}/settings/labels`, "Labels"],
-    ["profile-settings", "/settings/profile", "Settings / Profile"],
+    ["profile-settings", "/settings/profile", "Account settings / General"],
 ] as const;
 
 test("capture stable dark Gikan route references at desktop widths", async ({ page }) => {
