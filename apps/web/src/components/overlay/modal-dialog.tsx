@@ -6,15 +6,16 @@ interface ModalDialogProps {
     trigger: ReactNode;
     title: string;
     description?: string;
+    size?: "md" | "2xl";
     children: (args: { close: () => void }) => ReactNode;
 }
 
-export const ModalDialog = ({ trigger, title, description, children }: ModalDialogProps) => {
+export const ModalDialog = ({ trigger, title, description, size = "md", children }: ModalDialogProps) => {
     return (
         <DialogTrigger>
             {trigger}
             <ModalOverlay>
-                <Modal className="max-w-md">
+                <Modal className={size === "2xl" ? "max-w-2xl" : "max-w-md"}>
                     <Dialog>
                         {({ close }) => (
                             <div className="w-full rounded-xl bg-surface-1 p-6 shadow-xl ring-1 ring-subtle">

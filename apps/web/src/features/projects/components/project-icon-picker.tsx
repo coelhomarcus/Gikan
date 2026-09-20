@@ -51,8 +51,11 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
         [normalizedQuery],
     );
 
+    const allFilteredKeys = filteredGroups.flatMap((group) => group.keys);
+    const selectedIsVisible = allFilteredKeys.includes(selected as ProjectIconKey);
+
     return (
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
+        <div data-project-icon-picker className="flex min-h-0 min-w-0 flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-secondary">{label}</p>
                 <span className="text-xs text-tertiary">{projectIconKeys.length} icons</span>
@@ -65,14 +68,15 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                 onChange={setQuery}
                 icon={Search}
                 size="sm"
+                autoFocus
             />
 
-            <div className="max-h-[min(16rem,calc(100dvh-10rem))] min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
+            <div className="max-h-[min(16rem,calc(100dvh-9rem))] min-w-0 space-y-3 overflow-x-hidden overflow-y-auto pr-1">
                 {filteredGroups.length === 0 && <p className="py-3 text-center text-sm text-tertiary">No icons found.</p>}
                 {filteredGroups.map((group) => (
                     <section key={group.label} aria-label={group.label}>
-                        <p className="mb-2 text-xs font-medium text-tertiary">{group.label}</p>
-                        <div className="grid w-full min-w-0 grid-cols-5 gap-2 sm:grid-cols-6">
+                        <p className="mb-1.5 text-xs font-medium text-tertiary">{group.label}</p>
+                        <div className="grid w-full min-w-0 grid-cols-7 gap-1 sm:grid-cols-8">
                             {group.keys.map((key) => {
                                 const Icon = resolveProjectIcon(key);
                                 const isSelected = selected === key;
@@ -84,23 +88,24 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                                         aria-label={`Use ${iconLabels[key]} icon`}
                                         aria-pressed={isSelected}
                                         title={iconLabels[key]}
-                                        tabIndex={isSelected || (!filteredGroups.some((item) => item.keys.includes(selected as ProjectIconKey)) && group.keys[0] === key) ? 0 : -1}
+                                        tabIndex={isSelected || (!selectedIsVisible && allFilteredKeys[0] === key) ? 0 : -1}
                                         onClick={() => onChange(key)}
                                         onKeyDown={(event) => {
                                             if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
                                             event.preventDefault();
-                                            const buttons = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>("button") ?? []);
+                                            const buttons = Array.from(event.currentTarget.closest("[data-project-icon-picker]")?.querySelectorAll<HTMLButtonElement>("button[data-project-icon-option]") ?? []);
                                             const index = buttons.indexOf(event.currentTarget);
                                             const columns = Math.max(1, getComputedStyle(event.currentTarget.parentElement!).gridTemplateColumns.split(" ").length);
                                             const offset = event.key === "ArrowLeft" ? -1 : event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" ? -columns : event.key === "ArrowDown" ? columns : event.key === "Home" ? -index : buttons.length - index - 1;
                                             buttons[Math.max(0, Math.min(buttons.length - 1, index + offset))]?.focus();
                                         }}
+                                        data-project-icon-option
                                         className={cx(
-                                            "flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-secondary ring-1 ring-subtle transition duration-100 ease-linear ring-inset hover:bg-layer-1-hover hover:text-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong",
+                                            "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-secondary ring-1 ring-subtle transition duration-100 ease-linear ring-inset hover:bg-layer-1-hover hover:text-primary focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong",
                                             isSelected && "bg-brand-primary_alt text-accent-primary ring-2 ring-accent-strong hover:text-accent-primary",
                                         )}
                                     >
-                                        <Icon className="size-4.5" aria-hidden="true" />
+                                        <Icon className="size-4" aria-hidden="true" />
                                     </button>
                                 );
                             })}
