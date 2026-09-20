@@ -5,8 +5,8 @@ import { documentId, mockApi, projectId } from "./fixtures";
 const views = [
     ["projects", "/", "Platform"],
     ["overview", `/projects/${projectId}`, "Building a better workspace"],
-    ["list", `/projects/${projectId}/issues`, "Build the project workspace"],
-    ["board", `/projects/${projectId}/board`, "Backlog"],
+    ["list", `/projects/${projectId}/issues/list`, "Build the project workspace"],
+    ["board", `/projects/${projectId}/issues`, "Backlog"],
     ["issue", `/projects/${projectId}/issues/PLAT-1`, "Build the project workspace"],
     ["documents", `/projects/${projectId}/documents`, "Overview notes"],
     ["document-editor", `/projects/${projectId}/documents/${documentId}`, "Make every detail count."],
@@ -43,8 +43,8 @@ test("capture responsive list, board, issue, and document views", async ({ page 
     test.setTimeout(180_000);
     await mockApi(page);
     const responsiveViews = [
-        ["list", `/projects/${projectId}/issues`],
-        ["board", `/projects/${projectId}/board`],
+        ["list", `/projects/${projectId}/issues/list`],
+        ["board", `/projects/${projectId}/issues`],
         ["issue", `/projects/${projectId}/issues/PLAT-1`],
         ["documents", `/projects/${projectId}/documents`],
         ["document-editor", `/projects/${projectId}/documents/${documentId}`],
@@ -74,7 +74,7 @@ test("capture interactive menu, focus, hover, Peek, and mobile drawer states", a
     test.setTimeout(90_000);
     await mockApi(page);
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto(`/projects/${projectId}/issues`);
+    await page.goto(`/projects/${projectId}/issues/list`);
     await page.locator('[data-issue-identifier="PLAT-1"]').hover();
     await page.screenshot({ path: "../../docs/visual/after/1440-900/list-row-hover.png", animations: "disabled" });
     await page.getByPlaceholder("Search issues").focus();
@@ -94,7 +94,7 @@ test("capture interactive menu, focus, hover, Peek, and mobile drawer states", a
     await page.screenshot({ path: "../../docs/visual/after/1440-900/issue-peek.png", animations: "disabled" });
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`/projects/${projectId}/issues`);
+    await page.goto(`/projects/${projectId}/issues/list`);
     await page.getByRole("button", { name: "Open navigation" }).click();
     await expect(page.getByRole("dialog", { name: "Navigation" })).toBeVisible();
     await page.screenshot({ path: "../../docs/visual/after/390-844/mobile-navigation-open.png", animations: "disabled" });
@@ -108,7 +108,7 @@ test("capture Kanban and side Peek for Plane review", async ({ page }) => {
         { width: 390, height: 844 },
     ]) {
         await page.setViewportSize(viewport);
-        await page.goto(`/projects/${projectId}/board`);
+        await page.goto(`/projects/${projectId}/issues`);
         const card = page.locator('[data-issue-identifier="PLAT-1"]');
         await expect(card).toBeVisible();
         await page.evaluate(() => document.fonts.ready);

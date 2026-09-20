@@ -94,7 +94,7 @@ export const ProjectIssuesPage = () => {
     }, [orderedIssues, selectedIssueId]);
 
     useEffect(() => {
-        if (!location.pathname.endsWith("/issues")) return;
+        if (!location.pathname.endsWith("/issues/list")) return;
 
         function handleListKeyDown(event: KeyboardEvent) {
             const target = event.target as HTMLElement | null;

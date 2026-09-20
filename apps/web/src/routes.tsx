@@ -54,7 +54,8 @@ export const AppRoutes = () => {
                     <Route path="/projects/:projectId/settings/:section" element={<ProjectSettingsPage />} />
                     <Route path="/projects/:projectId/cycles" element={<ProjectCyclesPage />} />
                     <Route path="/projects/:projectId" element={<ProjectOverviewPage />} />
-                    <Route path="/projects/:projectId/issues" element={<ProjectIssuesPage />} />
+                    <Route path="/projects/:projectId/issues" element={<ProjectBoardPage />} />
+                    <Route path="/projects/:projectId/issues/list" element={<ProjectIssuesPage />} />
                     <Route path="/projects/:projectId/issues/:issueIdentifier" element={<IssueView mode="page" />} />
                     <Route path="/projects/:projectId/board" element={<ProjectBoardPage />} />
                     <Route path="/projects/:projectId/documents" element={<ProjectDocumentsPage />} />

@@ -9,6 +9,7 @@ test("dark theme, URL filters, and issue peek preserve the current workspace", a
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe("dark");
     await expect(page.getByText("Build the project workspace")).toBeVisible();
 
+    await page.getByRole("button", { name: "Search issues" }).click();
     await page.getByPlaceholder("Search issues").fill("refine");
     await expect(page).toHaveURL(/q=refine/);
     await expect(page.locator('[data-issue-identifier="PLAT-2"]')).toBeVisible();
@@ -55,19 +56,19 @@ test("Peek Assignee property shows the selected member's profile photo", async (
     await expect(assigneeRow.locator("img")).toHaveAttribute("src", "https://avatars.test/alex.png");
 });
 
-test("list and board switch without dropping query state; settings routes load", async ({ page }) => {
+test("Kanban is the default Issues view; list and board switch preserve query state", async ({ page }) => {
     await mockApi(page);
     await page.goto(`/projects/${projectId}/issues?priority=high&group=status`);
     await expect(page.locator('[data-issue-identifier="PLAT-1"]')).toBeVisible();
-
-    await page.getByRole("link", { name: "Board layout" }).click();
-    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/board\\?priority=high&group=status`));
     await expect(page.locator('[class*="w-[350px]"]').first()).toHaveCSS("width", "350px");
     await page.reload();
-    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/board\\?priority=high&group=status`));
 
     await page.getByRole("link", { name: "List layout" }).click();
+    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/issues/list\\?priority=high&group=status`));
+    await expect(page.locator('[data-issue-identifier="PLAT-1"]')).toBeVisible();
+    await page.getByRole("link", { name: "Board layout" }).click();
     await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/issues\\?priority=high&group=status`));
+    await expect(page.locator('[class*="w-[350px]"]').first()).toHaveCSS("width", "350px");
 
     await page.goto(`/projects/${projectId}/settings`);
     await expect(page).toHaveURL(new RegExp(`/projects/${projectId}/settings/general`));
@@ -95,9 +96,9 @@ test("mobile navigation opens as an accessible dark drawer", async ({ page }) =>
 test("creates an issue and saves an edited title from its peek view", async ({ page }) => {
     await mockApi(page);
     await page.goto(`/projects/${projectId}/issues`);
-    await page.locator("#main-content").getByRole("button", { name: "New issue" }).click();
-    await page.getByRole("textbox", { name: "Issue title" }).fill("Validate the new dark workspace");
-    await page.keyboard.press("Enter");
+    await page.locator(".board-toolbar").getByRole("button", { name: "New issue" }).click();
+    await page.getByRole("textbox", { name: "Title" }).fill("Validate the new dark workspace");
+    await page.getByRole("button", { name: "Create issue" }).click();
 
     await expect(page).toHaveURL(/issues\/PLAT-5/);
     await expect(page.getByRole("dialog", { name: "Issue PLAT-5" })).toBeVisible();
@@ -141,7 +142,7 @@ test("posts an issue comment", async ({ page }) => {
 
 test("presents API load errors", async ({ page }) => {
     await mockApi(page, { errorPath: `/projects/${projectId}/issues` });
-    await page.goto(`/projects/${projectId}/issues`);
+    await page.goto(`/projects/${projectId}/issues/list`);
     await expect(page.getByText("Could not load the project issues.")).toBeVisible();
 });
 
@@ -302,7 +303,7 @@ test("profile edits are saved and administration export respects account permiss
 
 test("empty data has a clear empty state and issue update failures are reported", async ({ page }) => {
     await mockApi(page, { empty: true });
-    await page.goto(`/projects/${projectId}/issues`);
+    await page.goto(`/projects/${projectId}/issues/list`);
     await expect(page.getByText("No issues yet", { exact: false })).toBeVisible();
 
     await mockApi(page);

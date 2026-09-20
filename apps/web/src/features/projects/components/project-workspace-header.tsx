@@ -40,13 +40,13 @@ export function ProjectWorkspaceHeader({
                         <nav aria-label="Issue layout" className="flex gap-0.5 rounded-md border border-subtle p-0.5">
                             {(
                                 [
-                                    ["issues", "List", AppIcons.Issues],
-                                    ["board", "Board", AppIcons.Board],
+                                    ["issues/list", "issues", "List", AppIcons.Issues],
+                                    ["issues", "board", "Board", AppIcons.Board],
                                 ] as const
-                            ).map(([view, label, Icon]) => (
+                            ).map(([path, view, label, Icon]) => (
                                 <Link
-                                    key={view}
-                                    to={`/projects/${projectId}/${view}${location.search}`}
+                                    key={path}
+                                    to={`/projects/${projectId}/${path}${location.search}`}
                                     aria-label={`${label} layout`}
                                     aria-current={activeView === view ? "page" : undefined}
                                     className={`flex size-6 items-center justify-center rounded-sm text-tertiary hover:bg-layer-1-hover ${activeView === view ? "bg-layer-2 text-primary" : ""}`}
