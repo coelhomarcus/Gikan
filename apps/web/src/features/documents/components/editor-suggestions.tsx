@@ -140,9 +140,10 @@ const commandKeys: Record<string, [TranslationKey, TranslationKey, TranslationKe
 function localizeCommand(item: EditorCommand): EditorCommand {
     const keys = commandKeys[item.id];
     if (!keys) return item;
-    const t = i18n.getFixedT(null, "translation");
     const headingLevel = item.id.startsWith("heading-") ? Number(item.id.slice(-1)) : undefined;
-    return { ...item, label: t(keys[0], headingLevel ? { level: headingLevel } : undefined), detail: t(keys[1]), group: t(keys[2]) };
+    const translate = (key: TranslationKey, options?: Record<string, string | number>) => i18n.t(key as string, options) as string;
+    const label = headingLevel ? translate(keys[0], { level: headingLevel }) : translate(keys[0]);
+    return { ...item, label, detail: translate(keys[1]), group: translate(keys[2]) };
 }
 
 export function executeBlockCommand(editor: Editor, item: EditorCommand, range: { from: number; to: number }) {

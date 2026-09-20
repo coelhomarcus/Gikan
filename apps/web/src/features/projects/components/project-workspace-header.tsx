@@ -24,7 +24,7 @@ export function ProjectWorkspaceHeader({
     const location = useLocation();
     const { t } = useTranslation();
     const issues = activeView === "issues" || activeView === "board";
-    const title = issues ? t("nav.issues") : activeView === "board" ? t("projects.board") : activeView === "overview" ? t("nav.overview") : activeView === "documents" ? t("nav.documents") : activeView === "cycles" ? t("nav.cycles") : t("nav.projectSettings");
+    const title = issues ? t("nav.issues") : activeView === "overview" ? t("nav.overview") : activeView === "documents" ? t("nav.documents") : activeView === "cycles" ? t("nav.cycles") : t("nav.projectSettings");
     return (
         <Topbar
             title={

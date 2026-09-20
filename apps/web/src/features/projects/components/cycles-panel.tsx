@@ -20,7 +20,7 @@ interface CyclesPanelProps {
 }
 
 export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const statusLabels: Record<Cycle["status"], string> = { planned: t("settings.planned"), active: t("settings.active"), completed: t("settings.completed") };
     const { data: cycles, isLoading, isError } = useCycles(projectId);
     const createCycle = useCreateCycle(projectId);

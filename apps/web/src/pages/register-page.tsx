@@ -18,7 +18,8 @@ export const RegisterPage = () => {
     const { t } = useTranslation();
     const { locale } = useLanguage();
 
-    const { control, handleSubmit, setError, formState } = useForm<RegisterInput>({
+    type RegisterFormValues = Omit<RegisterInput, "locale"> & { locale?: RegisterInput["locale"] };
+    const { control, handleSubmit, setError, formState } = useForm<RegisterFormValues, any, RegisterInput>({
         resolver: zodResolver(registerSchema),
         defaultValues: { name: "", username: "", email: "", password: "", specialCode: "", locale },
     });

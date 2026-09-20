@@ -153,6 +153,7 @@ function BlockActions({
 }
 
 export function DocumentBlockControls({ editor }: { editor: Editor }) {
+    const { t } = useTranslation();
     const [hoverPosition, setHoverPosition] = useState(-1);
     const hoverPositionRef = useRef(-1);
     const [open, setOpen] = useState(false);

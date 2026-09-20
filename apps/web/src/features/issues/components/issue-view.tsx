@@ -555,7 +555,7 @@ function IssueProperties({
 
 /** Plane side-peek uses a single property list with 30px controls and 12px row gaps. */
 function PeekProperties({ issue, projectIssues, columns, members, categories, cycles, save, error, isPending }: Parameters<typeof IssueProperties>[0]) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const assignee = members?.find((member) => member.id === issue.assigneeId);
     const rows = [
         { label: t("issue.status"), displayLabel: t("issue.state"), Icon: StateOutline, value: issue.columnId, options: (columns ?? []).map((c) => ({ value: c.id, label: c.name })), change: (value: string) => save({ columnId: value }), decoration: <StateIcon name={columns?.find((c) => c.id === issue.columnId)?.name ?? ""} color={columns?.find((c) => c.id === issue.columnId)?.color} /> },

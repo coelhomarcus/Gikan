@@ -83,7 +83,6 @@ function buildIssueClipboardContent({
     if (relations.length > 0) {
         lines.push("", `## ${t("issue.relations")}`, "");
         relations.forEach((relation) => {
-            const relationKey = relation.type === "blocked_by" ? "blockedBy" : relation.type === "duplicate" ? "duplicateOf" : relation.type === "related" ? "relatedTo" : relation.type;
             const relationTranslationKey: Record<IssueRelation["type"], TranslationKey> = {
                 blocks: "issue.blocks",
                 blocked_by: "issue.blockedBy",
