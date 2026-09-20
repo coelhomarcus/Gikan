@@ -37,6 +37,45 @@ const SlashCommands = Extension.create({
     },
 });
 
+const HeadingEnter = Extension.create({
+    name: "documentHeadingEnter",
+    addKeyboardShortcuts() {
+        return {
+            Enter: () => {
+                const { editor } = this;
+                const { selection } = editor.state;
+                const { $from, $to } = selection;
+
+                if (
+                    editor.view.composing ||
+                    documentSlashKey.getState(editor.state)?.active ||
+                    documentMentionKey.getState(editor.state)?.active ||
+                    !$from.sameParent($to) ||
+                    $from.parent.type.name !== "heading"
+                ) {
+                    return false;
+                }
+
+                if ($from.parent.content.size === 0) return editor.commands.setParagraph();
+
+                if (selection.empty && $from.parentOffset === 0) {
+                    if ($from.depth !== 1) return false;
+                    const position = $from.before();
+                    editor
+                        .chain()
+                        .insertContentAt(position, { type: "paragraph" })
+                        .setTextSelection(position + 1)
+                        .run();
+                    return true;
+                }
+
+                editor.chain().splitBlock().setParagraph().run();
+                return true;
+            },
+        };
+    },
+});
+
 export function DocumentEditor({
     content,
     contentKey,
@@ -81,6 +120,7 @@ export function DocumentEditor({
                 },
             }),
             SlashCommands,
+            HeadingEnter,
         ],
         onUpdate: ({ editor: current }) => onChangeRef.current(current.getJSON() as TiptapDocument),
     });

@@ -11,6 +11,51 @@ async function openDocument(page: Page, content: ReturnType<typeof documentWith>
     await expect(page.getByRole("textbox", { name: "Document content" })).toBeVisible();
 }
 
+for (const level of [1, 2, 3]) {
+    for (const source of ["markdown", "slash"] as const) {
+        test(`Enter after typing a new H${level} via ${source} starts a paragraph`, async ({ page }) => {
+            await openDocument(page, documentWith(paragraph("Before"), { type: "paragraph" }, paragraph("After")));
+            const editor = page.getByRole("textbox", { name: "Document content" });
+            await editor
+                .locator(":scope > p")
+                .nth(1)
+                .click({ position: { x: 4, y: 12 } });
+            if (source === "markdown") {
+                await page.keyboard.type(`${"#".repeat(level)} `);
+            } else {
+                await page.keyboard.type(`/h${level}`);
+                await expect(page.getByRole("option", { name: new RegExp(`Heading ${level}`) })).toBeVisible();
+                await page.keyboard.press("Enter");
+            }
+            await page.keyboard.type("My heading");
+            await expect(editor.locator(`:scope > h${level}`)).toHaveText("My heading");
+            await page.keyboard.press("Enter");
+            await page.keyboard.type("Normal body text");
+            await expect(editor.locator(`:scope > h${level}`)).toHaveText("My heading");
+            await expect(editor.locator(":scope > p")).toHaveText(["Before", "Normal body text", "After"]);
+        });
+    }
+}
+
+test("Enter inside a heading continues the remaining text as a paragraph", async ({ page }) => {
+    await openDocument(page, documentWith({ type: "paragraph" }));
+    const editor = page.getByRole("textbox", { name: "Document content" });
+    await editor.click({ position: { x: 4, y: 12 } });
+    await page.keyboard.type("## Heading body");
+    const heading = editor.locator(":scope > h2");
+    await heading.evaluate((element) => {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.setStart(element.firstChild!, "Heading ".length);
+        range.collapse(true);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+    });
+    await page.keyboard.press("Enter");
+    await expect(heading).toHaveText("Heading ");
+    await expect(editor.locator(":scope > p").first()).toHaveText("body");
+});
+
 test("markdown heading input rule changes only its current block and Enter starts body text", async ({ page }) => {
     await openDocument(page, documentWith(paragraph("Stable text before"), paragraph("Target title"), paragraph("Stable text after")));
     const editor = page.getByRole("textbox", { name: "Document content" });
