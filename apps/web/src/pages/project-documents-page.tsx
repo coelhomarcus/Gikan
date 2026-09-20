@@ -292,7 +292,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         />
                         <DocumentEditor
                             content={state.contentJson}
-                            contentKey={state.revision}
+                            contentVersion={state.contentVersion}
                             onChange={(contentJson) => session.edit({ contentJson })}
                             members={members}
                             disabled={busy || state.status === "deleted"}

@@ -78,21 +78,21 @@ const HeadingEnter = Extension.create({
 
 export function DocumentEditor({
     content,
-    contentKey,
+    contentVersion,
     onChange,
     members,
     disabled = false,
 }: {
     content: TiptapDocument;
-    /** Changes only when a saved/external revision replaces the active document. */
-    contentKey: number;
+    /** Changes only when an authoritative external version replaces the local editor state. */
+    contentVersion: number;
     onChange: (content: TiptapDocument) => void;
     members: { id: string; name: string }[];
     disabled?: boolean;
 }) {
     const onChangeRef = useRef(onChange),
         membersRef = useRef(members),
-        appliedContentKey = useRef(contentKey);
+        appliedContentVersion = useRef(contentVersion);
     onChangeRef.current = onChange;
     membersRef.current = members;
     const editor = useEditor({
@@ -128,10 +128,10 @@ export function DocumentEditor({
         editor?.setEditable(!disabled, false);
     }, [editor, disabled]);
     useEffect(() => {
-        if (!editor || appliedContentKey.current === contentKey) return;
-        appliedContentKey.current = contentKey;
+        if (!editor || appliedContentVersion.current === contentVersion) return;
+        appliedContentVersion.current = contentVersion;
         if (JSON.stringify(content) !== JSON.stringify(editor.getJSON())) editor.commands.setContent(content, { emitUpdate: false });
-    }, [content, contentKey, editor]);
+    }, [content, contentVersion, editor]);
     // Native ProseMirror dragging supplies the drop cursor; keep long pages scrolling near the edges.
     useEffect(() => {
         if (!editor) return;
@@ -174,8 +174,8 @@ export function DocumentEditor({
         >
             {editor && !disabled && (
                 <>
-                    <DocumentBlockControls key={`blocks:${contentKey}`} editor={editor} />
-                    <DocumentFormatMenu key={`format:${contentKey}`} editor={editor} />
+                    <DocumentBlockControls key={`blocks:${contentVersion}`} editor={editor} />
+                    <DocumentFormatMenu key={`format:${contentVersion}`} editor={editor} />
                 </>
             )}
             <EditorContent editor={editor} className="document-editor-content" />

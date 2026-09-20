@@ -286,6 +286,14 @@ test("image edit and resize controls do not dispatch stale mouse or pointer sele
     await page.mouse.up();
     await expect.poll(() => resize.getAttribute("aria-valuenow")).not.toBe("100");
 
+    const resizedNode = await page.locator(".document-image").elementHandle();
+    if (!resizedNode) throw new Error("The resized image node did not render.");
+    const committedWidth = await resize.getAttribute("aria-valuenow");
+    await page.keyboard.press("ControlOrMeta+s");
+    await expect(page.getByRole("status").filter({ hasText: "Saved" })).toBeVisible();
+    expect(await resizedNode.evaluate((element) => element.isConnected)).toBe(true);
+    await expect(resize).toHaveAttribute("aria-valuenow", committedWidth!);
+
     const widthBeforeCancel = await resize.getAttribute("aria-valuenow");
     const pointerIdPromise = resize.evaluate(
         (element) => new Promise<number>((resolve) => element.addEventListener("pointerdown", (event) => resolve(event.pointerId), { once: true })),

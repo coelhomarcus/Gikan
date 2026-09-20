@@ -7,6 +7,7 @@ export interface SessionState {
     title: string;
     contentJson: TiptapDocument;
     revision: number;
+    contentVersion: number;
     status: SaveStatus;
     dirty: boolean;
     error?: string;
@@ -40,7 +41,7 @@ export class DocumentSession {
         page: DocumentPage,
         private deps: Dependencies,
     ) {
-        this.state = { title: page.title, contentJson: page.contentJson, revision: page.revision, status: "loading", dirty: false };
+        this.state = { title: page.title, contentJson: page.contentJson, revision: page.revision, contentVersion: 0, status: "loading", dirty: false };
         this.ready = this.restore(page);
     }
     getSnapshot = () => this.state;
@@ -167,12 +168,12 @@ export class DocumentSession {
     observe(page: DocumentPage) {
         if (this.suspended || this.flight || this.state.status === "loading" || page.revision <= this.state.revision) return;
         if (this.state.dirty) this.emit({ status: "conflict" });
-        else this.emit({ title: page.title, contentJson: page.contentJson, revision: page.revision, status: "saved" });
+        else this.emit({ title: page.title, contentJson: page.contentJson, revision: page.revision, contentVersion: this.state.contentVersion + 1, status: "saved" });
     }
     async discard(page: DocumentPage) {
         await this.pause();
         await this.deps.remove();
-        this.emit({ title: page.title, contentJson: page.contentJson, revision: page.revision, dirty: false, status: "saved", error: undefined });
+        this.emit({ title: page.title, contentJson: page.contentJson, revision: page.revision, contentVersion: this.state.contentVersion + 1, dirty: false, status: "saved", error: undefined });
         this.suspended = false;
     }
     networkChanged() {
