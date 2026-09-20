@@ -39,6 +39,8 @@ import {
 import type { IssueDetail } from "../api";
 import { fetchIssueClipboardContent } from "../lib/issue-clipboard";
 import { EMPTY_TIPTAP_DOCUMENT, RichTextEditor } from "./rich-text-editor";
+import { useTranslation } from "react-i18next";
+import type { TranslationKey } from "@/i18n/resources";
 
 interface IssueViewProps {
     identifier?: string;
@@ -47,20 +49,21 @@ interface IssueViewProps {
     onClose?: () => void;
 }
 
-const activityLabels: Record<string, string> = {
-    created: "created this issue",
-    status_changed: "changed the status",
-    priority_changed: "changed the priority",
-    assignee_changed: "changed the assignee",
-    category_changed: "changed the category",
-    cycle_changed: "changed the cycle",
-    estimate_changed: "changed the estimate",
-    parent_changed: "changed the parent issue",
-    relation_added: "added a relation",
-    relation_removed: "removed a relation",
+const activityLabelKeys: Record<string, TranslationKey> = {
+    created: "issue.createdThisIssue",
+    status_changed: "issue.changedStatus",
+    priority_changed: "issue.changedPriority",
+    assignee_changed: "issue.changedAssignee",
+    category_changed: "issue.changedCategory",
+    cycle_changed: "issue.changedCycle",
+    estimate_changed: "issue.changedEstimate",
+    parent_changed: "issue.changedParent",
+    relation_added: "issue.addedRelation",
+    relation_removed: "issue.removedRelation",
 };
 
 export const IssueView = ({ identifier, projectId, mode = "page", onClose }: IssueViewProps) => {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     const params = useParams<{ projectId: string; issueIdentifier: string }>();
     const resolvedIdentifier = identifier ?? params.issueIdentifier ?? "";
@@ -146,7 +149,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
     }
     if (isError || !issue) {
-        const state = <ErrorMessage message="Could not load this issue." />;
+        const state = <ErrorMessage message={t("issue.couldNotLoadIssue")} />;
         return mode === "peek" ? <IssuePeekState onClose={onClose}>{state}</IssuePeekState> : state;
     }
 
@@ -154,7 +157,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         setPropertySaveError(null);
         updateIssue.mutate(
             { identifier: issue.identifier, input },
-            { onError: (reason) => setPropertySaveError(errorMessage(reason)) },
+            { onError: (reason) => setPropertySaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))) },
         );
     };
     const copyIssueContent = async () => {
@@ -177,7 +180,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
         <div className={cx("flex h-full min-h-0 flex-col", mode === "peek" && "plane-issue-peek")}>
             <div className={cx("issue-view-header flex items-center justify-between gap-3 px-4 py-3", mode === "page" && "border-b border-subtle")}>
                 <div className="flex min-w-0 items-center gap-2 text-sm text-tertiary">
-                    {onClose && <ButtonUtility icon={mode === "peek" ? ArrowRight : ArrowLeft} size="sm" color="tertiary" tooltip="Close issue" onClick={onClose} />}
+                    {onClose && <ButtonUtility icon={mode === "peek" ? ArrowRight : ArrowLeft} size="sm" color="tertiary" tooltip={t("issue.closeIssue")} onClick={onClose} />}
                     {mode === "page" && <><Link to={`/projects/${issue.projectId}`} className="truncate hover:text-primary">
                         {issue.project.name}
                     </Link>
@@ -185,12 +188,12 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                     <span className="font-mono text-xs text-accent-primary">{issue.identifier}</span></>}
                 </div>
                 <div className="flex items-center gap-2">
-                    {mode === "peek" && <span className="text-body-xs-regular text-tertiary" role="status">{updateIssue.isPending ? "Saving…" : titleDirty.current || descriptionDirty.current ? "Unsaved changes" : "Saved"}</span>}
+                    {mode === "peek" && <span className="text-body-xs-regular text-tertiary" role="status">{updateIssue.isPending ? t("issue.savingIssue") : titleDirty.current || descriptionDirty.current ? t("issue.unsavedIssue") : t("issue.savedIssue")}</span>}
                     <ButtonUtility
                         icon={Link2}
                         size="sm"
                         color="tertiary"
-                        tooltip="Copy issue link"
+                        tooltip={t("issue.copyIssueLink")}
                         onClick={() => navigator.clipboard.writeText(`${window.location.origin}/projects/${issue.projectId}/issues/${issue.identifier}`)}
                     />
                     {mode === "peek" && (
@@ -198,7 +201,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             icon={copied ? CheckCircle : Copy}
                             size="sm"
                             color="tertiary"
-                            tooltip={issueCopyError ? "Could not copy issue content" : copied ? "Copied issue content" : "Copy issue content"}
+                            tooltip={issueCopyError ? t("issue.couldNotCopyContent") : copied ? t("issue.copiedContent") : t("issue.copyContent")}
                             isDisabled={isCopyingIssue}
                             onClick={() => void copyIssueContent()}
                         />
@@ -208,17 +211,17 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             icon={ExternalLink}
                             size="sm"
                             color="tertiary"
-                            tooltip="Open full page"
+                            tooltip={t("issue.openFullPage")}
                             onClick={() => navigate(`/projects/${issue.projectId}/issues/${issue.identifier}`, { replace: true })}
                         />
                     )}
                     {mode === "peek" ? <Popover.Root>
-                        <Popover.Trigger render={<ButtonUtility icon={MoreHorizontalOutline} size="sm" color="tertiary" tooltip="Issue actions" />} />
+                        <Popover.Trigger render={<ButtonUtility icon={MoreHorizontalOutline} size="sm" color="tertiary" tooltip={t("issue.issueActions")} />} />
                         <Popover.Portal><Popover.Positioner sideOffset={4} align="end" className="z-50"><Popover.Popup className="rounded-md border border-subtle bg-layer-2 p-1 shadow-overlay-100">
-                            <Popover.Title className="sr-only">Issue actions</Popover.Title>
-                            <ConfirmDialog trigger={<Button color="tertiary" size="sm" iconLeading={Trash2}>Delete issue</Button>} title="Delete issue" description={`The issue "${issue.title}" will be deleted permanently.`} confirmLabel="Delete issue" isPending={deleteIssue.isPending} onConfirm={() => deleteIssue.mutate(issue.identifier, { onSuccess: onClose })} />
+                            <Popover.Title className="sr-only">{t("issue.issueActions")}</Popover.Title>
+                            <ConfirmDialog trigger={<Button color="tertiary" size="sm" iconLeading={Trash2}>{t("issue.deleteIssue")}</Button>} title={t("issue.deleteIssue")} description={t("issue.deleteIssueDescription", { title: issue.title })} confirmLabel={t("issue.deleteIssue")} isPending={deleteIssue.isPending} onConfirm={() => deleteIssue.mutate(issue.identifier, { onSuccess: onClose })} />
                         </Popover.Popup></Popover.Positioner></Popover.Portal>
-                    </Popover.Root> : <ButtonUtility icon={X} size="sm" color="tertiary" tooltip="Close" onClick={onClose ?? (() => navigate(`/projects/${issue.projectId}/issues`))} />}
+                    </Popover.Root> : <ButtonUtility icon={X} size="sm" color="tertiary" tooltip={t("common.close")} onClick={onClose ?? (() => navigate(`/projects/${issue.projectId}/issues`))} />}
                 </div>
             </div>
 
@@ -251,7 +254,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                             onSuccess: () => {
                                                 if (titleVersion.current === saveVersion) titleDirty.current = false;
                                             },
-                                            onError: (reason) => setTitleSaveError(errorMessage(reason)),
+                                            onError: (reason) => setTitleSaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))),
                                         },
                                     );
                                 } else {
@@ -259,7 +262,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 }
                             }}
                             className={cx("w-full resize-none overflow-hidden border-0 bg-transparent text-primary outline-none placeholder:text-tertiary focus-visible:ring-1 focus-visible:ring-accent-strong", mode === "peek" ? "block text-body-md-regular leading-tight" : "min-h-8 text-2xl leading-8 font-semibold")}
-                            aria-label="Issue title"
+                            aria-label={t("issue.title")}
                         />
                         {titleSaveError && <p role="alert" className="mt-1 text-xs text-danger-primary">{titleSaveError}</p>}
 
@@ -280,7 +283,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     setDescription(value);
                                 }}
                                 mentionItems={(members ?? []).map((member) => ({ id: member.id, label: member.username, description: member.name }))}
-                                placeholder="Describe the issue..."
+                                placeholder={t("issue.describeIssue")}
                             />
                             </div>
                             {(mode === "page" || descriptionEditing) && <div className="mt-2 flex justify-end">
@@ -297,23 +300,23 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                                     onSuccess: () => {
                                                         if (descriptionVersion.current === saveVersion) { descriptionDirty.current = false; setDescriptionEditing(false); }
                                                     },
-                                                    onError: (reason) => setDescriptionSaveError(errorMessage(reason)),
+                                                    onError: (reason) => setDescriptionSaveError(errorMessage(reason, t("issue.couldNotSaveIssue"))),
                                                 },
                                             );
                                         })()
                                     }
                                 >
-                                    Save description
+                                    {t("issue.saveDescription")}
                                 </Button>
                             </div>}
                             {descriptionSaveError && <p role="alert" className="mt-2 text-right text-xs text-danger-primary">{descriptionSaveError}</p>}
                         </section>
 
                         {mode === "peek" && <>
-                            <div className="mt-8 flex justify-end gap-1 text-caption-md-regular text-tertiary"><HistoryOutline className="size-3.5" />Updated {formatDistanceToNow(issue.updatedAt)}</div>
+                            <div className="mt-8 flex justify-end gap-1 text-caption-md-regular text-tertiary"><HistoryOutline className="size-3.5" />{t("issue.updatedAgo", { time: formatDistanceToNow(issue.updatedAt, i18n.language) })}</div>
                             <div className="mt-10 mb-12 flex flex-wrap items-center gap-2">
-                                <Button size="md" color="secondary" iconLeading={Link2} onClick={() => setRelationsOpen(!relationsOpen)} aria-expanded={relationsOpen}>Add relation</Button>
-                                <Button size="md" color="secondary" iconLeading={ParentOutline} onClick={() => document.querySelector<HTMLInputElement>(".plane-issue-peek [aria-label='Parent']")?.focus()}>Add parent</Button>
+                                <Button size="md" color="secondary" iconLeading={Link2} onClick={() => setRelationsOpen(!relationsOpen)} aria-expanded={relationsOpen}>{t("issue.addRelation")}</Button>
+                                <Button size="md" color="secondary" iconLeading={ParentOutline} onClick={() => document.querySelector<HTMLInputElement>(`.plane-issue-peek [aria-label='${t("issue.parent")}']`)?.focus()}>{t("issue.addParent")}</Button>
                             </div>
                         </>}
                         <IssueSubIssues issue={issue} columns={columns ?? []} />
@@ -327,7 +330,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             onDelete={(relationId) => deleteRelation.mutate(relationId)}
                         />}
                         {mode === "peek" && <PeekProperties issue={issue} projectIssues={projectIssues} columns={columns} members={members} categories={categories} cycles={cycles} save={save} error={propertySaveError} isPending={updateIssue.isPending} />}
-                        {mode === "peek" && <h2 className="mt-6 mb-4 text-h6-medium text-primary">Activity</h2>}
+                        {mode === "peek" && <h2 className="mt-6 mb-4 text-h6-medium text-primary">{t("issue.activity")}</h2>}
                         <IssueActivity hideHeading={mode === "peek"} activity={activity ?? []} columns={columns ?? []} members={members ?? []} categories={categories ?? []} cycles={cycles ?? []} projectIssues={projectIssues ?? []} />
                         <IssueComments compact={mode === "peek"}
                             comments={comments ?? []}
@@ -342,7 +345,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     await createComment.mutateAsync({ contentJson: comment });
                                     setComment(EMPTY_TIPTAP_DOCUMENT);
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, "Could not add the comment."));
+                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotAddComment")));
                                 }
                             }}
                             onDelete={async (commentId) => {
@@ -350,7 +353,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 try {
                                     await deleteComment.mutateAsync(commentId);
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, "Could not delete the comment."));
+                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotDeleteComment")));
                                     throw reason;
                                 }
                             }}
@@ -359,7 +362,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                 try {
                                     await updateComment.mutateAsync({ commentId, input: { contentJson } });
                                 } catch (reason) {
-                                    setCommentSaveError(errorMessage(reason, "Could not update the comment."));
+                                    setCommentSaveError(errorMessage(reason, t("issue.couldNotUpdateComment")));
                                     throw reason;
                                 }
                             }}
@@ -369,12 +372,12 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                             <ConfirmDialog
                                 trigger={
                                     <Button color="secondary-destructive" size="sm" iconLeading={Trash2}>
-                                        Delete issue
+                                        {t("issue.deleteIssue")}
                                     </Button>
                                 }
-                                title="Delete issue"
-                                description={`The issue "${issue.title}" will be deleted permanently.`}
-                                confirmLabel="Delete issue"
+                                title={t("issue.deleteIssue")}
+                                description={t("issue.deleteIssueDescription", { title: issue.title })}
+                                confirmLabel={t("issue.deleteIssue")}
                                 isPending={deleteIssue.isPending}
                                 onConfirm={() => deleteIssue.mutate(issue.identifier, { onSuccess: onClose ?? (() => navigate(`/projects/${issue.projectId}`)) })}
                             />
@@ -390,7 +393,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     );
 
     return mode === "peek" ? (
-        <Sheet open onOpenChange={(open) => !open && onClose?.()} title={`Issue ${issue.identifier}`}>
+        <Sheet open onOpenChange={(open) => !open && onClose?.()} title={`${t("issue.title")} ${issue.identifier}`}>
             <div ref={peekRef} tabIndex={-1} className="flex h-full min-h-0 flex-col outline-none">{content}</div>
         </Sheet>
     ) : (
@@ -415,6 +418,7 @@ function PropertySelect({
     isDisabled?: boolean;
     searchable?: boolean;
 }) {
+    const { t } = useTranslation();
     const items = options.map((option) => ({ id: option.value, label: option.label, avatarUrl: option.avatarUrl ?? undefined }));
     if (searchable) {
         return (
@@ -425,7 +429,7 @@ function PropertySelect({
                 onSelectionChange={(next) => onChange(String(next ?? ""))}
                 isDisabled={isDisabled}
                 label={label}
-                placeholder={options.find((option) => option.value === value)?.label ?? "Select"}
+                placeholder={options.find((option) => option.value === value)?.label ?? t("issue.select")}
                 size="sm"
             >
                 {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
@@ -469,15 +473,16 @@ function IssueProperties({
     error?: string | null;
     isPending: boolean;
 }) {
+    const { t, i18n } = useTranslation();
     return (
         <div className="flex flex-col gap-2">
-            <h2 className="mb-1 text-xs font-medium tracking-wide text-tertiary uppercase">Properties</h2>
+            <h2 className="mb-1 text-xs font-medium tracking-wide text-tertiary uppercase">{t("issue.properties")}</h2>
             {error && <p role="alert" className="text-xs text-danger-primary">{error}</p>}
-            {isPending && <p className="text-xs text-tertiary">Saving property...</p>}
+            {isPending && <p className="text-xs text-tertiary">{t("issue.savingProperty")}</p>}
             <PropertySelect
                 className="w-full"
                 value={issue.columnId}
-                label="Status"
+                label={t("issue.status")}
                 options={(columns ?? []).map((column) => ({ value: column.id, label: column.name }))}
                 isDisabled={isPending}
                 onChange={(value) => save({ columnId: value })}
@@ -485,11 +490,11 @@ function IssueProperties({
             <PropertySelect
                 className="w-full"
                 value={issue.priority}
-                label="Priority"
+                label={t("issue.priority")}
                 options={[
-                    { value: "low", label: "Low" },
-                    { value: "medium", label: "Medium" },
-                    { value: "high", label: "High" },
+                    { value: "low", label: t("issue.low") },
+                    { value: "medium", label: t("issue.medium") },
+                    { value: "high", label: t("issue.high") },
                 ]}
                 isDisabled={isPending}
                 onChange={(value) => save({ priority: value as "low" | "medium" | "high" })}
@@ -497,8 +502,8 @@ function IssueProperties({
             <PropertySelect
                 className="w-full"
                 value={issue.assigneeId ?? ""}
-                label="Assignee"
-                options={[{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))]}
+                label={t("issue.assignee")}
+                options={[{ value: "", label: t("issue.unassigned") }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))]}
                 searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ assigneeId: value || null })}
@@ -506,8 +511,8 @@ function IssueProperties({
             <PropertySelect
                 className="w-full"
                 value={issue.categoryId ?? ""}
-                label="Label"
-                options={[{ value: "", label: "No label" }, ...(categories ?? []).map((category) => ({ value: category.id, label: category.name }))]}
+                label={t("issue.label")}
+                options={[{ value: "", label: t("issue.noLabel") }, ...(categories ?? []).map((category) => ({ value: category.id, label: category.name }))]}
                 searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ categoryId: value || null })}
@@ -515,8 +520,8 @@ function IssueProperties({
             <PropertySelect
                 className="w-full"
                 value={issue.cycleId ?? ""}
-                label="Cycle"
-                options={[{ value: "", label: "No cycle" }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
+                label={t("issue.cycle")}
+                options={[{ value: "", label: t("issue.noCycle") }, ...(cycles ?? []).map((cycle) => ({ value: cycle.id, label: cycle.name }))]}
                 searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ cycleId: value || null })}
@@ -524,25 +529,25 @@ function IssueProperties({
             <PropertySelect
                 className="w-full"
                 value={String(issue.estimate ?? "")}
-                label="Estimate"
-                options={[{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: `${value} points` }))]}
+                label={t("issue.estimate")}
+                options={[{ value: "", label: t("issue.noEstimate") }, ...[1, 2, 3, 5, 8].map((value) => ({ value: String(value), label: t("projects.points", { count: value }) }))]}
                 isDisabled={isPending}
                 onChange={(value) => save({ estimate: value ? Number(value) : null })}
             />
             <PropertySelect
                 className="w-full"
                 value={issue.parent?.id ?? ""}
-                label="Parent"
-                options={[{ value: "", label: "No parent" }, ...(projectIssues ?? []).filter((candidate) => candidate.id !== issue.id).map((candidate) => ({ value: candidate.id, label: `${candidate.identifier} · ${candidate.title}` }))]}
+                label={t("issue.parent")}
+                options={[{ value: "", label: t("issue.noParent") }, ...(projectIssues ?? []).filter((candidate) => candidate.id !== issue.id).map((candidate) => ({ value: candidate.id, label: `${candidate.identifier} · ${candidate.title}` }))]}
                 searchable
                 isDisabled={isPending}
                 onChange={(value) => save({ parentIssueId: value || null })}
             />
             <div className="mt-2 flex flex-col gap-2 border-t border-subtle pt-3 text-xs">
-                <ReadOnlyProperty label="Project" value={`${issue.project.name} · ${issue.project.issueKey}`} />
-                <ReadOnlyProperty label="Created by" value={issue.createdBy.name} />
-                <ReadOnlyProperty label="Created" value={formatDate(issue.createdAt)} />
-                <ReadOnlyProperty label="Updated" value={formatDate(issue.updatedAt)} />
+                <ReadOnlyProperty label={t("issue.project")} value={`${issue.project.name} · ${issue.project.issueKey}`} />
+                <ReadOnlyProperty label={t("issue.createdBy")} value={issue.createdBy.name} />
+                <ReadOnlyProperty label={t("issue.created")} value={formatDate(issue.createdAt, i18n.language)} />
+                <ReadOnlyProperty label={t("issue.updated")} value={formatDate(issue.updatedAt, i18n.language)} />
             </div>
         </div>
     );
@@ -550,19 +555,20 @@ function IssueProperties({
 
 /** Plane side-peek uses a single property list with 30px controls and 12px row gaps. */
 function PeekProperties({ issue, projectIssues, columns, members, categories, cycles, save, error, isPending }: Parameters<typeof IssueProperties>[0]) {
+    const { t, i18n } = useTranslation();
     const assignee = members?.find((member) => member.id === issue.assigneeId);
     const rows = [
-        { label: "Status", displayLabel: "State", Icon: StateOutline, value: issue.columnId, options: (columns ?? []).map((c) => ({ value: c.id, label: c.name })), change: (value: string) => save({ columnId: value }), decoration: <StateIcon name={columns?.find((c) => c.id === issue.columnId)?.name ?? ""} color={columns?.find((c) => c.id === issue.columnId)?.color} /> },
-        { label: "Assignee", Icon: AssigneeOutline, value: issue.assigneeId ?? "", options: [{ value: "", label: "Unassigned" }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))], change: (value: string) => save({ assigneeId: value || null }), searchable: true, decoration: issue.assigneeId ? <IssueAvatar name={assignee?.name ?? ""} avatarUrl={assignee?.avatarUrl} /> : null },
-        { label: "Priority", Icon: PriorityOutline, value: issue.priority, options: ["low", "medium", "high"].map((value) => ({ value, label: value.charAt(0).toUpperCase() + value.slice(1) })), change: (value: string) => save({ priority: value as "low" | "medium" | "high" }), decoration: <PriorityIcon priority={issue.priority} /> },
-        { label: "Created by", Icon: AssigneeOutline, readonly: issue.createdBy.name, decoration: <IssueAvatar name={issue.createdBy.name} avatarUrl={issue.createdBy.avatarUrl} /> },
-        { label: "Estimate", Icon: EstimateOutline, value: String(issue.estimate ?? ""), options: [{ value: "", label: "No estimate" }, ...[1, 2, 3, 5, 8].map((n) => ({ value: String(n), label: `${n} points` }))], change: (value: string) => save({ estimate: value ? Number(value) : null }) },
-        { label: "Cycle", Icon: CyclesOutline, value: issue.cycleId ?? "", options: [{ value: "", label: "Add cycle" }, ...(cycles ?? []).map((c) => ({ value: c.id, label: c.name }))], change: (value: string) => save({ cycleId: value || null }), searchable: true },
-        { label: "Parent", Icon: ParentOutline, value: issue.parent?.id ?? "", options: [{ value: "", label: "Add parent issue" }, ...(projectIssues ?? []).filter((i) => i.id !== issue.id).map((i) => ({ value: i.id, label: `${i.identifier} · ${i.title}` }))], change: (value: string) => save({ parentIssueId: value || null }), searchable: true },
-        { label: "Label", Icon: LabelsOutline, value: issue.categoryId ?? "", options: [{ value: "", label: "Add label" }, ...(categories ?? []).map((c) => ({ value: c.id, label: c.name }))], change: (value: string) => save({ categoryId: value || null }), searchable: true, decoration: issue.categoryId ? <LabelsOutline className="size-3.5" style={{ color: categories?.find((c) => c.id === issue.categoryId)?.color ?? "#7a5af8" }} /> : null },
+        { label: t("issue.status"), displayLabel: t("issue.state"), Icon: StateOutline, value: issue.columnId, options: (columns ?? []).map((c) => ({ value: c.id, label: c.name })), change: (value: string) => save({ columnId: value }), decoration: <StateIcon name={columns?.find((c) => c.id === issue.columnId)?.name ?? ""} color={columns?.find((c) => c.id === issue.columnId)?.color} /> },
+        { label: t("issue.assignee"), Icon: AssigneeOutline, value: issue.assigneeId ?? "", options: [{ value: "", label: t("issue.unassigned") }, ...(members ?? []).map((member) => ({ value: member.id, label: member.name, avatarUrl: member.avatarUrl }))], change: (value: string) => save({ assigneeId: value || null }), searchable: true, decoration: issue.assigneeId ? <IssueAvatar name={assignee?.name ?? ""} avatarUrl={assignee?.avatarUrl} /> : null },
+        { label: t("issue.priority"), Icon: PriorityOutline, value: issue.priority, options: (["low", "medium", "high"] as const).map((value) => ({ value, label: t(`issue.${value}`) })), change: (value: string) => save({ priority: value as "low" | "medium" | "high" }), decoration: <PriorityIcon priority={issue.priority} /> },
+        { label: t("issue.createdBy"), Icon: AssigneeOutline, readonly: issue.createdBy.name, decoration: <IssueAvatar name={issue.createdBy.name} avatarUrl={issue.createdBy.avatarUrl} /> },
+        { label: t("issue.estimate"), Icon: EstimateOutline, value: String(issue.estimate ?? ""), options: [{ value: "", label: t("issue.noEstimate") }, ...[1, 2, 3, 5, 8].map((n) => ({ value: String(n), label: t("projects.points", { count: n }) }))], change: (value: string) => save({ estimate: value ? Number(value) : null }) },
+        { label: t("issue.cycle"), Icon: CyclesOutline, value: issue.cycleId ?? "", options: [{ value: "", label: t("issue.addCycle") }, ...(cycles ?? []).map((c) => ({ value: c.id, label: c.name }))], change: (value: string) => save({ cycleId: value || null }), searchable: true },
+        { label: t("issue.parent"), Icon: ParentOutline, value: issue.parent?.id ?? "", options: [{ value: "", label: t("issue.addParentIssue") }, ...(projectIssues ?? []).filter((i) => i.id !== issue.id).map((i) => ({ value: i.id, label: `${i.identifier} · ${i.title}` }))], change: (value: string) => save({ parentIssueId: value || null }), searchable: true },
+        { label: t("issue.label"), Icon: LabelsOutline, value: issue.categoryId ?? "", options: [{ value: "", label: t("issue.addLabel") }, ...(categories ?? []).map((c) => ({ value: c.id, label: c.name }))], change: (value: string) => save({ categoryId: value || null }), searchable: true, decoration: issue.categoryId ? <LabelsOutline className="size-3.5" style={{ color: categories?.find((c) => c.id === issue.categoryId)?.color ?? "#7a5af8" }} /> : null },
     ];
-    return <section aria-label="Properties">
-        <h2 className="mb-3 text-body-xs-medium text-primary">Properties</h2>
+    return <section aria-label={t("issue.properties")}>
+        <h2 className="mb-3 text-body-xs-medium text-primary">{t("issue.properties")}</h2>
         <div className="space-y-3">
             {rows.map((row) => <div key={row.label} className="peek-property-row flex min-h-[30px] items-center gap-3">
                 <span className="flex w-[122px] shrink-0 items-center gap-1.5 text-body-xs-regular text-tertiary"><row.Icon className="size-4" />{row.displayLabel ?? row.label}</span>
@@ -586,15 +592,16 @@ function ReadOnlyProperty({ label, value }: { label: string; value: string }) {
 }
 
 function IssueSubIssues({ issue, columns }: { issue: NonNullable<ReturnType<typeof useIssue>["data"]>; columns: Array<{ id: string; name: string }> }) {
+    const { t } = useTranslation();
     if (!issue.children?.length) return null;
     const statusCounts = issue.children.reduce((counts, child) => {
-        const status = columns.find((column) => column.id === child.columnId)?.name ?? "Unknown status";
+        const status = columns.find((column) => column.id === child.columnId)?.name ?? t("issue.unknownStatus");
         counts.set(status, (counts.get(status) ?? 0) + 1);
         return counts;
     }, new Map<string, number>());
     return (
         <section className="border-t border-subtle pt-5">
-            <SectionTitle title={`Sub-issues · ${issue.children.length}`} icon={CheckCircle} />
+            <SectionTitle title={`${t("issue.subIssues")} · ${issue.children.length}`} icon={CheckCircle} />
             <div className="mb-3 flex flex-wrap gap-2">
                 {[...statusCounts.entries()].map(([status, count]) => (
                     <span key={status} className="rounded-full border border-subtle bg-surface-2 px-2 py-1 text-[11px] text-tertiary">
@@ -650,6 +657,7 @@ function IssueRelations({
     onAdd: (targetIssueIdentifier: string, type: "blocks" | "blocked_by" | "related" | "duplicate") => Promise<void>;
     onDelete: (relationId: string) => void;
 }) {
+    const { t } = useTranslation();
     const [targetIssueIdentifier, setTargetIssueIdentifier] = useState("");
     const [type, setType] = useState<"blocks" | "blocked_by" | "related" | "duplicate">("related");
     const [error, setError] = useState<string | null>(null);
@@ -658,11 +666,11 @@ function IssueRelations({
         event.preventDefault();
         const target = targetIssueIdentifier.trim();
         if (!target) {
-            setError("Choose an issue to relate.");
+            setError(t("issue.chooseIssueToRelate"));
             return;
         }
         if (projectIssues.length > 0 && !projectIssues.some((projectIssue) => projectIssue.identifier.toLowerCase() === target.toLowerCase())) {
-            setError("Choose an issue from this project.");
+            setError(t("issue.chooseIssueFromProject"));
             return;
         }
         setError(null);
@@ -670,13 +678,13 @@ function IssueRelations({
             await onAdd(target, type);
             setTargetIssueIdentifier("");
         } catch (reason) {
-            setError(reason instanceof Error ? reason.message : "Could not add the relation.");
+            setError(reason instanceof ApiError ? reason.message : t("issue.couldNotAddRelation"));
         }
     }
 
     return (
         <section className="border-t border-subtle pt-5">
-            <SectionTitle title="Relations" icon={Link2} />
+            <SectionTitle title={t("issue.relations")} icon={Link2} />
             <div className="divide-y divide-subtle rounded-lg border border-subtle">
                 {relations.map((relation) => (
                     <div
@@ -702,7 +710,7 @@ function IssueRelations({
                             entity={{ type: "issue", projectId: relation.target.projectId || projectId, identifier: `${relation.target.project.issueKey}-${relation.target.number}`, title: relation.target.title }}
                             className="mr-1"
                         />
-                        <ButtonUtility icon={Trash2} size="xs" color="tertiary" className="text-danger-primary hover:text-danger-secondary" tooltip="Remove relation" onClick={() => onDelete(relation.id)} isDisabled={isPending} />
+                        <ButtonUtility icon={Trash2} size="xs" color="tertiary" className="text-danger-primary hover:text-danger-secondary" tooltip={t("issue.removeRelation")} onClick={() => onDelete(relation.id)} isDisabled={isPending} />
                     </div>
                 ))}
                 <form className="flex flex-col gap-2 p-2 sm:flex-row" onSubmit={addRelation}>
@@ -711,19 +719,19 @@ function IssueRelations({
                         items={projectIssues.filter((projectIssue) => projectIssue.id !== issueId).map((projectIssue) => ({ id: projectIssue.identifier, label: `${projectIssue.identifier} · ${projectIssue.title}` }))}
                         selectedKey={targetIssueIdentifier || null}
                         onSelectionChange={(next) => setTargetIssueIdentifier(String(next ?? ""))}
-                        placeholder="Issue identifier"
+                        placeholder={t("issue.issueIdentifier")}
                         size="sm"
                     >
                         {(item) => <ComboBoxItem item={item}>{item.label}</ComboBoxItem>}
                     </ComboBox>
                     <Select
                         className="sm:w-36"
-                        aria-label="Relation type"
+                        aria-label={t("issue.relationType")}
                         items={[
-                            { id: "related", label: "Related to" },
-                            { id: "blocks", label: "Blocks" },
-                            { id: "blocked_by", label: "Blocked by" },
-                            { id: "duplicate", label: "Duplicate of" },
+                            { id: "related", label: t("issue.relatedTo") },
+                            { id: "blocks", label: t("issue.blocks") },
+                            { id: "blocked_by", label: t("issue.blockedBy") },
+                            { id: "duplicate", label: t("issue.duplicateOf") },
                         ]}
                         selectedKey={type}
                         onSelectionChange={(next) => setType((next ?? "related") as typeof type)}
@@ -732,7 +740,7 @@ function IssueRelations({
                         {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
                     </Select>
                     <Button type="submit" size="xs" iconLeading={Plus} isLoading={isPending}>
-                        Add
+                        {t("common.add")}
                     </Button>
                 </form>
             </div>
@@ -750,16 +758,17 @@ function IssueActivity({ hideHeading = false, activity, columns, members, catego
     cycles: Array<{ id: string; name: string }>;
     projectIssues: Array<{ id: string; identifier: string; title: string }>;
 }) {
+    const { t, i18n } = useTranslation();
     if (!activity.length) return null;
     return (
         <section className="border-t border-subtle pt-5">
-            {!hideHeading && <SectionTitle title="Activity" icon={Calendar} />}
+            {!hideHeading && <SectionTitle title={t("issue.activity")} icon={Calendar} />}
             <div className="flex flex-col gap-3">
                 {activity.map((entry) => (
                     <div key={entry.id} className="flex items-center gap-2 text-sm text-tertiary">
                         <span className="font-medium text-secondary">{entry.actor.name}</span>
-                        <span>{activityLabels[entry.type] ?? entry.type}{formatActivityChange(entry.payload, { columns, members, categories, cycles, projectIssues })}</span>
-                        <span className="ml-auto text-xs">{formatDistanceToNow(entry.createdAt)}</span>
+                        <span>{activityLabelKeys[entry.type] ? t(activityLabelKeys[entry.type]) : entry.type}{formatActivityChange(entry.payload, { columns, members, categories, cycles, projectIssues }, t)}</span>
+                        <span className="ml-auto text-xs">{formatDistanceToNow(entry.createdAt, i18n.language)}</span>
                     </div>
                 ))}
             </div>
@@ -773,11 +782,11 @@ function formatActivityChange(payload: Record<string, unknown>, lookups: {
     categories: Array<{ id: string; name: string }>;
     cycles: Array<{ id: string; name: string }>;
     projectIssues: Array<{ id: string; identifier: string; title: string }>;
-}) {
+}, t: ReturnType<typeof useTranslation>["t"]) {
     if (!("from" in payload) && !("to" in payload)) return "";
     const field = String(payload.field ?? "");
     const resolve = (value: unknown) => {
-        if (value === null || value === undefined || value === "") return "None";
+        if (value === null || value === undefined || value === "") return t("issue.noneValue");
         const options = field === "columnId" ? lookups.columns : field === "assigneeId" ? lookups.members : field === "categoryId" ? lookups.categories : field === "cycleId" ? lookups.cycles : field === "parentIssueId" ? lookups.projectIssues : [];
         const match = options.find((option) => option.id === value);
         if (match && "identifier" in match) return match.identifier;
@@ -810,24 +819,25 @@ function IssueComments({
     onDelete: (id: string) => void | Promise<void>;
     onEdit: (id: string, contentJson: TiptapDocument) => void | Promise<void>;
 }) {
+    const { t, i18n } = useTranslation();
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editingContent, setEditingContent] = useState<TiptapDocument>(EMPTY_TIPTAP_DOCUMENT);
     return (
         <section className={compact ? "peek-comments" : "border-t border-subtle pt-5"}>
-            {!compact && <SectionTitle title="Comments" icon={User} />}
+            {!compact && <SectionTitle title={t("issue.comments")} icon={User} />}
             <div className="flex flex-col gap-4">
                 {comments.map((entry) => (
                     <article key={entry.id} className="rounded-lg border border-subtle p-4">
                         <div className="mb-2 flex items-center justify-between gap-3 text-xs text-tertiary">
                             <span className="font-medium text-secondary">{entry.author.name}</span>
-                            <span>{formatDistanceToNow(entry.createdAt)}</span>
+                            <span>{formatDistanceToNow(entry.createdAt, i18n.language)}</span>
                         </div>
                         {editingId === entry.id ? (
                             <>
                                 <RichTextEditor variant="comment" content={editingContent} onChange={setEditingContent} />
                                 <div className="mt-2 flex justify-end gap-2">
                                     <Button size="xs" color="tertiary" onClick={() => setEditingId(null)}>
-                                        Cancel
+                                        {t("common.cancel")}
                                     </Button>
                                     <Button
                                         size="xs"
@@ -841,7 +851,7 @@ function IssueComments({
                                             }
                                         }}
                                     >
-                                        Save
+                                        {t("common.save")}
                                     </Button>
                                 </div>
                             </>
@@ -858,7 +868,7 @@ function IssueComments({
                                         setEditingContent(entry.contentJson);
                                     }}
                                 >
-                                    Edit
+                                    {t("common.edit")}
                                 </button>
                                 <button
                                     type="button"
@@ -872,17 +882,17 @@ function IssueComments({
                                         }
                                     }}
                                 >
-                                    Delete
+                                    {t("common.delete")}
                                 </button>
                             </div>
                         )}
                     </article>
                 ))}
                 <div className="rounded-lg border border-subtle">
-                    <RichTextEditor toolbar={!compact} variant="comment" content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder="Leave a comment..." />
+                    <RichTextEditor toolbar={!compact} variant="comment" content={value} onChange={onChange} onSubmitShortcut={onSubmit} placeholder={t("issue.leaveComment")} />
                     <div className="flex justify-end border-t border-subtle p-2">
                         <Button size="sm" iconLeading={Plus} isDisabled={!value.content?.length || isSubmitting} isLoading={isSubmitting} onClick={onSubmit}>
-                            Comment
+                            {t("issue.commentAction")}
                         </Button>
                     </div>
                 </div>
@@ -901,28 +911,31 @@ function SectionTitle({ title, icon: Icon }: { title: string; icon: typeof Check
     );
 }
 
-function formatDistanceToNow(value: string) {
+function formatDistanceToNow(value: string, locale: string) {
     const minutes = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 60000));
-    if (minutes < 60) return `${minutes}m ago`;
+    const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    if (minutes < 60) return formatter.format(-minutes, "minute");
     const hours = Math.round(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.round(hours / 24)}d ago`;
+    if (hours < 24) return formatter.format(-hours, "hour");
+    return formatter.format(-Math.round(hours / 24), "day");
 }
 
-function formatDate(value: string) {
-    return new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+function formatDate(value: string, locale: string) {
+    return new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 function IssuePeekState({ children, onClose }: { children: React.ReactNode; onClose?: () => void }) {
-    return <Sheet open onOpenChange={(open) => !open && onClose?.()} title="Issue panel"><div className="flex h-full min-h-0 flex-col">{children}</div></Sheet>;
+    const { t } = useTranslation();
+    return <Sheet open onOpenChange={(open) => !open && onClose?.()} title={t("issue.issuePanel")}><div className="flex h-full min-h-0 flex-col">{children}</div></Sheet>;
 }
 
 function IssueLoadingSkeleton({ mode }: { mode: "page" | "peek" }) {
+    const { t } = useTranslation();
     return (
         <div
             className="flex h-full min-h-0 flex-col"
             role="status"
-            aria-label={mode === "peek" ? "Loading issue" : "Loading issue details"}
+            aria-label={mode === "peek" ? t("issue.loadingIssue") : t("issue.loadingIssueDetails")}
             aria-live="polite"
         >
             {mode === "page" && (
@@ -958,8 +971,7 @@ function IssueLoadingSkeleton({ mode }: { mode: "page" | "peek" }) {
     );
 }
 
-function errorMessage(reason: unknown, fallback = "Could not save the issue.") {
+function errorMessage(reason: unknown, fallback: string) {
     if (reason instanceof ApiError) return reason.message;
-    if (reason instanceof Error) return reason.message;
     return fallback;
 }

@@ -21,8 +21,10 @@ import { ApiError } from "@/lib/api-client";
 import { useColumns, useCreateColumn, useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { positionAtIndex } from "../position";
 import { COLUMN_COLORS } from "./column-color";
+import { useTranslation } from "react-i18next";
 
 export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
+    const { t } = useTranslation();
     const { data: columns, isLoading, isError } = useColumns(projectId);
     const createColumn = useCreateColumn(projectId);
     const updateColumn = useUpdateColumn(projectId);
@@ -31,7 +33,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
     const [expanded, setExpanded] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const pending = updateColumn.isPending || deleteColumn.isPending || createColumn.isPending;
-    const showError = (reason: unknown) => setError(reason instanceof ApiError ? reason.message : "Could not update the workflow.");
+    const showError = (reason: unknown) => setError(reason instanceof ApiError ? reason.message : t("settings.couldNotUpdateWorkflow"));
 
     function moveColumn(columnId: string, direction: -1 | 1) {
         if (!columns) return;
@@ -48,12 +50,12 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
     }
     return (
         <div className="space-y-6">
-            <SettingsHeading title="States" description="Manage the states in your project's workflow." />
+            <SettingsHeading title={t("settings.states")} description={t("settings.defineWorkflow")} />
             {error && <Alert tone="error">{error}</Alert>}
             {isLoading ? (
-                <LoadingState label="Loading states..." />
+                <LoadingState label={t("settings.loadingStates")} />
             ) : isError ? (
-                <ErrorMessage message="Could not load the project states." />
+                <ErrorMessage message={t("settings.couldNotLoadStates")} />
             ) : (
                 <section className="space-y-1 rounded-sm border border-subtle bg-surface-2 p-2">
                     <div className="flex items-center justify-between gap-2">
@@ -66,14 +68,14 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                         >
                             <ChevronDown className={`size-5 transition-transform ${expanded ? "" : "-rotate-90"}`} />
                             <CircleDashed className="size-5 text-tertiary" />
-                            Workflow <span className="text-xs font-normal text-tertiary">{columns?.length ?? 0}</span>
+                            {t("settings.workflow")} <span className="text-xs font-normal text-tertiary">{columns?.length ?? 0}</span>
                         </button>
                         {isProjectOwner && (
                             <ButtonUtility
                                 icon={Plus}
                                 size="sm"
                                 color="tertiary"
-                                tooltip="Add state"
+                                tooltip={t("settings.addState")}
                                 isDisabled={pending}
                                 onClick={() => {
                                     setEditor("new");
@@ -86,23 +88,23 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                         {editor === "new" && (
                             <NamedColorForm
                                 key="new"
-                                label="State name"
+                                label={t("settings.stateName")}
                                 initialColor={COLUMN_COLORS[0]}
-                                submitLabel="Add state"
+                                submitLabel={t("settings.addState")}
                                 onSave={(input) => createColumn.mutateAsync(input)}
                                 onClose={() => setEditor(null)}
                             />
                         )}
-                        {!columns?.length && editor !== "new" && <EmptyState title="No states yet" description="Add a state to start organizing issues." />}
+                        {!columns?.length && editor !== "new" && <EmptyState title={t("settings.noStates")} description={t("settings.addStateHint")} />}
                         <ul className="space-y-1">
                             {columns?.map((column, index) => (
                                 <li key={column.id}>
                                     {editor === column.id ? (
                                         <NamedColorForm
-                                            label="State name"
+                                            label={t("settings.stateName")}
                                             initialName={column.name}
                                             initialColor={column.color}
-                                            submitLabel="Save"
+                                            submitLabel={t("common.save")}
                                             onSave={(input) => updateColumn.mutateAsync({ columnId: column.id, input })}
                                             onClose={() => setEditor(null)}
                                         />
@@ -118,7 +120,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                                         icon={ArrowUp}
                                                         size="sm"
                                                         color="tertiary"
-                                                        tooltip="Move state up"
+                                                        tooltip={t("settings.moveStateUp")}
                                                         isDisabled={pending || index === 0}
                                                         onClick={() => moveColumn(column.id, -1)}
                                                     />
@@ -126,7 +128,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                                         icon={ArrowDown}
                                                         size="sm"
                                                         color="tertiary"
-                                                        tooltip="Move state down"
+                                                        tooltip={t("settings.moveStateDown")}
                                                         isDisabled={pending || index === (columns?.length ?? 0) - 1}
                                                         onClick={() => moveColumn(column.id, 1)}
                                                     />
@@ -134,7 +136,7 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                                         icon={Pencil}
                                                         size="sm"
                                                         color="tertiary"
-                                                        tooltip={`Edit ${column.name}`}
+                                                        tooltip={`${t("common.edit")} ${column.name}`}
                                                         isDisabled={pending}
                                                         onClick={() => setEditor(column.id)}
                                                     />
@@ -144,13 +146,13 @@ export const ColumnsPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                                                 icon={Trash2}
                                                                 size="sm"
                                                                 color="tertiary"
-                                                                tooltip="Delete state"
+                                                                tooltip={t("settings.deleteState")}
                                                                 isDisabled={pending}
                                                             />
                                                         }
-                                                        title="Delete state"
-                                                        description={`The state "${column.name}" will be deleted. Move its issues first; states with issues cannot be deleted.`}
-                                                        confirmLabel="Delete state"
+                                                        title={t("settings.deleteState")}
+                                                        description={t("settings.deleteStateDescription", { name: column.name })}
+                                                        confirmLabel={t("settings.deleteState")}
                                                         isPending={deleteColumn.isPending}
                                                         onConfirm={() => {
                                                             setError(null);

@@ -1,4 +1,6 @@
 import type { TiptapDocument } from "@gikan/shared";
+import i18n from "@/i18n/i18n";
+import type { TranslationKey } from "@/i18n/resources";
 import {
     getIssue,
     listIssueActivity,
@@ -15,21 +17,14 @@ type IssueContentOverrides = {
     description?: TiptapDocument;
 };
 
-const activityLabels: Record<string, string> = {
-    created: "created this issue",
-    status_changed: "changed the status",
-    priority_changed: "changed the priority",
-    assignee_changed: "changed the assignee",
-    category_changed: "changed the category",
-    cycle_changed: "changed the cycle",
-    estimate_changed: "changed the estimate",
-    parent_changed: "changed the parent issue",
-    relation_added: "added a relation",
-    relation_removed: "removed a relation",
+const activityLabelKeys: Record<string, TranslationKey> = {
+    created: "issue.createdThisIssue", status_changed: "issue.changedStatus", priority_changed: "issue.changedPriority",
+    assignee_changed: "issue.changedAssignee", category_changed: "issue.changedCategory", cycle_changed: "issue.changedCycle",
+    estimate_changed: "issue.changedEstimate", parent_changed: "issue.changedParent", relation_added: "issue.addedRelation", relation_removed: "issue.removedRelation",
 };
 
 /** Fetches the complete saved issue content before producing a clipboard-ready Markdown document. */
-export async function fetchIssueClipboardContent(identifier: string, overrides?: IssueContentOverrides): Promise<string> {
+export async function fetchIssueClipboardContent(identifier: string, overrides?: IssueContentOverrides, locale = i18n.language): Promise<string> {
     const [issue, comments, activity, relations] = await Promise.all([
         getIssue(identifier),
         listIssueComments(identifier),
@@ -37,7 +32,7 @@ export async function fetchIssueClipboardContent(identifier: string, overrides?:
         listIssueRelations(identifier),
     ]);
 
-    return buildIssueClipboardContent({ issue, comments, activity, relations, overrides });
+    return buildIssueClipboardContent({ issue, comments, activity, relations, overrides, locale });
 }
 
 function buildIssueClipboardContent({
@@ -46,61 +41,71 @@ function buildIssueClipboardContent({
     activity,
     relations,
     overrides,
+    locale,
 }: {
     issue: IssueDetail;
     comments: IssueComment[];
     activity: IssueActivity[];
     relations: IssueRelation[];
     overrides?: IssueContentOverrides;
+    locale: string;
 }): string {
+    const t = i18n.getFixedT(locale, "translation");
     const title = overrides?.title ?? issue.title;
     const description = overrides?.description ?? issue.descriptionJson;
     const lines = [
         `# ${issue.identifier}: ${title}`,
         "",
-        `- **Project:** ${issue.project.name}`,
-        `- **Status:** ${issue.column.name}`,
-        `- **Priority:** ${capitalize(issue.priority)}`,
-        `- **Assignee:** ${issue.assignee?.name ?? "Unassigned"}`,
-        `- **Category:** ${issue.category?.name ?? "None"}`,
-        `- **Cycle:** ${issue.cycle?.name ?? "None"}`,
-        `- **Estimate:** ${issue.estimate ?? "None"}`,
-        `- **Created by:** ${issue.createdBy.name}`,
-        `- **Created:** ${formatDate(issue.createdAt)}`,
-        `- **Updated:** ${formatDate(issue.updatedAt)}`,
-        `- **Parent:** ${issue.parent ? `${issue.project.issueKey}-${issue.parent.number}: ${issue.parent.title}` : "None"}`,
+        `- **${t("issue.project")}:** ${issue.project.name}`,
+        `- **${t("issue.status")}:** ${issue.column.name}`,
+        `- **${t("issue.priority")}:** ${t(`issue.${issue.priority}`)}`,
+        `- **${t("issue.assignee")}:** ${issue.assignee?.name ?? t("issue.unassigned")}`,
+        `- **${t("issue.category")}:** ${issue.category?.name ?? t("issue.noneValue")}`,
+        `- **${t("issue.cycle")}:** ${issue.cycle?.name ?? t("issue.noneValue")}`,
+        `- **${t("issue.estimate")}:** ${issue.estimate ?? t("issue.noneValue")}`,
+        `- **${t("issue.createdBy")}:** ${issue.createdBy.name}`,
+        `- **${t("issue.created")}:** ${formatDate(issue.createdAt, locale)}`,
+        `- **${t("issue.updated")}:** ${formatDate(issue.updatedAt, locale)}`,
+        `- **${t("issue.parent")}:** ${issue.parent ? `${issue.project.issueKey}-${issue.parent.number}: ${issue.parent.title}` : t("issue.noneValue")}`,
         "",
-        "## Description",
+        `## ${t("issue.description")}`,
         "",
-        tiptapDocumentToMarkdown(description) || "(No description)",
+        tiptapDocumentToMarkdown(description) || `(${t("issue.noDescription")})`,
     ];
 
     if (issue.children.length > 0) {
-        lines.push("", `## Sub-issues (${issue.children.length})`, "");
+        lines.push("", `## ${t("issue.subIssues")} (${issue.children.length})`, "");
         issue.children.forEach((child) => {
-            lines.push(`- [ ] ${issue.project.issueKey}-${child.number}: ${child.title} — ${child.priority} priority`);
+            lines.push(`- [ ] ${issue.project.issueKey}-${child.number}: ${child.title} — ${t(`issue.${child.priority}`)}`);
         });
     }
 
     if (relations.length > 0) {
-        lines.push("", "## Relations", "");
+        lines.push("", `## ${t("issue.relations")}`, "");
         relations.forEach((relation) => {
-            lines.push(`- **${relation.type.replaceAll("_", " ")}:** ${relation.target.project.issueKey}-${relation.target.number}: ${relation.target.title}`);
+            const relationKey = relation.type === "blocked_by" ? "blockedBy" : relation.type === "duplicate" ? "duplicateOf" : relation.type === "related" ? "relatedTo" : relation.type;
+            const relationTranslationKey: Record<IssueRelation["type"], TranslationKey> = {
+                blocks: "issue.blocks",
+                blocked_by: "issue.blockedBy",
+                related: "issue.relatedTo",
+                duplicate: "issue.duplicateOf",
+            };
+            lines.push(`- **${t(relationTranslationKey[relation.type])}:** ${relation.target.project.issueKey}-${relation.target.number}: ${relation.target.title}`);
         });
     }
 
     if (comments.length > 0) {
-        lines.push("", `## Comments (${comments.length})`, "");
+        lines.push("", `## ${t("issue.comments")} (${comments.length})`, "");
         comments.forEach((comment) => {
-            lines.push(`### ${comment.author.name} — ${formatDate(comment.createdAt)}`, "", tiptapDocumentToMarkdown(comment.contentJson) || "(Empty comment)", "");
+            lines.push(`### ${comment.author.name} — ${formatDate(comment.createdAt, locale)}`, "", tiptapDocumentToMarkdown(comment.contentJson) || `(${t("issue.emptyComment")})`, "");
         });
     }
 
     if (activity.length > 0) {
-        lines.push("## Activity", "");
+        lines.push(`## ${t("issue.activity")}`, "");
         activity.forEach((entry) => {
             const payload = Object.keys(entry.payload).length > 0 ? ` — ${JSON.stringify(entry.payload)}` : "";
-            lines.push(`- ${formatDate(entry.createdAt)} — ${entry.actor.name} ${activityLabels[entry.type] ?? entry.type}${payload}`);
+            lines.push(`- ${formatDate(entry.createdAt, locale)} — ${entry.actor.name} ${activityLabelKeys[entry.type] ? t(activityLabelKeys[entry.type]) : entry.type}${payload}`);
         });
     }
 
@@ -218,11 +223,7 @@ function applyMarks(text: string, marks: TiptapNode[]): string {
     }, text);
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: string): string {
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? value : date.toISOString();
-}
-
-function capitalize(value: string): string {
-    return value.charAt(0).toUpperCase() + value.slice(1);
+    return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }

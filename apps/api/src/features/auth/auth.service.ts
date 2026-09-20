@@ -37,6 +37,7 @@ export async function registerUser(input: RegisterInput) {
             email: input.email,
             passwordHash,
             isAdmin,
+            locale: input.locale,
         })
         .returning();
 

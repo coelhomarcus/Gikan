@@ -14,6 +14,8 @@ import { useDeleteColumn, useUpdateColumn } from "../hooks/use-board";
 import { StateIcon } from "./issue-property-icons";
 import { ArrowCollapseOutline, ArrowExpandOutline } from "@makeplane/propel/icons";
 import { IssueCard } from "./issue-card";
+import { useTranslation } from "react-i18next";
+import { translateStatusName } from "@/i18n/status-label";
 
 interface ColumnProps {
     column: BoardColumn;
@@ -27,6 +29,7 @@ interface ColumnProps {
 }
 
 export const Column = ({ column, issues, projectId, categoriesById, membersById, cyclesById, onOpenIssue, onCreateIssue }: ColumnProps) => {
+    const { t } = useTranslation();
     const { setNodeRef: setDropRef, isOver } = useDroppable({ id: column.id });
 
     const updateColumn = useUpdateColumn(projectId);
@@ -57,14 +60,14 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
             return;
         }
         updateColumn.mutate({ columnId: column.id, input: { name: trimmed } }, {
-            onError: (err) => setError(err instanceof ApiError ? err.message : "Could not rename the column"),
+            onError: (err) => setError(err instanceof ApiError ? err.message : t("errors.requestFailed")),
         });
     }
 
     function handleDelete() {
         setError(null);
         deleteColumn.mutate(column.id, {
-            onError: (err) => setError(err instanceof ApiError ? err.message : "Could not delete the column"),
+            onError: (err) => setError(err instanceof ApiError ? err.message : t("errors.requestFailed")),
         });
     }
 
@@ -74,7 +77,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                 {isEditingName ? (
                     <Input
                         size="sm"
-                        aria-label="Column name"
+                        aria-label={t("settings.stateName")}
                         value={name}
                         onChange={setName}
                         onBlur={saveName}
@@ -95,20 +98,20 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                         className="flex min-w-0 items-center gap-2 rounded px-0.5 text-left text-h6-medium text-primary hover:bg-layer-1-hover"
                     >
                         <StateIcon name={column.name} color={column.color} />
-                        {!collapsed && <span className="truncate">{column.name}</span>}
+                        {!collapsed && <span className="truncate">{translateStatusName(column.name, t)}</span>}
                     </button>
                 )}
 
                 {!collapsed && <span className="text-body-sm-regular text-tertiary">{issues.length}</span>}
                 <div className="ml-auto flex shrink-0 items-center gap-1">
-                    <ButtonUtility icon={collapsed ? ArrowExpandOutline : ArrowCollapseOutline} size="xs" color="tertiary" tooltip={collapsed ? `Expand ${column.name}` : `Collapse ${column.name}`} onClick={() => setCollapsed(!collapsed)} />
-                    {!collapsed && <ButtonUtility icon={Plus} size="xs" color="tertiary" tooltip={`Add issue to ${column.name}`} onClick={() => onCreateIssue(column.id)} />}
+                    <ButtonUtility icon={collapsed ? ArrowExpandOutline : ArrowCollapseOutline} size="xs" color="tertiary" tooltip={`${collapsed ? t("nav.expand") : t("nav.collapse")} ${translateStatusName(column.name, t)}`} onClick={() => setCollapsed(!collapsed)} />
+                    {!collapsed && <ButtonUtility icon={Plus} size="xs" color="tertiary" tooltip={`${t("issue.newIssue")} · ${translateStatusName(column.name, t)}`} onClick={() => onCreateIssue(column.id)} />}
                     <div className="hidden group-hover/column:block group-focus-within/column:block">
                     <ConfirmDialog
-                        trigger={<ButtonUtility icon={Trash2} size="xs" color="tertiary" tooltip="Delete column" />}
-                        title="Delete column"
-                        description={`The column "${column.name}" will be deleted. This action cannot be undone.`}
-                        confirmLabel="Delete column"
+                        trigger={<ButtonUtility icon={Trash2} size="xs" color="tertiary" tooltip={t("settings.deleteState")} />}
+                        title={t("settings.deleteState")}
+                        description={t("settings.deleteStateDescription", { name: translateStatusName(column.name, t) })}
+                        confirmLabel={t("settings.deleteState")}
                         isPending={deleteColumn.isPending}
                         onConfirm={handleDelete}
                     />
@@ -134,7 +137,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                     ))}
                 </SortableContext>
                 <Button color="tertiary" size="sm" iconLeading={Plus} onClick={() => onCreateIssue(column.id)} className="w-full justify-start px-2 text-primary">
-                    New issue
+                    {t("issue.newIssue")}
                 </Button>
             </div>
         </div>

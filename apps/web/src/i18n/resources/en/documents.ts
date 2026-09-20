@@ -1,0 +1,27 @@
+const documents = {
+        documents: "Documents", pages: "Pages", allPages: "All pages", newPage: "New page", untitled: "Untitled", noPages: "No pages yet",
+        createFirst: "Create a page to capture project notes and decisions.", searchPages: "Search pages", created: "Created {{date}}", deletePage: "Delete page",
+        pageDescription: "A place for your project’s ideas, plans, and knowledge.", createFailed: "Could not create the page. Please try again.", loadFailed: "Could not load the pages. Please try again.",
+        noPagesFound: "No pages found", startBlank: "Start with a blank page", tryDifferentTitle: "Try a different title.", writeFreely: "Write freely, organize your thoughts, and share them with your project.", createPage: "Create a page",
+        loading: "Loading documents", pageTitle: "Page title", saving: "Saving…", saved: "Saved", unsaved: "Unsaved changes", offline: "Offline",
+        saveFailed: "Save failed", resolveChanges: "Changes to resolve", pageDeleted: "Page deleted", keepDraft: "Your draft is kept.",
+        localDraftUnavailable: "Local drafts are unavailable. Keep this page open until your changes are saved.",
+        localDraftFailed: "Could not store a local draft. Keep this page open until it is saved.",
+        draftClearFailed: "The page was saved, but the local draft could not be cleared.",
+        offlineHint: "You’re offline. Your draft is kept on this device and will sync when you reconnect.",
+        deletedMessage: "This page was deleted.", newerVersion: "A newer version was saved elsewhere.",
+        draftPreserved: "Your local draft is preserved. Create a separate page to keep these changes.",
+        createFromDraft: "Create page from draft", openSavedVersion: "Open saved version", couldNotLoad: "This page could not be loaded. It may have been deleted or you may no longer have access.",
+        couldNotRefresh: "Could not refresh this page. Your local work is still available.", couldNotSave: "Could not save the page.",
+        retrySave: "Press Ctrl/Cmd+S to retry.", deleteTitle: "Delete this page?", openSavedTitle: "Open the saved version?",
+        deleteWarning: "This permanently deletes the page and its local draft. This cannot be undone.",
+        openSavedWarning: "This replaces your local draft with the saved version. Create a page from your draft first if you want to keep both.",
+        couldNotComplete: "Could not complete the action.", couldNotCopy: "Could not create a copy.", localCopy: "(local copy)",
+        slashNoResults: "No results", slashCommands: "Editor commands", mentions: "Mention suggestions", text: "Text", paragraph: "Plain paragraph",
+        heading: "Heading {{level}}", sectionHeading: "Section heading", bulletList: "Bullet list", unorderedList: "Unordered list",
+        numberedList: "Numbered list", orderedList: "Ordered list", todoList: "To-do list", checklist: "Checklist", quote: "Quote",
+        blockquote: "Block quote", codeBlock: "Code block", preformatted: "Preformatted text", divider: "Divider", horizontalRule: "Horizontal rule",
+        image: "Image", insertImageUrl: "Insert an image URL", table: "Table", tableDimensions: "3 × 3 with a header row",
+    } as const;
+
+export default documents;

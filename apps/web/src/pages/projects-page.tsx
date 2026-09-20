@@ -5,28 +5,30 @@ import { Topbar } from "@/components/layout/topbar";
 import { CreateProjectModal } from "@/features/projects/components/create-project-modal";
 import { ProjectCard } from "@/features/projects/components/project-card";
 import { useProjects } from "@/features/projects/hooks/use-projects";
+import { useTranslation } from "react-i18next";
 
 export const ProjectsPage = () => {
     const { data: projects, isLoading, isError } = useProjects();
+    const { t } = useTranslation();
 
     return (
         <div className="flex h-full min-h-0 flex-col">
-            <Topbar title="Projects" actions={<CreateProjectModal />} />
+            <Topbar title={t("nav.projects")} actions={<CreateProjectModal />} />
             <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
                 {isLoading && <ProjectListSkeleton />}
 
-                {isError && <ErrorMessage message="Could not load your projects. Try refreshing the page." />}
+                {isError && <ErrorMessage message={t("projects.couldNotLoad")} />}
 
                 {!isLoading && !isError && projects?.length === 0 && (
-                    <EmptyState title="No projects yet" description="Create your first project to start organizing your work." action={<CreateProjectModal />} />
+                    <EmptyState title={t("projects.noProjects")} description={t("projects.createFirst")} action={<CreateProjectModal />} />
                 )}
 
                 {projects && projects.length > 0 && (
                     <div className="overflow-hidden rounded-lg border border-subtle">
                         <div className="hidden items-center gap-3 border-b border-subtle bg-surface-2 px-3 py-2 text-xs font-medium text-tertiary sm:flex">
                             <span className="w-8 shrink-0" />
-                            <span className="flex-1">Project</span>
-                            <span className="w-28 text-right">Updated</span>
+                            <span className="flex-1">{t("projects.project")}</span>
+                            <span className="w-28 text-right">{t("projects.updated")}</span>
                             <span className="w-4 shrink-0" />
                         </div>
                         <div className="divide-y divide-subtle">
@@ -42,7 +44,8 @@ export const ProjectsPage = () => {
 };
 
 function ProjectListSkeleton() {
-    return <div className="overflow-hidden rounded-lg border border-subtle" aria-label="Loading projects" role="status">
+    const { t } = useTranslation();
+    return <div className="overflow-hidden rounded-lg border border-subtle" aria-label={t("common.loading")} role="status">
         <div className="hidden h-9 border-b border-subtle bg-surface-2 sm:block" />
         <div className="divide-y divide-subtle">
             {["one", "two", "three"].map((key) => <div key={key} className="flex min-h-16 items-center gap-4 px-3 py-3">

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { localeSchema } from "../locales";
 
 export const updateProfileSchema = z
     .object({
@@ -10,6 +11,10 @@ export const updateProfileSchema = z
             .nullable()
             .optional()
             .transform((value) => (value === "" ? null : value)),
+        locale: localeSchema.optional(),
     })
     .strict();
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+
+export const updateLocaleSchema = z.object({ locale: localeSchema }).strict();
+export type UpdateLocaleInput = z.infer<typeof updateLocaleSchema>;

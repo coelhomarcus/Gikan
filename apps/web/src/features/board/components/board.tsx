@@ -31,6 +31,7 @@ import { positionAtIndex } from "../position";
 import { AddColumnForm } from "./add-column-form";
 import { Column } from "./column";
 import { IssueCardContent } from "./issue-card";
+import { useTranslation } from "react-i18next";
 
 /**
  * On a board, what matters is literally beneath the cursor (`pointerWithin`) — much more
@@ -46,6 +47,7 @@ const collisionDetection: CollisionDetection = (args) => {
 const measuring = { droppable: { strategy: MeasuringStrategy.Always } };
 
 export const Board = ({ projectId, filters = new URLSearchParams() }: { projectId: string; filters?: URLSearchParams }) => {
+    const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId);
@@ -185,7 +187,7 @@ export const Board = ({ projectId, filters = new URLSearchParams() }: { projectI
         updateIssue.mutate(
             { identifier: activeIssue.identifier, input: { columnId: targetColumnId, position } },
             {
-                onError: (reason) => setMoveError(reason instanceof ApiError ? reason.message : "Could not move the issue."),
+                onError: (reason) => setMoveError(reason instanceof ApiError ? reason.message : t("errors.requestFailed")),
                 onSettled: () => setDragIssues(null),
             },
         );
@@ -201,7 +203,7 @@ export const Board = ({ projectId, filters = new URLSearchParams() }: { projectI
     }
 
     if (columnsError || issuesError) {
-        return <ErrorMessage message="Could not load the board. You may not have access to this project, or it may not exist." />;
+        return <ErrorMessage message={t("errors.requestFailed")} />;
     }
 
     const activeCategory = activeIssue?.categoryId ? categoriesById.get(activeIssue.categoryId) : undefined;
@@ -254,7 +256,8 @@ export const Board = ({ projectId, filters = new URLSearchParams() }: { projectI
 };
 
 function BoardSkeleton() {
-    return <div className="flex h-full min-w-max items-start gap-4" aria-label="Loading board" role="status">
+    const { t } = useTranslation();
+    return <div className="flex h-full min-w-max items-start gap-4" aria-label={t("common.loading")} role="status">
         {["one", "two", "three"].map((key) => <div key={key} className="flex h-full w-[350px] shrink-0 flex-col gap-4 rounded-md bg-layer-1 p-2">
             <div className="flex h-8 items-center justify-between px-1"><Skeleton className="h-3 w-28" /><Skeleton className="size-4 rounded-full" /></div>
             <div className="space-y-2"><Skeleton className="h-24 w-full rounded-md" /><Skeleton className="h-20 w-full rounded-md" /><Skeleton className="h-28 w-full rounded-md" /></div>

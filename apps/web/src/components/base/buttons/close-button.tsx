@@ -3,6 +3,7 @@ import { Button as BaseButton } from "@base-ui/react/button";
 import { AppIcons } from "@/components/foundations/icons";
 import { cx } from "@/utils/cx";
 import { controlScale } from "@/components/base/control-scale";
+import { useTranslation } from "react-i18next";
 
 const sizes = {
     xs: { root: controlScale.iconButton.xs, icon: "size-4" },
@@ -24,11 +25,12 @@ interface CloseButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>,
 }
 
 export const CloseButton = ({ label, className, size = "sm", theme = "light", onPress, ...otherProps }: CloseButtonProps) => {
+    const { t } = useTranslation();
     return (
         <BaseButton
             {...otherProps}
             onClick={onPress || otherProps.onClick}
-            aria-label={label || "Close"}
+            aria-label={label || t("common.close")}
             className={cx(
                     "flex cursor-pointer items-center justify-center rounded-md transition duration-100 ease-linear focus:outline-hidden",
                     sizes[size].root,

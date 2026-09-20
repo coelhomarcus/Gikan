@@ -1,5 +1,6 @@
 import { cx } from "@/utils/cx";
 import { COLUMN_COLORS, COLUMN_FALLBACK_COLOR } from "./column-color";
+import { useTranslation } from "react-i18next";
 
 interface ColumnColorPickerProps {
     value: string | null | undefined;
@@ -11,19 +12,20 @@ interface ColumnColorPickerProps {
  * Presets plus a custom color. The grid matches the category color selector; the custom color
  * uses the native `<input type="color">` because the UI kit has no color picker component.
  */
-export const ColumnColorPicker = ({ value, onChange, label = "Color" }: ColumnColorPickerProps) => {
+export const ColumnColorPicker = ({ value, onChange, label }: ColumnColorPickerProps) => {
+    const { t } = useTranslation();
     const current = value ?? COLUMN_FALLBACK_COLOR;
     const isCustom = !!value && !COLUMN_COLORS.includes(value);
 
     return (
         <div className="flex flex-col gap-2">
-            {label && <p className="text-sm font-medium text-secondary">{label}</p>}
+            {label !== "" && <p className="text-sm font-medium text-secondary">{label ?? t("settings.color")}</p>}
             <div className="flex flex-wrap items-center gap-2">
                 {COLUMN_COLORS.map((color) => (
                     <button
                         key={color}
                         type="button"
-                        aria-label={`Color ${color}`}
+                        aria-label={t("settings.colorValue", { color })}
                         aria-pressed={current === color}
                         onClick={() => onChange(color)}
                         className={cx(
@@ -40,7 +42,7 @@ export const ColumnColorPicker = ({ value, onChange, label = "Color" }: ColumnCo
                         isCustom ? "outline-2 outline-fg-primary" : "ring-1 ring-subtle ring-inset",
                     )}
                     style={isCustom ? { backgroundColor: current } : undefined}
-                    title="Custom color"
+                    title={t("settings.customColor")}
                 >
                     {/* The gradient appears when no custom color is active, signaling "choose another color". */}
                     {!isCustom && (
@@ -52,7 +54,7 @@ export const ColumnColorPicker = ({ value, onChange, label = "Color" }: ColumnCo
                     )}
                     <input
                         type="color"
-                        aria-label="Custom color"
+                        aria-label={t("settings.customColor")}
                         value={current}
                         onChange={(event) => onChange(event.target.value)}
                         className="absolute inset-0 cursor-pointer opacity-0"

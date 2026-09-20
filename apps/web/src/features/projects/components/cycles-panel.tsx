@@ -12,15 +12,16 @@ import { ErrorMessage } from "@/components/feedback/error-message";
 import { LoadingState } from "@/components/feedback/loading-state";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ApiError } from "@/lib/api-client";
+import { useTranslation } from "react-i18next";
 
 interface CyclesPanelProps {
     projectId: string;
     isProjectOwner: boolean;
 }
 
-const statusLabels: Record<Cycle["status"], string> = { planned: "Planned", active: "Active", completed: "Completed" };
-
 export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => {
+    const { t, i18n } = useTranslation();
+    const statusLabels: Record<Cycle["status"], string> = { planned: t("settings.planned"), active: t("settings.active"), completed: t("settings.completed") };
     const { data: cycles, isLoading, isError } = useCycles(projectId);
     const createCycle = useCreateCycle(projectId);
     const updateCycle = useUpdateCycle(projectId);
@@ -34,7 +35,7 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
     function submit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
         if (!name.trim()) {
-            setError("Add a cycle name.");
+            setError(t("validation.required"));
             return;
         }
         setError(null);
@@ -47,7 +48,7 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                     setStartsAt("");
                     setEndsAt("");
                 },
-                onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not create the cycle."),
+                onError: (reason) => setError(reason instanceof ApiError ? reason.message : t("settings.couldNotCreateCycle")),
             },
         );
     }
@@ -57,13 +58,13 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
             {isProjectOwner && (
                 <form className="flex flex-col gap-4 rounded-lg border border-subtle p-4" onSubmit={submit}>
                     <div>
-                        <h3 className="text-sm font-semibold text-primary">New cycle</h3>
-                        <p className="mt-1 text-sm text-tertiary">Plan a focused period of work for this project.</p>
+                        <h3 className="text-sm font-semibold text-primary">{t("settings.newCycle")}</h3>
+                        <p className="mt-1 text-sm text-tertiary">{t("settings.planCycleDescription")}</p>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
-                        <Input label="Name" value={name} onChange={setName} placeholder="Cycle name" />
+                            <Input label={t("settings.name")} value={name} onChange={setName} placeholder={t("settings.cycleName")} />
                         <Select
-                            label="Status"
+                            label={t("issue.status")}
                             size="md"
                             items={Object.entries(statusLabels).map(([value, label]) => ({ id: value, label }))}
                             selectedKey={status}
@@ -73,17 +74,17 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                         </Select>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
-                        <Input type="datetime-local" label="Starts" value={startsAt} onChange={setStartsAt} />
-                        <Input type="datetime-local" label="Ends" value={endsAt} onChange={setEndsAt} />
+                        <Input type="datetime-local" label={t("settings.starts")} value={startsAt} onChange={setStartsAt} />
+                        <Input type="datetime-local" label={t("settings.ends")} value={endsAt} onChange={setEndsAt} />
                     </div>
                     {error && <Alert tone="error">{error}</Alert>}
-                    <div><Button type="submit" isLoading={createCycle.isPending}>Create cycle</Button></div>
+                    <div><Button type="submit" isLoading={createCycle.isPending}>{t("settings.createCycle")}</Button></div>
                 </form>
             )}
 
-            {isLoading && <LoadingState label="Loading cycles..." />}
-            {isError && <ErrorMessage message="Could not load the project cycles." />}
-            {!isLoading && !isError && cycles?.length === 0 && <EmptyState title="No cycles yet" description={isProjectOwner ? "Create a cycle to organize a focused period of work." : "This project does not have any cycles yet."} />}
+            {isLoading && <LoadingState label={t("settings.loadingCycles")} />}
+            {isError && <ErrorMessage message={t("settings.couldNotLoadCycles")} />}
+            {!isLoading && !isError && cycles?.length === 0 && <EmptyState title={t("settings.noCycles")} description={isProjectOwner ? t("settings.createCycleHint") : t("settings.noCyclesAvailable")} />}
             {!isLoading && !isError && cycles && cycles.length > 0 && (
                 <div className="divide-y divide-subtle overflow-hidden rounded-lg border border-subtle">
                     {cycles.map((cycle) => (
@@ -95,18 +96,18 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
                             onUpdate={(input) =>
                                 updateCycle.mutate(
                                     { cycleId: cycle.id, input },
-                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not update the cycle.") },
+                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : t("settings.couldNotUpdateCycle")) },
                                 )
                             }
                             onStatusChange={(nextStatus) =>
                                 updateCycle.mutate(
                                     { cycleId: cycle.id, input: { status: nextStatus } },
-                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not update the cycle.") },
+                                    { onError: (reason) => setError(reason instanceof ApiError ? reason.message : t("settings.couldNotUpdateCycle")) },
                                 )
                             }
                             onDelete={() =>
                                 deleteCycle.mutate(cycle.id, {
-                                    onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not delete the cycle."),
+                                    onError: (reason) => setError(reason instanceof ApiError ? reason.message : t("settings.couldNotDeleteCycle")),
                                 })
                             }
                         />
@@ -118,6 +119,8 @@ export const CyclesPanel = ({ projectId, isProjectOwner }: CyclesPanelProps) => 
 };
 
 function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, onDelete }: { cycle: Cycle; isProjectOwner: boolean; isPending: boolean; onUpdate: (input: { name?: string; status?: Cycle["status"]; startsAt?: string | null; endsAt?: string | null }) => void; onStatusChange: (status: Cycle["status"]) => void; onDelete: () => void }) {
+    const { t, i18n } = useTranslation();
+    const statusLabels: Record<Cycle["status"], string> = { planned: t("settings.planned"), active: t("settings.active"), completed: t("settings.completed") };
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(cycle.name);
     const [startsAt, setStartsAt] = useState(toLocalInput(cycle.startsAt));
@@ -142,14 +145,14 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
             <div className="min-w-0 flex-1">
                 {isEditing ? (
                     <div className="grid gap-2 sm:grid-cols-3">
-                        <Input size="sm" value={name} onChange={setName} aria-label={`${cycle.name} name`} className="sm:col-span-3" />
-                        <Input size="sm" type="datetime-local" value={startsAt} onChange={setStartsAt} aria-label={`${cycle.name} starts`} />
-                        <Input size="sm" type="datetime-local" value={endsAt} onChange={setEndsAt} aria-label={`${cycle.name} ends`} />
+                        <Input size="sm" value={name} onChange={setName} aria-label={`${cycle.name} ${t("settings.name")}`} className="sm:col-span-3" />
+                        <Input size="sm" type="datetime-local" value={startsAt} onChange={setStartsAt} aria-label={`${cycle.name} ${t("settings.starts")}`} />
+                        <Input size="sm" type="datetime-local" value={endsAt} onChange={setEndsAt} aria-label={`${cycle.name} ${t("settings.ends")}`} />
                     </div>
                 ) : (
                     <>
                         <p className="truncate text-sm font-medium text-primary">{cycle.name}</p>
-                        <p className="mt-1 text-xs text-tertiary">Cycle {cycle.number}{cycle.startsAt || cycle.endsAt ? ` · ${formatPeriod(cycle.startsAt, cycle.endsAt)}` : " · No period set"}</p>
+                        <p className="mt-1 text-xs text-tertiary">{t("settings.cycleName")} {cycle.number}{cycle.startsAt || cycle.endsAt ? ` · ${formatPeriod(cycle.startsAt, cycle.endsAt, i18n.language)}` : ` · ${t("settings.noPeriodSet")}`}</p>
                     </>
                 )}
             </div>
@@ -159,7 +162,7 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
                     size="sm"
                     selectedKey={cycle.status}
                     isDisabled={isPending}
-                    aria-label={`${cycle.name} status`}
+                    aria-label={`${cycle.name} ${t("issue.status")}`}
                     items={Object.entries(statusLabels).map(([value, label]) => ({ id: value, label }))}
                     onSelectionChange={(next) => onStatusChange((next ?? cycle.status) as Cycle["status"])}
                 >
@@ -170,11 +173,11 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
                 <div className="flex items-center gap-1">
                     {isEditing ? (
                         <>
-                            <Button size="xs" isDisabled={isPending || !name.trim()} isLoading={isPending} onClick={saveEdit}>Save</Button>
-                            <Button size="xs" color="tertiary" isDisabled={isPending} onClick={cancelEdit}>Cancel</Button>
+                            <Button size="xs" isDisabled={isPending || !name.trim()} isLoading={isPending} onClick={saveEdit}>{t("common.save")}</Button>
+                            <Button size="xs" color="tertiary" isDisabled={isPending} onClick={cancelEdit}>{t("common.cancel")}</Button>
                         </>
-                    ) : <ButtonUtility icon={Pencil} size="sm" color="tertiary" tooltip="Edit cycle" isDisabled={isPending} onClick={() => setIsEditing(true)} />}
-                    <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete cycle" isDisabled={isPending} />} title="Delete cycle" description={`The cycle "${cycle.name}" will be deleted. Issues in it will remain available.`} confirmLabel="Delete cycle" isPending={isPending} onConfirm={onDelete} />
+                    ) : <ButtonUtility icon={Pencil} size="sm" color="tertiary" tooltip={t("settings.editCycle")} isDisabled={isPending} onClick={() => setIsEditing(true)} />}
+                    <ConfirmDialog trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip={t("settings.deleteCycle")} isDisabled={isPending} />} title={t("settings.deleteCycle")} description={t("settings.deleteCycleDescription", { name: cycle.name })} confirmLabel={t("settings.deleteCycle")} isPending={isPending} onConfirm={onDelete} />
                 </div>
             )}
         </div>
@@ -192,7 +195,7 @@ function toLocalInput(value: string | null) {
     return date.toISOString().slice(0, 16);
 }
 
-function formatPeriod(startsAt: string | null, endsAt: string | null) {
-    const format = (value: string | null) => (value ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(value)) : "?");
+function formatPeriod(startsAt: string | null, endsAt: string | null, locale: string) {
+    const format = (value: string | null) => (value ? new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(new Date(value)) : "?");
     return `${format(startsAt)} – ${format(endsAt)}`;
 }

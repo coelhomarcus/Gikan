@@ -7,6 +7,7 @@ import { HintText } from "@/components/base/input/hint-text";
 import { Label } from "@/components/base/input/label";
 import { Tooltip, TooltipTrigger } from "@/components/base/tooltip/tooltip";
 import { cx, sortCx } from "@/utils/cx";
+import { useTranslation } from "react-i18next";
 
 type InputState = { isRequired?: boolean; isInvalid?: boolean; isDisabled?: boolean };
 
@@ -47,6 +48,7 @@ export const InputBase = ({
     type = "text",
     ...inputProps
 }: InputBaseProps) => {
+    const { t } = useTranslation();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const context = useContext(TextFieldContext);
     const inputSize = context.size || size;
@@ -131,7 +133,7 @@ export const InputBase = ({
             {type === "password" && (
                 <button
                     type="button"
-                    aria-label="Toggle password visibility"
+                    aria-label={t("common.togglePassword")}
                     onClick={() => setIsPasswordVisible((visible) => !visible)}
                     className={cx(
                         "absolute flex cursor-pointer items-center justify-center text-placeholder hover:text-secondary",

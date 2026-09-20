@@ -44,7 +44,7 @@ export const requireProjectMember = asyncHandler<{ projectId: string }>(async (r
 
     const membership = await findMembership(projectId, req.user!.sub);
     if (!membership) {
-        res.status(403).json({ error: "You are not a member of this project" });
+        res.status(403).json({ error: "You are not a member of this project", code: "errors.membershipRequired" });
         return;
     }
 
@@ -63,7 +63,7 @@ export const requireProjectOwner = asyncHandler<{ projectId: string }>(async (re
 
     const membership = await findMembership(projectId, req.user!.sub);
     if (!membership || membership.role !== "owner") {
-        res.status(403).json({ error: "Only the project owner can do this" });
+        res.status(403).json({ error: "Only the project owner can do this", code: "errors.permissionDenied" });
         return;
     }
 

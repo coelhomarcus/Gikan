@@ -5,8 +5,11 @@ import { BubbleMenu } from "@tiptap/react/menus";
 import { Bold, Code2, Italic, Link2, Strikethrough, Table2 } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { useTranslation } from "react-i18next";
+import type { TranslationKey } from "@/i18n/resources";
 
 export function DocumentFormatMenu({ editor }: { editor: Editor }) {
+    const { t } = useTranslation();
     const [scrollTarget, setScrollTarget] = useState<HTMLElement | Window>(window);
     const [linkOpen, setLinkOpen] = useState(false);
     const dismissedSelection = useRef<string | null>(null);
@@ -83,10 +86,10 @@ export function DocumentFormatMenu({ editor }: { editor: Editor }) {
             }}
         >
             {[
-                { label: "Bold", Icon: Bold, active: marks.bold, action: () => editor.chain().focus().toggleBold().run() },
-                { label: "Italic", Icon: Italic, active: marks.italic, action: () => editor.chain().focus().toggleItalic().run() },
-                { label: "Strikethrough", Icon: Strikethrough, active: marks.strike, action: () => editor.chain().focus().toggleStrike().run() },
-                { label: "Inline code", Icon: Code2, active: marks.code, action: () => editor.chain().focus().toggleCode().run() },
+                { label: t("editor.bold"), Icon: Bold, active: marks.bold, action: () => editor.chain().focus().toggleBold().run() },
+                { label: t("editor.italic"), Icon: Italic, active: marks.italic, action: () => editor.chain().focus().toggleItalic().run() },
+                { label: t("editor.strikethrough"), Icon: Strikethrough, active: marks.strike, action: () => editor.chain().focus().toggleStrike().run() },
+                { label: t("editor.inlineCode"), Icon: Code2, active: marks.code, action: () => editor.chain().focus().toggleCode().run() },
             ].map(({ label, Icon, active, action }) => (
                 <button
                     key={label}
@@ -111,26 +114,26 @@ export function DocumentFormatMenu({ editor }: { editor: Editor }) {
                     }
                 }}
             >
-                <Popover.Trigger className="document-format-button" aria-label="Edit link">
+                <Popover.Trigger className="document-format-button" aria-label={t("editor.editLink")}>
                     <Link2 className="size-4" />
                 </Popover.Trigger>
                 <Popover.Portal>
                     <Popover.Positioner side="bottom" sideOffset={8} collisionPadding={12} className="document-overlay">
                         <Popover.Popup finalFocus={() => editor.view.dom} className="document-popover w-72">
-                            <Popover.Title className="mb-3 text-sm font-medium">Link</Popover.Title>
+                            <Popover.Title className="mb-3 text-sm font-medium">{t("editor.link")}</Popover.Title>
                             <form
                                 className="space-y-3"
                                 onSubmit={(event) => {
                                     event.preventDefault();
                                     if (!/^(https?:\/\/|mailto:)/i.test(url.trim())) {
-                                        setError("Use an HTTP, HTTPS, or email link.");
+                                        setError(t("editor.validLink"));
                                         return;
                                     }
                                     editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
                                     setLinkOpen(false);
                                 }}
                             >
-                                <Input id={id} label="Link URL" value={url} onChange={setUrl} isInvalid={!!error} hint={error} autoFocus />
+                                <Input id={id} label={t("editor.linkUrl")} value={url} onChange={setUrl} isInvalid={!!error} hint={error} autoFocus />
                                 <div className="flex justify-end gap-2">
                                     <Button
                                         color="tertiary"
@@ -139,9 +142,9 @@ export function DocumentFormatMenu({ editor }: { editor: Editor }) {
                                             setLinkOpen(false);
                                         }}
                                     >
-                                        Remove
+                                        {t("editor.removeLink")}
                                     </Button>
-                                    <Button type="submit">Apply</Button>
+                                    <Button type="submit">{t("editor.apply")}</Button>
                                 </div>
                             </form>
                         </Popover.Popup>
@@ -150,23 +153,23 @@ export function DocumentFormatMenu({ editor }: { editor: Editor }) {
             </Popover.Root>
             {marks.table && (
                 <Popover.Root>
-                    <Popover.Trigger className="document-format-button" aria-label="Table actions">
+                    <Popover.Trigger className="document-format-button" aria-label={t("editor.tableActions")}>
                         <Table2 className="size-4" />
                     </Popover.Trigger>
                     <Popover.Portal>
                         <Popover.Positioner side="bottom" sideOffset={8} collisionPadding={12} className="document-overlay">
                             <Popover.Popup finalFocus={() => editor.view.dom} className="document-popover w-60">
-                                <Popover.Title className="mb-2 px-2 text-xs font-medium text-tertiary">Table</Popover.Title>
+                                <Popover.Title className="mb-2 px-2 text-xs font-medium text-tertiary">{t("editor.table")}</Popover.Title>
                                 <div className="flex flex-col">
                                     {[
-                                        ["Add row above", () => editor.chain().focus().addRowBefore().run()],
-                                        ["Add row below", () => editor.chain().focus().addRowAfter().run()],
-                                        ["Add column before", () => editor.chain().focus().addColumnBefore().run()],
-                                        ["Add column after", () => editor.chain().focus().addColumnAfter().run()],
-                                        ["Toggle header row", () => editor.chain().focus().toggleHeaderRow().run()],
-                                        ["Delete row", () => editor.chain().focus().deleteRow().run()],
-                                        ["Delete column", () => editor.chain().focus().deleteColumn().run()],
-                                        ["Delete table", () => editor.chain().focus().deleteTable().run()],
+                                        ["editor.addRowAbove", () => editor.chain().focus().addRowBefore().run()],
+                                        ["editor.addRowBelow", () => editor.chain().focus().addRowAfter().run()],
+                                        ["editor.addColumnBefore", () => editor.chain().focus().addColumnBefore().run()],
+                                        ["editor.addColumnAfter", () => editor.chain().focus().addColumnAfter().run()],
+                                        ["editor.toggleHeaderRow", () => editor.chain().focus().toggleHeaderRow().run()],
+                                        ["editor.deleteRow", () => editor.chain().focus().deleteRow().run()],
+                                        ["editor.deleteColumn", () => editor.chain().focus().deleteColumn().run()],
+                                        ["editor.deleteTable", () => editor.chain().focus().deleteTable().run()],
                                     ].map(([label, action]) => (
                                         <button
                                             key={String(label)}
@@ -174,7 +177,7 @@ export function DocumentFormatMenu({ editor }: { editor: Editor }) {
                                             onMouseDown={(event) => event.preventDefault()}
                                             onClick={action as () => void}
                                         >
-                                            {String(label)}
+                                            {t(String(label) as TranslationKey)}
                                         </button>
                                     ))}
                                 </div>

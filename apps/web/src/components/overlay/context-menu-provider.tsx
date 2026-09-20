@@ -14,6 +14,8 @@ import { fetchIssueClipboardContent } from "@/features/issues/lib/issue-clipboar
 import { DeleteProjectDialog } from "@/features/projects/components/delete-project-dialog";
 import { useProjectPermissions } from "@/features/projects/hooks/use-project-permissions";
 import { cx } from "@/utils/cx";
+import { useTranslation } from "react-i18next";
+import { ApiError } from "@/lib/api-client";
 
 export type ProjectContextEntity = { type: "project"; projectId: string; name: string; issueKey: string };
 export type IssueContextEntity = { type: "issue"; projectId: string; identifier: string; title: string };
@@ -42,11 +44,12 @@ const itemClass = "flex min-h-9 w-full items-center gap-2 rounded-md px-2.5 py-2
 /** A mobile action button that opens the same entity menu used by desktop context clicks. */
 export function ContextMenuButton({ entity, className }: { entity: ContextMenuEntity; className?: string }) {
     const { open } = useContext(ContextMenuContext);
+    const { t } = useTranslation();
     const label = entity.type === "project" ? entity.name : entity.type === "issue" ? entity.identifier : entity.title;
     return (
         <button
             type="button"
-            aria-label={`More actions for ${label}`}
+            aria-label={`${t("common.moreActions")} ${label}`}
             data-context-menu-trigger
             data-context-menu-entity={entity.type}
             data-context-menu-project-id={entity.projectId}
@@ -71,6 +74,7 @@ export function ContextMenuButton({ entity, className }: { entity: ContextMenuEn
 }
 
 export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
+    const { t } = useTranslation();
     const [state, setState] = useState<MenuState | null>(null);
     const [confirmation, setConfirmation] = useState<ContextMenuEntity | null>(null);
     const [deletePending, setDeletePending] = useState(false);
@@ -101,7 +105,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     entity: {
                         type: "project",
                         projectId: trigger.dataset.contextMenuProjectId ?? "",
-                        name: trigger.dataset.contextMenuName ?? "Project",
+                        name: trigger.dataset.contextMenuName ?? t("projects.project"),
                         issueKey: trigger.dataset.contextMenuIssueKey ?? "",
                     },
                 };
@@ -113,7 +117,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                         type: "document",
                         projectId: trigger.dataset.contextMenuProjectId ?? "",
                         documentId: trigger.dataset.contextMenuDocumentId ?? "",
-                        title: trigger.dataset.contextMenuTitle ?? "Untitled",
+                        title: trigger.dataset.contextMenuTitle ?? t("documents.untitled"),
                         authorId: trigger.dataset.contextMenuAuthorId ?? "",
                     },
                 };
@@ -125,7 +129,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                         type: "issue",
                         projectId: trigger.dataset.contextMenuProjectId ?? "",
                         identifier: trigger.dataset.contextMenuIdentifier ?? "",
-                        title: trigger.dataset.contextMenuTitle ?? "Issue",
+                        title: trigger.dataset.contextMenuTitle ?? t("issue.genericIssue"),
                     },
                 };
             }
@@ -138,7 +142,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     entity: {
                         type: "project",
                         projectId,
-                        name: element.dataset.projectName ?? element.textContent?.trim() ?? "Project",
+                        name: element.dataset.projectName ?? element.textContent?.trim() ?? t("projects.project"),
                         issueKey: element.dataset.projectIssueKey ?? "",
                     },
                 };
@@ -150,7 +154,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                         type: "document",
                         projectId,
                         documentId: element.dataset.documentId ?? "",
-                        title: element.dataset.documentTitle ?? element.textContent?.trim() ?? "Untitled",
+                        title: element.dataset.documentTitle ?? element.textContent?.trim() ?? t("documents.untitled"),
                         authorId: element.dataset.documentAuthorId ?? "",
                     },
                 };
@@ -161,7 +165,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     type: "issue",
                     projectId,
                     identifier: element.dataset.issueIdentifier ?? "",
-                    title: element.dataset.issueTitle ?? element.textContent?.trim() ?? "Issue",
+                    title: element.dataset.issueTitle ?? element.textContent?.trim() ?? t("issue.genericIssue"),
                 },
             };
         }
@@ -207,7 +211,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             document.removeEventListener("contextmenu", handleContextMenu);
             document.removeEventListener("keydown", handleKeyDown, true);
         };
-    }, [open]);
+    }, [open, t]);
 
     const updatePosition = useCallback(() => {
         if (!state || !menuRef.current) return;
@@ -276,19 +280,18 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
         const { entity } = state;
         const projectUrl = `/projects/${entity.projectId}`;
         const entityUrl = entity.type === "project" ? projectUrl : entity.type === "issue" ? `${projectUrl}/issues/${encodeURIComponent(entity.identifier)}` : `${projectUrl}/documents/${encodeURIComponent(entity.documentId)}`;
-        const entityName = entity.type === "project" ? "project" : entity.type === "issue" ? "issue" : "page";
         const openItem: MenuAction = {
             key: "open",
-            label: `Open ${entityName}`,
+            label: t("contextMenu.open"),
             icon: ExternalLink,
             onSelect: () => navigate(entityUrl, entity.type === "issue" ? { state: { backgroundLocation: location } } : undefined),
         };
-        const newTabItem: MenuAction = { key: "new-tab", label: "Open in new tab", icon: ExternalLink, onSelect: () => window.open(entityUrl, "_blank", "noopener,noreferrer") };
+        const newTabItem: MenuAction = { key: "new-tab", label: t("common.openInNewTab"), icon: ExternalLink, onSelect: () => window.open(entityUrl, "_blank", "noopener,noreferrer") };
         const copyLinkItem: MenuAction = {
             key: "copy-link",
-            label: `Copy ${entityName} link`,
+            label: t("common.copyLink"),
             icon: Copy,
-            onSelect: () => void copy(`${window.location.origin}${entityUrl}`).then((result) => setNotice(result.success ? "Link copied" : "Could not copy link")),
+            onSelect: () => void copy(`${window.location.origin}${entityUrl}`).then((result) => setNotice(result.success ? t("contextMenu.linkCopied") : t("contextMenu.couldNotCopyLink"))),
         };
 
         if (entity.type === "project") {
@@ -296,8 +299,8 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                 openItem,
                 newTabItem,
                 copyLinkItem,
-                { key: "settings", label: "Project settings", icon: Settings2, onSelect: () => navigate(`${projectUrl}/settings/general`) },
-                ...(canDeleteProject ? [{ key: "delete", label: "Delete project", icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) }] : []),
+                { key: "settings", label: t("contextMenu.projectSettings"), icon: Settings2, onSelect: () => navigate(`${projectUrl}/settings/general`) },
+                ...(canDeleteProject ? [{ key: "delete", label: t("contextMenu.deleteProject"), icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) }] : []),
             ];
         }
         if (entity.type === "document") {
@@ -305,23 +308,23 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                 openItem,
                 newTabItem,
                 copyLinkItem,
-                ...(canDeleteDocument ? [{ key: "delete", label: "Delete page", icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) }] : []),
+                ...(canDeleteDocument ? [{ key: "delete", label: t("contextMenu.deletePage"), icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) }] : []),
             ];
         }
         return [
             openItem,
             newTabItem,
-            { key: "copy-identifier", label: "Copy issue identifier", icon: Copy, onSelect: () => void copy(entity.identifier).then((result) => setNotice(result.success ? "Issue identifier copied" : "Could not copy identifier")) },
+            { key: "copy-identifier", label: t("contextMenu.copyIssueIdentifier"), icon: Copy, onSelect: () => void copy(entity.identifier).then((result) => setNotice(result.success ? t("contextMenu.identifierCopied") : t("contextMenu.couldNotCopyIdentifier"))) },
             copyLinkItem,
             {
                 key: "copy-content",
-                label: "Copy issue content",
+                label: t("contextMenu.copyAllIssueContent"),
                 icon: Copy,
-                onSelect: () => void fetchIssueClipboardContent(entity.identifier).then(copy).then((result) => setNotice(result.success ? "Issue content copied" : "Could not copy issue content")).catch(() => setNotice("Could not copy issue content")),
+                onSelect: () => void fetchIssueClipboardContent(entity.identifier).then(copy).then((result) => setNotice(result.success ? t("contextMenu.issueContentCopied") : t("contextMenu.couldNotCopyContent"))).catch(() => setNotice(t("contextMenu.couldNotCopyContent"))),
             },
-            { key: "delete", label: "Delete issue", icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) },
+            { key: "delete", label: t("contextMenu.deleteIssue"), icon: Trash2, destructive: true, onSelect: () => setConfirmation(entity) },
         ];
-    }, [canDeleteDocument, canDeleteProject, copy, navigate, state]);
+    }, [canDeleteDocument, canDeleteProject, copy, navigate, state, t]);
 
     async function confirmDelete() {
         if (!confirmation) return;
@@ -331,7 +334,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             if (confirmation.type === "issue") {
                 await deleteIssue.mutateAsync(confirmation.identifier);
             } else if (confirmation.type === "document") {
-                if (!user) throw new Error("Your session has expired. Sign in and try again.");
+                if (!user) throw new Error(t("errors.invalidSession"));
                 const resume = await pauseDocumentSession(user.id, confirmation.projectId, confirmation.documentId);
                 try {
                     await deleteDocument(confirmation.projectId, confirmation.documentId);
@@ -340,7 +343,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     throw error;
                 }
                 await clearDocumentSession(user.id, confirmation.projectId, confirmation.documentId).catch(() => {
-                    setNotice("Page deleted, but its local draft could not be cleared.");
+                    setNotice(t("contextMenuExtra.pageDeletedDraftClearFailed"));
                 });
                 await queryClient.cancelQueries({ queryKey: documentKey(confirmation.projectId, confirmation.documentId) });
                 queryClient.removeQueries({ queryKey: documentKey(confirmation.projectId, confirmation.documentId) });
@@ -352,7 +355,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
             setConfirmation(null);
             setDeleteError(null);
         } catch (error) {
-            setDeleteError(error instanceof Error ? error.message : "Could not complete the action. Try again.");
+            setDeleteError(error instanceof ApiError ? error.message : t("contextMenu.tryAgain"));
         } finally {
             setDeletePending(false);
         }
@@ -371,7 +374,7 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                 <div
                     ref={menuRef}
                     role="menu"
-                    aria-label={`${state.entity.type} actions`}
+                    aria-label={t("common.actions")}
                     style={{ left: position?.x ?? Math.max(8, Math.min(state.mode === "button" ? state.x - 224 : state.x, window.innerWidth - 232)), top: position?.y ?? Math.max(8, Math.min(state.y, window.innerHeight - 280)) }}
                     className={menuClass}
                 >
@@ -405,18 +408,18 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                         <Dialog.Viewport className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto p-4">
                             <Dialog.Popup className="w-full max-w-md rounded-lg border border-subtle bg-surface-1 p-6 shadow-overlay-200 outline-none">
                                 <Dialog.Title className="text-lg font-semibold text-primary">
-                                    {confirmation.type === "issue" ? "Delete issue?" : "Delete page?"}
+                                    {confirmation.type === "issue" ? t("contextMenu.deleteIssueTitle") : t("contextMenu.deletePageTitle")}
                                 </Dialog.Title>
                                 <Dialog.Description className="mt-2 text-sm text-tertiary">
                                     {confirmation.type === "issue"
-                                        ? `The issue “${confirmation.identifier}: ${confirmation.title}” will be permanently deleted.`
-                                        : `The page “${confirmation.title}” will be permanently deleted, along with its local draft.`}
+                                        ? t("contextMenu.issueDeletedDescription", { title: `${confirmation.identifier}: ${confirmation.title}` })
+                                        : t("contextMenu.pageDeletedDescription", { title: confirmation.title })}
                                 </Dialog.Description>
                                 {deleteError && <p role="alert" className="mt-4 text-sm text-danger-primary">{deleteError}</p>}
                                 <div className="mt-6 flex justify-end gap-2">
-                                    <Button color="secondary" isDisabled={deletePending} onClick={() => setConfirmation(null)}>Cancel</Button>
+                                    <Button color="secondary" isDisabled={deletePending} onClick={() => setConfirmation(null)}>{t("common.cancel")}</Button>
                                     <Button color="primary-destructive" isLoading={deletePending} onClick={() => void confirmDelete()}>
-                                        {confirmation.type === "issue" ? "Delete issue" : "Delete page"}
+                                        {confirmation.type === "issue" ? t("contextMenu.deleteIssue") : t("contextMenu.deletePage")}
                                     </Button>
                                 </div>
                             </Dialog.Popup>

@@ -6,11 +6,13 @@ import { AppIcons } from "@/components/foundations/icons";
 import { AUTH_QUERY_KEY, logout } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { clearDocumentDrafts } from "@/features/documents/sessions";
+import { useTranslation } from "react-i18next";
 
 export function SidebarAccount() {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const mutation = useMutation({
         mutationFn: logout,
         onSuccess: async () => {
@@ -28,7 +30,7 @@ export function SidebarAccount() {
     const item = "flex min-h-7 cursor-pointer items-center gap-2 rounded px-2 py-1 text-sm text-secondary outline-none data-highlighted:bg-layer-2-hover";
     return (
         <Menu.Root>
-            <Menu.Trigger aria-label="Account menu" className="flex size-8 items-center justify-center rounded-md hover:bg-layer-1">
+            <Menu.Trigger aria-label={t("nav.account")} className="flex size-8 items-center justify-center rounded-md hover:bg-layer-1">
                 <Avatar
                     key={user.avatarUrl}
                     src={user.avatarUrl ?? undefined}
@@ -49,16 +51,16 @@ export function SidebarAccount() {
                         </div>
                         <Menu.Item className={`${item} mt-1`} onClick={() => navigate("/settings/profile")}>
                             <AppIcons.Settings className="size-4" />
-                            Account settings
+                            {t("nav.settings")}
                         </Menu.Item>
                         <Menu.Separator className="my-1 border-t border-subtle" />
                         <Menu.Item className={item} disabled={mutation.isPending} onClick={() => mutation.mutate()}>
                             <AppIcons.SignOut className="size-4" />
-                            Sign out
+                            {t("nav.signOut")}
                         </Menu.Item>
                         {mutation.isError && (
                             <p role="alert" className="px-2 py-1 text-xs text-danger-primary">
-                                Could not sign out. Try again.
+                                {t("errors.requestFailed")}
                             </p>
                         )}
                     </Menu.Popup>

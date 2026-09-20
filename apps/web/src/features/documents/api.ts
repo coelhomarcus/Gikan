@@ -1,5 +1,5 @@
 import type { CreateDocumentInput, TiptapDocument, UpdateDocumentInput } from "@gikan/shared";
-import { ApiError, apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 export interface DocumentPage {
     id: string;
@@ -19,14 +19,6 @@ export const createDocument = (projectId: string, input: Partial<CreateDocumentI
     apiClient.post<{ document: DocumentPage }>(base(projectId), input).then((r) => r.document);
 export const deleteDocument = (projectId: string, id: string) => apiClient.delete<void>(`${base(projectId)}/${id}`);
 export async function saveDocument(projectId: string, id: string, input: UpdateDocumentInput, signal?: AbortSignal): Promise<DocumentPage> {
-    const response = await fetch(`/api${base(projectId)}/${id}`, {
-        method: "PATCH",
-        credentials: "include",
-        signal,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-    });
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new ApiError(response.status, body.error ?? "Could not save the page.");
-    return body.document;
+    const { document } = await apiClient.patch<{ document: DocumentPage }>(`${base(projectId)}/${id}`, input, signal);
+    return document;
 }

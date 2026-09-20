@@ -1,0 +1,27 @@
+const documents = {
+        documents: "Documentos", pages: "Páginas", allPages: "Todas as páginas", newPage: "Nova página", untitled: "Sem título", noPages: "Nenhuma página ainda",
+        createFirst: "Crie uma página para registrar notas e decisões do projeto.", searchPages: "Buscar páginas", created: "Criada em {{date}}", deletePage: "Excluir página",
+        pageDescription: "Um espaço para ideias, planos e conhecimento do projeto.", createFailed: "Não foi possível criar a página. Tente novamente.", loadFailed: "Não foi possível carregar as páginas. Tente novamente.",
+        noPagesFound: "Nenhuma página encontrada", startBlank: "Comece com uma página em branco", tryDifferentTitle: "Tente buscar por outro título.", writeFreely: "Escreva, organize suas ideias e compartilhe com o projeto.", createPage: "Criar página",
+        loading: "Carregando documentos", pageTitle: "Título da página", saving: "Salvando…", saved: "Salvo", unsaved: "Alterações não salvas", offline: "Sem conexão",
+        saveFailed: "Falha ao salvar", resolveChanges: "Alterações para resolver", pageDeleted: "Página excluída", keepDraft: "Seu rascunho foi mantido.",
+        localDraftUnavailable: "Os rascunhos locais estão indisponíveis. Mantenha esta página aberta até que as alterações sejam salvas.",
+        localDraftFailed: "Não foi possível guardar o rascunho local. Mantenha esta página aberta até que ele seja salvo.",
+        draftClearFailed: "A página foi salva, mas não foi possível limpar o rascunho local.",
+        offlineHint: "Você está sem conexão. Seu rascunho está salvo neste dispositivo e será sincronizado quando a conexão voltar.",
+        deletedMessage: "Esta página foi excluída.", newerVersion: "Uma versão mais recente foi salva em outro lugar.",
+        draftPreserved: "Seu rascunho local foi preservado. Crie uma página separada para manter estas alterações.",
+        createFromDraft: "Criar página a partir do rascunho", openSavedVersion: "Abrir versão salva", couldNotLoad: "Não foi possível carregar esta página. Ela pode ter sido excluída ou você pode não ter mais acesso.",
+        couldNotRefresh: "Não foi possível atualizar esta página. Seu trabalho local continua disponível.", couldNotSave: "Não foi possível salvar a página.",
+        retrySave: "Pressione Ctrl/Cmd+S para tentar novamente.", deleteTitle: "Excluir esta página?", openSavedTitle: "Abrir a versão salva?",
+        deleteWarning: "Esta ação exclui permanentemente a página e o rascunho local. Não é possível desfazê-la.",
+        openSavedWarning: "Isto substituirá seu rascunho local pela versão salva. Crie uma página a partir do rascunho antes se quiser manter ambas.",
+        couldNotComplete: "Não foi possível concluir a ação.", couldNotCopy: "Não foi possível criar uma cópia.", localCopy: "(cópia local)",
+        slashNoResults: "Nenhum resultado", slashCommands: "Comandos do editor", mentions: "Sugestões de menção", text: "Texto", paragraph: "Parágrafo simples",
+        heading: "Título {{level}}", sectionHeading: "Título de seção", bulletList: "Lista com marcadores", unorderedList: "Lista não ordenada",
+        numberedList: "Lista numerada", orderedList: "Lista ordenada", todoList: "Lista de tarefas", checklist: "Lista de verificação", quote: "Citação",
+        blockquote: "Bloco de citação", codeBlock: "Bloco de código", preformatted: "Texto pré-formatado", divider: "Divisor", horizontalRule: "Linha horizontal",
+        image: "Imagem", insertImageUrl: "Inserir URL de imagem", table: "Tabela", tableDimensions: "3 × 3 com cabeçalho",
+    } as const;
+
+export default documents;

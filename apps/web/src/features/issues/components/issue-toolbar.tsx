@@ -9,9 +9,12 @@ import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { useCycles } from "../hooks/use-issues";
 import { readIssueOrder } from "../lib/issue-filters";
+import { useTranslation } from "react-i18next";
+import { translateStatusName } from "@/i18n/status-label";
 
 export function IssueToolbar({ projectId, onCreate, layout = "list", compact = false }: { projectId: string; onCreate: () => void; layout?: "list" | "board"; compact?: boolean }) {
     const [query, setQuery] = useSearchParams();
+    const { t } = useTranslation();
     const { data: columns } = useColumns(projectId);
     const { data: categories } = useCategories(projectId);
     const { data: members } = useProjectMembers(projectId);
@@ -28,11 +31,11 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
         );
     }
     const filters = [
-        { key: "status", label: "Status", items: columns ?? [] },
-        { key: "priority", label: "Priority", items: ["high", "medium", "low"].map((id) => ({ id, name: id.charAt(0).toUpperCase() + id.slice(1) })) },
-        { key: "assignee", label: "Assignee", items: members ?? [] },
-        { key: "label", label: "Label", items: categories ?? [] },
-        { key: "cycle", label: "Cycle", items: cycles ?? [] },
+        { key: "status", label: t("issue.status"), items: (columns ?? []).map((item) => ({ ...item, name: translateStatusName(item.name, t) })) },
+        { key: "priority", label: t("issue.priority"), items: (["high", "medium", "low"] as const).map((id) => ({ id, name: t(`issue.${id}`) })) },
+        { key: "assignee", label: t("issue.assignee"), items: members ?? [] },
+        { key: "label", label: t("issue.label"), items: categories ?? [] },
+        { key: "cycle", label: t("issue.cycle"), items: cycles ?? [] },
     ];
     const count = filters.filter((filter) => query.get(filter.key)).length;
     const popup = "grid w-[min(320px,calc(100vw-32px))] gap-3 rounded-md border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none";
@@ -41,16 +44,16 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
             <div className={compact ? "flex items-center gap-2" : "flex min-h-11 flex-wrap items-center gap-2 px-4 py-2"}>
                 <Popover.Root>
                     {compact && count === 0 ? (
-                        <Popover.Trigger render={<Button aria-label="Filters" color="secondary" iconLeading={FilterOutline} />} />
+                        <Popover.Trigger render={<Button aria-label={t("issue.filters")} color="secondary" iconLeading={FilterOutline} />} />
                     ) : (
-                        <Popover.Trigger render={<Button aria-label="Filters" color={compact ? "secondary" : "tertiary"} iconLeading={FilterOutline} />}>
-                            {!compact ? "Filters" : null}{count ? ` · ${count}` : ""}
+                        <Popover.Trigger render={<Button aria-label={t("issue.filters")} color={compact ? "secondary" : "tertiary"} iconLeading={FilterOutline} />}>
+                            {!compact ? t("issue.filters") : null}{count ? ` · ${count}` : ""}
                         </Popover.Trigger>
                     )}
                     <Popover.Portal>
                         <Popover.Positioner sideOffset={8} align="start" className="z-30">
                             <Popover.Popup className={popup}>
-                                <Popover.Title className="text-sm font-medium">Filter issues</Popover.Title>
+                                <Popover.Title className="text-sm font-medium">{t("issue.filterTitle")}</Popover.Title>
                                 {filters.map((filter) => (
                                     <Select
                                         key={filter.key}
@@ -58,7 +61,7 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
                                         size="sm"
                                         selectedKey={query.get(filter.key) ?? ""}
                                         onSelectionChange={(value) => update(filter.key, String(value ?? ""))}
-                                        items={[{ id: "", label: "All" }, ...filter.items.map((item) => ({ id: item.id, label: item.name }))]}
+                                        items={[{ id: "", label: t("issue.all") }, ...filter.items.map((item) => ({ id: item.id, label: item.name }))]}
                                     >
                                         {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
                                     </Select>
@@ -68,53 +71,53 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
                     </Popover.Portal>
                 </Popover.Root>
                 {compact ? <Popover.Root>
-                    <Popover.Trigger render={<Button aria-label="Search issues" color="tertiary" iconLeading={SearchOutline} />} />
+                    <Popover.Trigger render={<Button aria-label={t("issue.searchIssues")} color="tertiary" iconLeading={SearchOutline} />} />
                     <Popover.Portal><Popover.Positioner sideOffset={8} align="end" className="z-30"><Popover.Popup className={popup}>
-                        <Popover.Title className="sr-only">Search issues</Popover.Title>
-                        <Input size="sm" value={query.get("q") ?? ""} onChange={(value) => update("q", value)} placeholder="Search issues" icon={SearchOutline} />
+                        <Popover.Title className="sr-only">{t("issue.searchIssues")}</Popover.Title>
+                        <Input size="sm" value={query.get("q") ?? ""} onChange={(value) => update("q", value)} placeholder={t("issue.searchIssues")} icon={SearchOutline} />
                     </Popover.Popup></Popover.Positioner></Popover.Portal>
                 </Popover.Root> : (<div className="w-40">
                     <Input
                         size="sm"
                         value={query.get("q") ?? ""}
                         onChange={(value) => update("q", value)}
-                        placeholder="Search issues"
+                        placeholder={t("issue.searchIssues")}
                         icon={SearchOutline}
                         wrapperClassName="bg-transparent ring-0 shadow-none focus-within:ring-1"
                     />
                 </div>)}
                 <div className="ml-auto flex items-center gap-2">
                     <Popover.Root>
-                        <Popover.Trigger render={<Button color={compact ? "secondary" : "tertiary"} iconLeading={compact ? undefined : DisplayOutline} />}>Display</Popover.Trigger>
+                    <Popover.Trigger render={<Button color={compact ? "secondary" : "tertiary"} iconLeading={compact ? undefined : DisplayOutline} />}>{t("issue.display")}</Popover.Trigger>
                         <Popover.Portal>
                             <Popover.Positioner sideOffset={8} align="end" className="z-30">
                                 <Popover.Popup className={popup}>
-                                    <Popover.Title className="text-sm font-medium">Display options</Popover.Title>
+                                    <Popover.Title className="text-sm font-medium">{t("issue.displayOptions")}</Popover.Title>
                                     <Select
-                                        label="Order by"
+                                        label={t("issue.orderBy")}
                                         size="sm"
                                         selectedKey={readIssueOrder(query.get("order"))}
                                         onSelectionChange={(value) => update("order", String(value ?? "position"))}
                                         items={[
-                                            { id: "position", label: "Manual order" },
-                                            { id: "priority", label: "Priority" },
-                                            { id: "updated", label: "Recently updated" },
-                                            { id: "number", label: "Issue number" },
+                                            { id: "position", label: t("issue.manualOrder") },
+                                            { id: "priority", label: t("issue.priority") },
+                                            { id: "updated", label: t("issue.recentlyUpdated") },
+                                            { id: "number", label: t("issue.issueNumber") },
                                         ]}
                                     >
                                         {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
                                     </Select>
                                     {layout === "list" && (
                                         <Select
-                                            label="Group by"
+                                            label={t("issue.groupBy")}
                                             size="sm"
                                             selectedKey={query.get("group") ?? "none"}
                                             onSelectionChange={(value) => update("group", value === "none" ? "" : String(value))}
                                             items={[
-                                                { id: "none", label: "No grouping" },
-                                                { id: "status", label: "Status" },
-                                                { id: "assignee", label: "Assignee" },
-                                                { id: "cycle", label: "Cycle" },
+                                                { id: "none", label: t("issue.noGrouping") },
+                                                { id: "status", label: t("issue.status") },
+                                                { id: "assignee", label: t("issue.assignee") },
+                                                { id: "cycle", label: t("issue.cycle") },
                                             ]}
                                         >
                                             {(item) => <Select.Item id={item.id}>{item.label}</Select.Item>}
@@ -125,7 +128,7 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
                         </Popover.Portal>
                     </Popover.Root>
                     <Button iconLeading={compact ? undefined : AddOutline} onClick={onCreate}>
-                        New issue
+                        {t("issue.newIssue")}
                     </Button>
                 </div>
             </div>
@@ -138,9 +141,9 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
                                 key={filter.key}
                                 onClick={() => update(filter.key, "")}
                                 className="flex items-center gap-1 rounded border border-subtle bg-layer-1 px-2 py-0.5 text-xs text-secondary"
-                                aria-label={`Clear ${filter.label} filter`}
+                                aria-label={t("issue.clearFilter", { filter: filter.label })}
                             >
-                                {filter.label}: {filter.items.find((item) => item.id === query.get(filter.key))?.name ?? "Selected"}
+                                {filter.label}: {filter.items.find((item) => item.id === query.get(filter.key))?.name ?? t("issue.selected")}
                                 <CloseOutline className="size-3" />
                             </button>
                         ))}

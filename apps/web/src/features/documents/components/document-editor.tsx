@@ -14,6 +14,8 @@ import "./document-editor.css";
 import { DocumentFormatMenu } from "./document-format-menu";
 import { DocumentImage } from "./document-image";
 import { type EditorCommand, documentMentionKey, documentSlashKey, documentSuggestions, executeBlockCommand, filterBlockCommands } from "./editor-suggestions";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n/i18n";
 
 const SlashCommands = Extension.create({
     name: "documentSlashCommands",
@@ -90,6 +92,7 @@ export function DocumentEditor({
     members: { id: string; name: string }[];
     disabled?: boolean;
 }) {
+    const { t } = useTranslation();
     const onChangeRef = useRef(onChange),
         membersRef = useRef(members),
         appliedContentVersion = useRef(contentVersion);
@@ -98,7 +101,7 @@ export function DocumentEditor({
     const editor = useEditor({
         immediatelyRender: false,
         content,
-        editorProps: { attributes: { "aria-label": "Document content", role: "textbox", "aria-multiline": "true", spellcheck: "true" } },
+        editorProps: { attributes: { "aria-label": t("editor.documentContent"), role: "textbox", "aria-multiline": "true", spellcheck: "true" } },
         extensions: [
             StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, dropcursor: { color: "var(--bg-accent-primary)", width: 2 } }),
             Link.configure({ openOnClick: false, autolink: true, defaultProtocol: "https" }),
@@ -106,7 +109,7 @@ export function DocumentEditor({
             TaskItem.configure({ nested: true }),
             DocumentImage,
             TableKit.configure({ table: { resizable: true, allowTableNodeSelection: true } }),
-            Placeholder.configure({ placeholder: "Write something, or type ‘/’ for commands…" }),
+            Placeholder.configure({ placeholder: () => i18n.t("editor.writeOrSlash") }),
             Mention.configure({
                 HTMLAttributes: { class: "mention" },
                 suggestion: {
@@ -127,6 +130,11 @@ export function DocumentEditor({
     useEffect(() => {
         editor?.setEditable(!disabled, false);
     }, [editor, disabled]);
+    useEffect(() => {
+        if (!editor) return;
+        editor.view.dom.setAttribute("aria-label", t("editor.documentContent"));
+        editor.view.dispatch(editor.state.tr.setMeta("document-language-changed", true));
+    }, [editor, t]);
     useEffect(() => {
         if (!editor || appliedContentVersion.current === contentVersion) return;
         appliedContentVersion.current = contentVersion;

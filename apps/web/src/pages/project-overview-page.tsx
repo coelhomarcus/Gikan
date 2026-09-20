@@ -8,9 +8,11 @@ import { useColumns } from "@/features/board/hooks/use-board";
 import { useCycles, useIssues } from "@/features/issues/hooks/use-issues";
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
 import { useProject } from "@/features/projects/hooks/use-project";
+import { useTranslation } from "react-i18next";
 
 export const ProjectOverviewPage = () => {
     const { projectId } = useParams<{ projectId: string }>();
+    const { t } = useTranslation();
     const { data: project, isLoading, isError } = useProject(projectId!);
     const { data: issues, isLoading: issuesLoading, isError: issuesError } = useIssues(projectId!);
     const { data: columns, isLoading: columnsLoading, isError: columnsError } = useColumns(projectId!);
@@ -27,7 +29,7 @@ export const ProjectOverviewPage = () => {
                 {overviewLoading ? (
                     <OverviewSkeleton />
                 ) : overviewError || !project ? (
-                    <ErrorMessage message="Could not load the project overview." />
+                    <ErrorMessage message={t("errors.requestFailed")} />
                 ) : (
                 <div className="flex flex-col">
                     <header className="flex flex-wrap items-start justify-between gap-6 border-b border-subtle pb-6">
@@ -42,10 +44,10 @@ export const ProjectOverviewPage = () => {
                         <div>
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <h2 className="text-sm font-semibold text-primary">Project status</h2>
-                                    <p className="mt-1 text-sm text-tertiary">A quick view of the work across your workflow.</p>
+                                    <h2 className="text-sm font-semibold text-primary">{t("projects.projectStatus")}</h2>
+                                    <p className="mt-1 text-sm text-tertiary">{t("projects.workflowSummary")}</p>
                                 </div>
-                                <span className="text-xs text-tertiary">{issuesLoading ? "..." : `${issues?.length ?? 0} issues`}</span>
+                                <span className="text-xs text-tertiary">{issuesLoading ? "..." : t("projects.issueCount", { count: issues?.length ?? 0 })}</span>
                             </div>
                             <div className="mt-4 divide-y divide-subtle rounded-lg border border-subtle">
                                 {(columns ?? []).map((column) => {
@@ -60,29 +62,29 @@ export const ProjectOverviewPage = () => {
                                         </div>
                                     );
                                 })}
-                                {!columnsLoading && columns?.length === 0 && <div className="px-3 py-4 text-sm text-tertiary">Add a status to start organizing issues.</div>}
+                                {!columnsLoading && columns?.length === 0 && <div className="px-3 py-4 text-sm text-tertiary">{t("projects.addStatus")}</div>}
                             </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4 lg:grid-cols-1">
-                            <Fact icon={Gauge} label="Active cycle" value={activeCycle?.name ?? "No active cycle"} />
-                            <Fact icon={ListChecks} label="Estimate" value={`${totalEstimate} points`} />
+                            <Fact icon={Gauge} label={t("projects.activeCycle")} value={activeCycle?.name ?? t("projects.noActiveCycle")} />
+                            <Fact icon={ListChecks} label={t("projects.estimate")} value={t("projects.points", { count: totalEstimate })} />
                         </div>
                     </section>
 
                     <section className="py-6">
                         <div className="mb-4">
-                            <h2 className="text-sm font-semibold text-primary">Project views</h2>
-                            <p className="mt-1 text-sm text-tertiary">Choose the workspace that matches the way you want to work.</p>
+                            <h2 className="text-sm font-semibold text-primary">{t("projects.views")}</h2>
+                            <p className="mt-1 text-sm text-tertiary">{t("projects.viewsDescription")}</p>
                         </div>
                         <div className="divide-y divide-subtle rounded-lg border border-subtle">
-                            <OverviewLink href={`/projects/${projectId}/issues`} icon={AppIcons.Issues} title="Issues" description="Browse, filter, and update the project work." />
-                            <OverviewLink href={`/projects/${projectId}/board`} icon={AppIcons.Board} title="Board" description="Move issues through their statuses." />
-                            <OverviewLink href={`/projects/${projectId}/documents`} icon={AppIcons.Documents} title="Documents" description="Keep the project's main document in one place." />
+                            <OverviewLink href={`/projects/${projectId}/issues`} icon={AppIcons.Issues} title={t("nav.issues")} description={t("projects.browseIssues")} />
+                            <OverviewLink href={`/projects/${projectId}/board`} icon={AppIcons.Board} title={t("projects.board")} description={t("projects.moveIssues")} />
+                            <OverviewLink href={`/projects/${projectId}/documents`} icon={AppIcons.Documents} title={t("nav.documents")} description={t("projects.mainDocument")} />
                         </div>
                     </section>
 
-                    {!issuesLoading && issues?.length === 0 && <EmptyState title="No issues yet" description="Create an issue from the Issues view to start tracking work in this project." />}
+                    {!issuesLoading && issues?.length === 0 && <EmptyState title={t("issue.noIssues")} description={t("issue.createFirst")} />}
                 </div>
                 )}
             </main>
@@ -91,8 +93,9 @@ export const ProjectOverviewPage = () => {
 };
 
 function OverviewSkeleton() {
+    const { t } = useTranslation();
     return (
-        <div className="flex flex-col" role="status" aria-label="Loading project overview" aria-live="polite">
+        <div className="flex flex-col" role="status" aria-label={t("common.loading")} aria-live="polite">
             <div className="space-y-3 border-b border-subtle pb-6">
                 <Skeleton className="h-3 w-16" />
                 <Skeleton className="h-8 w-72 max-w-full" />

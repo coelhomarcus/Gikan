@@ -19,6 +19,8 @@ import {
     Type,
 } from "lucide-react";
 import { type Root, createRoot } from "react-dom/client";
+import i18n from "@/i18n/i18n";
+import type { TranslationKey } from "@/i18n/resources";
 
 export const documentSlashKey = new PluginKey("document-slash");
 export const documentMentionKey = new PluginKey("document-mention");
@@ -115,8 +117,32 @@ export const blockCommands: EditorCommand[] = [
 
 export function filterBlockCommands(query: string) {
     const normalizedQuery = query.trim().toLowerCase();
-    if (!normalizedQuery) return blockCommands;
-    return blockCommands.filter((item) => [item.label, item.detail, ...(item.aliases ?? [])].filter(Boolean).join(" ").toLowerCase().includes(normalizedQuery));
+    const localized = blockCommands.map(localizeCommand);
+    if (!normalizedQuery) return localized;
+    return localized.filter((item, index) => [item.label, item.detail, blockCommands[index].label, blockCommands[index].detail, ...(item.aliases ?? [])].filter(Boolean).join(" ").toLowerCase().includes(normalizedQuery));
+}
+
+const commandKeys: Record<string, [TranslationKey, TranslationKey, TranslationKey]> = {
+    text: ["editor.text", "editor.paragraph", "editor.blocks"],
+    "heading-1": ["editor.heading", "editor.sectionHeading", "editor.blocks"],
+    "heading-2": ["editor.heading", "editor.sectionHeading", "editor.blocks"],
+    "heading-3": ["editor.heading", "editor.sectionHeading", "editor.blocks"],
+    bullet: ["editor.bulletList", "editor.unorderedList", "editor.lists"],
+    numbered: ["editor.numberedList", "editor.orderedList", "editor.lists"],
+    task: ["editor.todoList", "editor.checklist", "editor.lists"],
+    quote: ["editor.quote", "editor.blockquote", "editor.blocks"],
+    code: ["editor.codeBlock", "editor.preformatted", "editor.blocks"],
+    divider: ["editor.divider", "editor.horizontalRule", "editor.blocks"],
+    image: ["editor.image", "editor.insertImageUrl", "editor.media"],
+    table: ["editor.table", "editor.tableDimensions", "editor.media"],
+};
+
+function localizeCommand(item: EditorCommand): EditorCommand {
+    const keys = commandKeys[item.id];
+    if (!keys) return item;
+    const t = i18n.getFixedT(null, "translation");
+    const headingLevel = item.id.startsWith("heading-") ? Number(item.id.slice(-1)) : undefined;
+    return { ...item, label: t(keys[0], headingLevel ? { level: headingLevel } : undefined), detail: t(keys[1]), group: t(keys[2]) };
 }
 
 export function executeBlockCommand(editor: Editor, item: EditorCommand, range: { from: number; to: number }) {
@@ -178,9 +204,10 @@ export function documentSuggestions(pluginKey: PluginKey) {
         if (!props || !root) return;
         const current = props;
         const list = current.items;
+        const t = i18n.getFixedT(null, "translation");
         root.render(
-            <div role="listbox" aria-label={pluginKey === documentMentionKey ? "Mention suggestions" : "Editor commands"} className="document-command-list">
-                {list.length === 0 && <p className="px-3 py-3 text-sm text-tertiary">No results</p>}
+            <div role="listbox" aria-label={t(pluginKey === documentMentionKey ? "editor.mentions" : "editor.commands")} className="document-command-list">
+                {list.length === 0 && <p className="px-3 py-3 text-sm text-tertiary">{t("editor.noResults")}</p>}
                 {list.map((item, i) => {
                     const Icon = commandIcons[item.id];
                     const previous = list[i - 1];

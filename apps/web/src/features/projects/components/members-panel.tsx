@@ -16,8 +16,10 @@ import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { ModalDialog } from "@/components/overlay/modal-dialog";
 import { ApiError } from "@/lib/api-client";
 import { useAddProjectMember, useProjectMembers, useRemoveProjectMember } from "../hooks/use-project-members";
+import { useTranslation } from "react-i18next";
 
 export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
+    const { t, i18n } = useTranslation();
     const { data: members, isLoading, isError } = useProjectMembers(projectId);
     const removeMutation = useRemoveProjectMember(projectId);
     const [search, setSearch] = useState("");
@@ -26,12 +28,12 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
     return (
         <div>
             <header className="flex flex-wrap items-center justify-between gap-4 border-b border-subtle py-2">
-                <h1 className="text-sm font-semibold text-primary">Members</h1>
+                <h1 className="text-sm font-semibold text-primary">{t("settings.members")}</h1>
                 <div className="flex flex-wrap items-center gap-3">
                     <Input
                         size="sm"
-                        aria-label="Search members"
-                        placeholder="Search members"
+                        aria-label={t("settings.searchMembers")}
+                        placeholder={t("settings.searchMembers")}
                         icon={Search}
                         value={search}
                         onChange={setSearch}
@@ -41,11 +43,11 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                         <ModalDialog
                             trigger={
                                 <Button size="lg" iconLeading={Plus}>
-                                    Add member
+                                    {t("settings.addMember")}
                                 </Button>
                             }
-                            title="Add member"
-                            description="Add an existing Gikan user to this project."
+                            title={t("settings.addMember")}
+                            description={t("settings.addMemberDescription")}
                         >
                             {({ close }) => <AddMemberForm projectId={projectId} onClose={close} />}
                         </ModalDialog>
@@ -54,15 +56,15 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
             </header>
             {removeMutation.isError && (
                 <div className="mt-4">
-                    <Alert tone="error">{removeMutation.error instanceof ApiError ? removeMutation.error.message : "Could not remove the member."}</Alert>
+                    <Alert tone="error">{removeMutation.error instanceof ApiError ? removeMutation.error.message : t("settings.couldNotRemoveMember")}</Alert>
                 </div>
             )}
-            {isLoading && <LoadingState label="Loading members..." />}
-            {isError && <ErrorMessage message="Could not load the project members." />}
+            {isLoading && <LoadingState label={t("settings.loadingMembers")} />}
+            {isError && <ErrorMessage message={t("settings.couldNotLoadMembers")} />}
             {filtered && filtered.length === 0 && (
                 <EmptyState
-                    title={search.trim() ? "No members found" : "No members yet"}
-                    description={search.trim() ? "Try a different name, username, or email." : "Add teammates to collaborate on this project."}
+                    title={search.trim() ? t("settings.noMembersFound") : t("settings.noMembers")}
+                    description={search.trim() ? t("settings.tryMemberSearch") : t("settings.inviteTeammates")}
                 />
             )}
             {!!filtered?.length && (
@@ -71,20 +73,20 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                         <thead>
                             <tr className="border-b border-subtle text-xs text-tertiary">
                                 <th scope="col" className="min-w-56 px-3 py-3 font-medium">
-                                    Name
+                                    {t("settings.name")}
                                 </th>
                                 <th scope="col" className="px-3 py-3 font-medium">
-                                    Email
+                                    {t("settings.email")}
                                 </th>
                                 <th scope="col" className="px-3 py-3 font-medium">
-                                    Role
+                                    {t("settings.role")}
                                 </th>
                                 <th scope="col" className="px-3 py-3 font-medium whitespace-nowrap">
-                                    Joined on
+                                    {t("settings.joinedOn")}
                                 </th>
                                 {isProjectOwner && (
                                     <th scope="col" className="w-10">
-                                        <span className="sr-only">Actions</span>
+                                        <span className="sr-only">{t("settings.actions")}</span>
                                     </th>
                                 )}
                             </tr>
@@ -108,9 +110,9 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                         </div>
                                     </td>
                                     <td className="px-3 py-3 text-tertiary">{member.email}</td>
-                                    <td className="px-3 py-3">{member.role === "owner" ? "Owner" : "Member"}</td>
+                                    <td className="px-3 py-3">{member.role === "owner" ? t("settings.owner") : t("settings.member")}</td>
                                     <td className="px-3 py-3 whitespace-nowrap text-tertiary">
-                                        {new Date(member.joinedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                        {new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }).format(new Date(member.joinedAt))}
                                     </td>
                                     {isProjectOwner && (
                                         <td className="px-2 py-3">
@@ -122,13 +124,13 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                                                 icon={UserRoundMinus}
                                                                 size="sm"
                                                                 color="tertiary"
-                                                                tooltip={`Remove ${member.name}`}
+                                                                tooltip={`${t("settings.removeMember")} ${member.name}`}
                                                                 isDisabled={removeMutation.isPending}
                                                             />
                                                         }
-                                                        title="Remove member"
-                                                        description={`${member.name} (@${member.username}) will lose access to this project. You can add them again later.`}
-                                                        confirmLabel="Remove member"
+                                                        title={t("settings.removeMember")}
+                                                        description={t("settings.removeMemberDescription", { name: member.name, username: member.username })}
+                                                        confirmLabel={t("settings.removeMember")}
                                                         isPending={removeMutation.isPending}
                                                         onConfirm={() => removeMutation.mutate(member.id)}
                                                     />
@@ -147,6 +149,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
 };
 
 function AddMemberForm({ projectId, onClose }: { projectId: string; onClose: () => void }) {
+    const { t } = useTranslation();
     const mutation = useAddProjectMember(projectId);
     const { control, handleSubmit, setError, formState } = useForm<AddProjectMemberInput>({
         resolver: zodResolver(addProjectMemberSchema),
@@ -159,18 +162,18 @@ function AddMemberForm({ projectId, onClose }: { projectId: string; onClose: () 
             onSubmit={handleSubmit((data) =>
                 mutation.mutate(data.username, {
                     onSuccess: onClose,
-                    onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not add the member." }),
+                    onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : t("settings.couldNotAddMember") }),
                 }),
             )}
         >
-            <ControlledInput control={control} name="username" label="Username" placeholder="username" isRequired autoFocus isDisabled={mutation.isPending} />
+            <ControlledInput control={control} name="username" label={t("settings.username")} placeholder={t("settings.username")} isRequired autoFocus isDisabled={mutation.isPending} />
             {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
             <div className="flex justify-end gap-2">
                 <Button color="secondary" size="lg" isDisabled={mutation.isPending} onClick={onClose}>
-                    Cancel
+                    {t("common.cancel")}
                 </Button>
                 <Button type="submit" size="lg" isLoading={mutation.isPending}>
-                    Add member
+                    {t("settings.addMember")}
                 </Button>
             </div>
         </form>

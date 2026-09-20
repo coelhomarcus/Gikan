@@ -1,9 +1,11 @@
 import { Skeleton } from "@/components/base/feedback/skeleton";
+import { useTranslation } from "react-i18next";
 
 /** Keeps the workspace frame mounted while a lazy route's content is loaded. */
 export function WorkspaceLoadingFallback() {
+    const { t } = useTranslation();
     return (
-        <div className="flex min-h-0 flex-1 flex-col" role="status" aria-label="Loading page" aria-live="polite">
+        <div className="flex min-h-0 flex-1 flex-col" role="status" aria-label={t("common.loadingPage")} aria-live="polite">
             <div className="flex h-12 shrink-0 items-center border-b border-subtle px-4">
                 <Skeleton className="h-4 w-48" />
             </div>

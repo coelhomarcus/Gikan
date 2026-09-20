@@ -18,11 +18,14 @@ import { ProjectWorkspaceHeader } from "@/features/projects/components/project-w
 import { IssueToolbar } from "@/features/issues/components/issue-toolbar";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { ApiError } from "@/lib/api-client";
+import { useTranslation } from "react-i18next";
+import { translateStatusName } from "@/i18n/status-label";
 
 type OrderBy = "position" | "priority" | "updated" | "number";
 type GroupBy = "none" | "status" | "assignee" | "cycle";
 
 export const ProjectIssuesPage = () => {
+    const { t } = useTranslation();
     const { projectId } = useParams<{ projectId: string }>();
     const location = useLocation();
     const navigate = useNavigate();
@@ -81,13 +84,13 @@ export const ProjectIssuesPage = () => {
             key,
             label:
                 groupBy === "status"
-                    ? columnById.get(key)?.name ?? "Unknown status"
+                    ? columnById.get(key)?.name ?? t("issue.unknownStatus")
                     : groupBy === "assignee"
-                      ? memberById.get(key)?.name ?? "Unassigned"
-                      : cycleById.get(key)?.name ?? "No cycle",
+                      ? memberById.get(key)?.name ?? t("issue.unassigned")
+                      : cycleById.get(key)?.name ?? t("issue.noCycle"),
             issues: groupedIssues,
         }));
-    }, [columnById, cycleById, filteredIssues, groupBy, memberById]);
+    }, [columnById, cycleById, filteredIssues, groupBy, memberById, t]);
     const orderedIssues = useMemo(() => groups.flatMap((group) => group.issues), [groups]);
 
     useEffect(() => {
@@ -139,11 +142,11 @@ export const ProjectIssuesPage = () => {
 
     function submitIssue() {
         if (!title.trim()) {
-            setCreateError("Add a title to create the issue.");
+            setCreateError(t("validation.required"));
             return;
         }
         if (!columns?.[0]) {
-            setCreateError("Create a status before adding an issue.");
+            setCreateError(t("issue.createStatusFirst"));
             return;
         }
         setCreateError(null);
@@ -155,7 +158,7 @@ export const ProjectIssuesPage = () => {
                     setIsCreating(false);
                     openIssue(issue.identifier);
                 },
-                onError: (reason) => setCreateError(reason instanceof ApiError ? reason.message : "Could not create the issue."),
+                onError: (reason) => setCreateError(reason instanceof ApiError ? reason.message : t("errors.requestFailed")),
             },
         );
     }
@@ -177,36 +180,36 @@ export const ProjectIssuesPage = () => {
                                     setTitle(value);
                                 }}
                                 onKeyDown={(event) => event.key === "Enter" && submitIssue()}
-                                placeholder="Issue title"
+                                placeholder={t("issue.issueTitle")}
                                 size="sm"
                                 className="min-w-0 flex-1"
-                                aria-label="Issue title"
+                                aria-label={t("issue.issueTitle")}
                             />
                             <Button size="xs" isLoading={createIssue.isPending} onClick={submitIssue}>
-                                Create
+                                {t("common.create")}
                             </Button>
                             <Button size="xs" color="tertiary" onClick={() => setIsCreating(false)}>
-                                Cancel
+                                {t("common.cancel")}
                             </Button>
                             {createError && <p role="alert" className="text-xs text-danger-primary">{createError}</p>}
                         </div>
                     )}
 
                     {isLoading && <IssueListSkeleton />}
-                    {isError && <ErrorMessage message="Could not load the project issues." />}
+                    {isError && <ErrorMessage message={t("issue.couldNotLoadIssues")} />}
                     {!isLoading && !isError && (
                         <div className="overflow-hidden">
                             <div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] gap-3 border-b border-subtle px-3 py-2 text-xs font-medium text-tertiary sm:grid lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem]">
-                                <span>Issue</span>
-                                <span>Status</span>
-                                <span>Priority</span>
-                                <span>Assignee</span>
-                                <span className="hidden lg:block">Label</span>
-                                <span className="hidden lg:block">Cycle</span>
-                                <span className="hidden text-right lg:block">Est.</span>
+                                <span>{t("issue.title")}</span>
+                                <span>{t("issue.status")}</span>
+                                <span>{t("issue.priority")}</span>
+                                <span>{t("issue.assignee")}</span>
+                                <span className="hidden lg:block">{t("issue.label")}</span>
+                                <span className="hidden lg:block">{t("issue.cycle")}</span>
+                                <span className="hidden text-right lg:block">{t("issue.estimate")}</span>
                             </div>
                             {groups.map((group) => (
-                                <section key={group.key} aria-label={group.label ?? "All issues"}>
+                                <section key={group.key} aria-label={group.label ?? t("issue.allIssues")}>
                                     {group.label && (
                                         <h2 className="border-b border-subtle bg-surface-2">
                                             <button
@@ -221,7 +224,7 @@ export const ProjectIssuesPage = () => {
                                                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-secondary hover:bg-layer-1-hover"
                                             >
                                                 <ChevronDown className={`size-3.5 text-placeholder transition-transform ${collapsedGroups.has(group.key) ? "-rotate-90" : ""}`} aria-hidden="true" />
-                                                <span>{group.label}</span>
+                                                <span>{group.label === "Unknown status" ? t("issue.unknownStatus") : translateStatusName(group.label, t)}</span>
                                                 <span className="text-tertiary">{group.issues.length}</span>
                                             </button>
                                         </h2>
@@ -244,16 +247,16 @@ export const ProjectIssuesPage = () => {
                             ))}
                             {filteredIssues.length === 0 && (
                                 <EmptyState
-                                    title={issues?.length ? "No issues match these filters" : "No issues yet"}
-                                    description={issues?.length ? "Try clearing a filter or changing your search." : "Create your first issue to start tracking work in this project."}
+                                    title={issues?.length ? t("issue.noIssuesMatch") : t("issue.noIssues")}
+                                    description={issues?.length ? t("issue.clearOrSearch") : t("issue.createFirstIssue")}
                                     action={
                                         issues?.length ? (
                                             <Button size="sm" color="secondary" onClick={clearFilters}>
-                                                Clear filters
+                                                {t("issue.clearFilters")}
                                             </Button>
                                         ) : (
                                             <Button size="sm" iconLeading={Plus} onClick={() => setIsCreating(true)}>
-                                                New issue
+                                                {t("issue.newIssue")}
                                             </Button>
                                         )
                                     }
@@ -268,7 +271,8 @@ export const ProjectIssuesPage = () => {
 };
 
 function IssueListSkeleton() {
-    return <div className="overflow-hidden" aria-label="Loading issues" role="status">
+    const { t } = useTranslation();
+    return <div className="overflow-hidden" aria-label={t("common.loading")} role="status">
         <div className="hidden h-9 border-b border-subtle bg-surface-2 sm:block" />
         <div className="divide-y divide-subtle">{["one", "two", "three", "four", "five"].map((key) => <div key={key} className="flex min-h-12 items-center gap-3 px-3 py-2">
             <Skeleton className="size-2 shrink-0 rounded-full" /><Skeleton className="h-3 w-16 shrink-0" /><Skeleton className="h-3 min-w-0 flex-1" /><Skeleton className="hidden h-6 w-16 sm:block" /><Skeleton className="hidden h-3 w-20 lg:block" />
@@ -305,6 +309,7 @@ function IssueRow({
     selected: boolean;
     onSelect: () => void;
 }) {
+    const { t } = useTranslation();
     return (
         <div
             className="group/issue relative"
@@ -327,19 +332,19 @@ function IssueRow({
                     <span aria-hidden="true" className="size-2 shrink-0 rounded-full" style={{ backgroundColor: column?.color ?? "#71717a" }} />
                     <span className="w-16 shrink-0 text-xs text-tertiary">{issue.identifier}</span>
                     <span className="min-w-0 truncate text-sm text-primary">{issue.title}</span>
-                    <span className="ml-auto hidden shrink-0 text-[11px] text-tertiary max-sm:block">{column?.name}</span>
+                    <span className="ml-auto hidden shrink-0 text-[11px] text-tertiary max-sm:block">{column ? translateStatusName(column.name, t) : ""}</span>
                 </span>
-                <span className="truncate text-xs text-secondary max-sm:hidden">{column?.name ?? "Unknown"}</span>
+                <span className="truncate text-xs text-secondary max-sm:hidden">{column ? translateStatusName(column.name, t) : t("issue.unknown")}</span>
                 <span className="max-sm:hidden"><ImportanceBadge importance={issue.priority} /></span>
                 <span className="flex min-w-0 items-center gap-2 text-xs text-tertiary max-sm:hidden">
                     {member ? <Avatar size="xs" src={member.avatarUrl ?? undefined} initials={initialsOf(member.name)} /> : <span className="size-6 shrink-0 rounded-full border border-dashed border-subtle" />}
-                    <span className="truncate">{member?.name ?? "Unassigned"}</span>
+                    <span className="truncate">{member?.name ?? t("issue.unassigned")}</span>
                 </span>
                 <span className="hidden truncate text-xs text-tertiary lg:block">{category?.name ?? "—"}</span>
                 <span className="hidden truncate text-xs text-tertiary lg:block">{cycle?.name ?? "—"}</span>
                 <span className="hidden text-right font-mono text-xs text-tertiary lg:block">{issue.estimate ?? "—"}</span>
                 <span className="hidden truncate text-[11px] text-tertiary max-sm:block">
-                    {[category?.name, cycle?.name, `${issue.priority} priority`].filter(Boolean).join(" · ")}
+                    {[category?.name, cycle?.name, `${t(`issue.${issue.priority}`)} · ${t("issue.priority")}`].filter(Boolean).join(" · ")}
                 </span>
             </Link>
             <ContextMenuButton

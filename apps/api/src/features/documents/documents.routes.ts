@@ -44,6 +44,7 @@ documentsRouter.patch(
       document: await service.updateDocument(
         projectId,
         documentId,
+        req.user!.sub,
         updateDocumentSchema.parse(req.body),
       ),
     });

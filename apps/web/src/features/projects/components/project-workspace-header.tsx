@@ -7,6 +7,7 @@ import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useProjects } from "@/features/projects/hooks/use-projects";
 import { ProjectIcon } from "./project-icon";
+import { useTranslation } from "react-i18next";
 
 export function ProjectWorkspaceHeader({
     projectId,
@@ -21,8 +22,9 @@ export function ProjectWorkspaceHeader({
     const { data: projects } = useProjects();
     const project = projectData ?? projects?.find((candidate) => candidate.id === projectId);
     const location = useLocation();
+    const { t } = useTranslation();
     const issues = activeView === "issues" || activeView === "board";
-    const title = issues ? "Issues" : activeView.charAt(0).toUpperCase() + activeView.slice(1);
+    const title = issues ? t("nav.issues") : activeView === "board" ? t("projects.board") : activeView === "overview" ? t("nav.overview") : activeView === "documents" ? t("nav.documents") : activeView === "cycles" ? t("nav.cycles") : t("nav.projectSettings");
     return (
         <Topbar
             title={
@@ -31,7 +33,7 @@ export function ProjectWorkspaceHeader({
                         className="flex min-w-0 items-center gap-2"
                         data-project-context="true"
                         data-project-id={projectId}
-                        data-project-name={project?.name ?? "Project"}
+                        data-project-name={project?.name ?? t("projects.project")}
                         data-project-issue-key={project?.issueKey ?? ""}
                     >
                     <ProjectIcon icon={project?.icon} className="size-4 shrink-0 text-tertiary" />
@@ -39,7 +41,7 @@ export function ProjectWorkspaceHeader({
                         to={`/projects/${projectId}`}
                         className="truncate text-secondary hover:text-primary"
                     >
-                        {project?.name ?? "Project"}
+                        {project?.name ?? t("projects.project")}
                     </Link>
                     {project && <ContextMenuButton entity={{ type: "project", projectId, name: project.name, issueKey: project.issueKey }} className="size-7" />}
                     </span>
@@ -50,17 +52,17 @@ export function ProjectWorkspaceHeader({
             actions={
                 <>
                     {issues && (
-                        <nav aria-label="Issue layout" className="flex gap-0.5 rounded-md border border-subtle p-0.5">
+                    <nav aria-label={t("issue.issues")} className="flex gap-0.5 rounded-md border border-subtle p-0.5">
                             {(
                                 [
-                                    ["issues/list", "issues", "List", AppIcons.Issues],
-                                    ["issues", "board", "Board", AppIcons.Board],
+                                    ["issues/list", "issues", t("issue.list"), AppIcons.Issues],
+                                    ["issues", "board", t("projects.board"), AppIcons.Board],
                                 ] as const
                             ).map(([path, view, label, Icon]) => (
                                 <Link
                                     key={path}
                                     to={`/projects/${projectId}/${path}${location.search}`}
-                                    aria-label={`${label} layout`}
+                                    aria-label={`${label} ${t("issue.layout")}`}
                                     aria-current={activeView === view ? "page" : undefined}
                                     className={`flex size-6 items-center justify-center rounded-sm text-tertiary hover:bg-layer-1-hover ${activeView === view ? "bg-layer-2 text-primary" : ""}`}
                                 >
@@ -74,7 +76,7 @@ export function ProjectWorkspaceHeader({
                         <ButtonUtility
                             icon={AppIcons.ExternalLink}
                             color="tertiary"
-                            tooltip="Open repository"
+                            tooltip={t("projects.openRepository")}
                             href={project.repositoryUrl}
                             target="_blank"
                             rel="noopener noreferrer"
@@ -82,7 +84,7 @@ export function ProjectWorkspaceHeader({
                     )}
                     {!actions && <Link
                         to={`/projects/${projectId}/settings/general`}
-                        aria-label="Project settings"
+                        aria-label={t("nav.projectSettings")}
                         className="flex size-6 items-center justify-center rounded text-tertiary hover:bg-layer-1-hover"
                     >
                         <AppIcons.Settings className="size-4" />

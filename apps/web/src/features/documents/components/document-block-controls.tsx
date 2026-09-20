@@ -4,8 +4,9 @@ import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import { TextSelection, type Transaction } from "@tiptap/pm/state";
 import { type Editor, useEditorState } from "@tiptap/react";
 import { GripVertical, Plus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { convertDocumentBlock } from "./block-conversion";
-import { blockCommands } from "./editor-suggestions";
+import { filterBlockCommands } from "./editor-suggestions";
 
 function getTopLevelBlock(editor: Editor, position: number) {
     if (!Number.isInteger(position) || position < 0 || position >= editor.state.doc.content.size) return null;
@@ -45,6 +46,7 @@ function BlockActions({
     getPosition: () => number;
     onOpenChange: (open: boolean) => void;
 }) {
+    const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const setMenuOpen = (value: boolean) => {
         setOpen(value);
@@ -68,20 +70,20 @@ function BlockActions({
     };
     return (
         <>
-            <button type="button" className="document-block-button" aria-label="Add block" onMouseDown={(event) => event.preventDefault()} onClick={add}>
+            <button type="button" className="document-block-button" aria-label={t("editor.addBlock")} onMouseDown={(event) => event.preventDefault()} onClick={add}>
                 <Plus className="size-4" />
             </button>
             <Popover.Root open={open} onOpenChange={setMenuOpen}>
-                <Popover.Trigger className="document-block-button" aria-label="Block actions">
+                <Popover.Trigger className="document-block-button" aria-label={t("editor.blockActions")}>
                     <GripVertical className="size-4" />
                 </Popover.Trigger>
                 <Popover.Portal>
                     <Popover.Positioner side="right" align="start" sideOffset={8} collisionPadding={12} className="document-overlay">
                         <Popover.Popup finalFocus={() => editor.view.dom} className="document-popover w-56">
-                            <Popover.Title className="mb-2 px-2 text-xs font-medium text-tertiary">Block actions</Popover.Title>
+                            <Popover.Title className="mb-2 px-2 text-xs font-medium text-tertiary">{t("editor.blockActions")}</Popover.Title>
                             <div className="flex flex-col" onClick={() => setMenuOpen(false)}>
                                 <button className="document-menu-item" onClick={add}>
-                                    Add block below
+                                    {t("editor.addBlockBelow")}
                                 </button>
                                 <button
                                     className="document-menu-item"
@@ -95,21 +97,21 @@ function BlockActions({
                                                 .run();
                                     }}
                                 >
-                                    Duplicate
+                                    {t("editor.duplicate")}
                                 </button>
                                 <button
                                     className="document-menu-item"
                                     disabled={position === 0}
                                     onClick={() => moveDocumentBlock(editor, currentPosition(), -1)}
                                 >
-                                    Move up
+                                    {t("editor.moveUp")}
                                 </button>
                                 <button
                                     className="document-menu-item"
                                     disabled={!node || position + node.nodeSize === editor.state.doc.content.size}
                                     onClick={() => moveDocumentBlock(editor, currentPosition(), 1)}
                                 >
-                                    Move down
+                                    {t("editor.moveDown")}
                                 </button>
                                 <button
                                     className="document-menu-item text-danger-primary"
@@ -123,12 +125,12 @@ function BlockActions({
                                                 .run();
                                     }}
                                 >
-                                    Delete block
+                                    {t("editor.deleteBlock")}
                                 </button>
                                 {node && !["image", "table", "horizontalRule"].includes(node.type.name) && (
                                     <>
-                                        <p className="mt-2 border-t border-subtle px-2 py-2 text-xs text-tertiary">Turn into</p>
-                                        {blockCommands.slice(0, 9).map((command) => (
+                                        <p className="mt-2 border-t border-subtle px-2 py-2 text-xs text-tertiary">{t("editor.turnInto")}</p>
+                                        {filterBlockCommands("").slice(0, 9).map((command) => (
                                             <button
                                                 key={command.id}
                                                 className="document-menu-item"
@@ -194,7 +196,7 @@ export function DocumentBlockControls({ editor }: { editor: Editor }) {
                     </div>
                 )}
             </DragHandle>
-            <div className="document-touch-controls flex items-center gap-1" aria-label="Current block">
+            <div className="document-touch-controls flex items-center gap-1" aria-label={t("editor.currentBlock")}>
                 <BlockActions
                     editor={editor}
                     position={cursorPosition}

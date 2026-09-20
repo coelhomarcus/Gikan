@@ -10,6 +10,7 @@ import { isReactComponent } from "@/utils/is-react-component";
 import { ComboBox } from "./combobox";
 import { SelectItem } from "./select-item";
 import { type CommonProps, SelectContext, type SelectItemType, sizes } from "./select-shared";
+import { useTranslation } from "react-i18next";
 
 export { SelectContext, sizes, type CommonProps, type SelectItemType } from "./select-shared";
 
@@ -65,7 +66,7 @@ const SelectValue = ({
 );
 
 const Select = ({
-    placeholder = "Select",
+    placeholder,
     icon,
     size = "md",
     children,
@@ -88,6 +89,8 @@ const Select = ({
     "aria-label": ariaLabel,
     ...rest
 }: SelectProps) => {
+    const { t } = useTranslation();
+    const resolvedPlaceholder = placeholder ?? t("common.select");
     const selectedValue = selectedKey !== undefined ? selectedKey : value;
     const initialValue = defaultSelectedKey !== undefined ? defaultSelectedKey : defaultValue;
     const triggerId = useId();
@@ -125,7 +128,7 @@ const Select = ({
                         )}
                         aria-invalid={isInvalid || undefined}
                     >
-                        <SelectValue icon={icon} size={size} placeholder={placeholder} items={items} />
+                        <SelectValue icon={icon} size={size} placeholder={resolvedPlaceholder} items={items} />
                         <BaseSelect.Icon className="ml-auto shrink-0 text-placeholder">
                             <ChevronDown aria-hidden="true" className={size === "lg" ? "size-5" : "size-4 stroke-[2.25px]"} />
                         </BaseSelect.Icon>

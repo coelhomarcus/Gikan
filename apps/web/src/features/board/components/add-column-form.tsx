@@ -5,8 +5,10 @@ import { Input } from "@/components/base/input/input";
 import { useCreateColumn } from "../hooks/use-board";
 import { COLUMN_COLORS } from "./column-color";
 import { ColumnColorPicker } from "./column-color-picker";
+import { useTranslation } from "react-i18next";
 
 export const AddColumnForm = ({ projectId }: { projectId: string }) => {
+    const { t } = useTranslation();
     const [isAdding, setIsAdding] = useState(false);
     const [name, setName] = useState("");
     const [color, setColor] = useState<string>(COLUMN_COLORS[0]);
@@ -22,7 +24,7 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
         return (
             <div className="w-[350px] shrink-0">
                 <Button color="secondary" size="sm" iconLeading={Plus} onClick={() => setIsAdding(true)} className="w-full justify-start">
-                    New column
+                    {t("settings.newColumn")}
                 </Button>
             </div>
         );
@@ -38,16 +40,16 @@ export const AddColumnForm = ({ projectId }: { projectId: string }) => {
                 mutation.mutate({ name: trimmed, color }, { onSuccess: reset });
             }}
         >
-            <Input size="sm" aria-label="Column name" placeholder="Column name" value={name} onChange={setName} autoFocus />
+            <Input size="sm" aria-label={t("settings.columnName")} placeholder={t("settings.columnName")} value={name} onChange={setName} autoFocus />
 
             <ColumnColorPicker value={color} onChange={setColor} />
 
             <div className="flex gap-2">
                 <Button type="submit" size="sm" isLoading={mutation.isPending}>
-                    Add
+                    {t("common.add")}
                 </Button>
                 <Button type="button" size="sm" color="secondary" onClick={reset}>
-                    Cancel
+                    {t("common.cancel")}
                 </Button>
             </div>
         </form>

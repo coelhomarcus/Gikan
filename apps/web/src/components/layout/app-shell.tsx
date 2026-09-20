@@ -11,6 +11,7 @@ import { GikanIcon } from "@/components/foundations/logo/gikan-icon";
 import { ProjectSearchModal } from "@/features/projects/components/project-search-modal";
 import { Sidebar } from "./sidebar";
 import { SidebarAccount } from "./sidebar-account";
+import { useTranslation } from "react-i18next";
 
 const NavigationContext = createContext({ toggleSidebar: () => {} });
 export const useAppNavigation = () => useContext(NavigationContext);
@@ -21,6 +22,7 @@ const readWidth = () => {
 
 export const AppShell = () => {
     const location = useLocation();
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [width, setWidth] = useState(readWidth);
     const [collapsed, setCollapsed] = useState(() => localStorage.getItem("gikan-sidebar-collapsed") === "true");
@@ -66,12 +68,12 @@ export const AppShell = () => {
     return (
         <NavigationContext.Provider value={{ toggleSidebar }}>
             <div className="flex h-dvh min-h-0 flex-col overflow-hidden bg-canvas text-primary">
-                <header className="flex h-10 shrink-0 items-center justify-between gap-2 px-3.5" aria-label="Global navigation">
+                <header className="flex h-10 shrink-0 items-center justify-between gap-2 px-3.5" aria-label={t("nav.search")}>
                     <div className="flex min-w-0 flex-1 items-center gap-2">
                         <span className="md:hidden">
-                            <ButtonUtility color="tertiary" icon={AppIcons.Menu} tooltip="Open navigation" onClick={toggleSidebar} />
+                            <ButtonUtility color="tertiary" icon={AppIcons.Menu} tooltip={t("nav.expand")} onClick={toggleSidebar} />
                         </span>
-                        <Link to="/" className="flex items-center gap-2 rounded-sm text-sm font-semibold" aria-label="Gikan home">
+                        <Link to="/" className="flex items-center gap-2 rounded-sm text-sm font-semibold" aria-label="Gikan">
                             <GikanIcon className="size-5 text-primary" />
                             Gikan
                         </Link>
@@ -80,10 +82,10 @@ export const AppShell = () => {
                         type="button"
                         onClick={() => setSearchOpen(true)}
                         className="flex h-7 w-64 max-w-[45vw] items-center gap-2 rounded-md border border-subtle bg-surface-1 px-2 text-xs text-placeholder hover:bg-layer-1-hover"
-                        aria-label="Search workspace"
+                        aria-label={t("nav.search")}
                     >
                         <AppIcons.Search className="size-3.5" />
-                        <span className="truncate">Search</span>
+                        <span className="truncate">{t("nav.search")}</span>
                         <kbd className="ml-auto shrink-0 rounded border border-subtle px-1 text-[10px]">⌘ K</kbd>
                     </button>
                     <div className="flex flex-1 justify-end">
@@ -91,10 +93,10 @@ export const AppShell = () => {
                     </div>
                 </header>
                 <div className="flex min-h-0 flex-1 pr-2 pb-2 max-md:px-2">
-                    <nav className="hidden w-[60px] shrink-0 flex-col gap-4 px-2 py-3 md:flex" aria-label="Applications">
+                    <nav className="hidden w-[60px] shrink-0 flex-col gap-4 px-2 py-3 md:flex" aria-label={t("nav.applications")}>
                         <Link to="/" className={`${railItem} ${!settings ? "bg-layer-1 text-primary" : ""}`} aria-current={!settings ? "page" : undefined}>
                             <AppIcons.Projects className="size-5" />
-                            Projects
+                            {t("nav.projects")}
                         </Link>
                         <div className="mx-2 border-t border-strong" />
                         <Link
@@ -103,7 +105,7 @@ export const AppShell = () => {
                             aria-current={settings ? "page" : undefined}
                         >
                             <AppIcons.Settings className="size-5" />
-                            Settings
+                            {t("nav.settings")}
                         </Link>
                     </nav>
                     <div className="relative flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg border border-subtle bg-surface-1" data-app-content>
@@ -111,12 +113,12 @@ export const AppShell = () => {
                             <aside
                                 className="relative hidden h-full shrink-0 border-r border-subtle bg-surface-1 md:block"
                                 style={{ width }}
-                                aria-label="Project navigation"
+                                aria-label={t("nav.projects")}
                             >
                                 <Sidebar onCollapse={toggleSidebar} />
                                 <div
                                     role="separator"
-                                    aria-label="Resize sidebar"
+                                    aria-label={t("nav.resizeSidebar")}
                                     aria-orientation="vertical"
                                     aria-valuenow={width}
                                     aria-valuemin={236}
@@ -153,7 +155,7 @@ export const AppShell = () => {
                     <Dialog.Portal>
                         <Dialog.Backdrop className="fixed inset-0 z-40 bg-backdrop" />
                         <Dialog.Popup className="fixed inset-y-0 left-0 z-50 w-[min(300px,85vw)] border-r border-subtle bg-surface-1 outline-none">
-                            <Dialog.Title className="sr-only">Navigation</Dialog.Title>
+                            <Dialog.Title className="sr-only">{t("nav.navigation")}</Dialog.Title>
                             <Sidebar onCollapse={() => setMobileOpen(false)} />
                             <button
                                 className="m-3 flex items-center gap-2 rounded px-2 py-1 text-sm text-secondary hover:bg-layer-1"
@@ -163,7 +165,7 @@ export const AppShell = () => {
                                 }}
                             >
                                 <AppIcons.Settings className="size-4" />
-                                Settings
+                                {t("nav.settings")}
                             </button>
                         </Dialog.Popup>
                     </Dialog.Portal>

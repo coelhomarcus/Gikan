@@ -1,4 +1,4 @@
-import { suggestProjectKey, type CreateProjectInput, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
+import { resolveLocale, suggestProjectKey, type CreateProjectInput, type Locale, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
 import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, issues, projectMembers, projects, users } from "../../db/schema";
@@ -6,11 +6,18 @@ import { HttpError } from "../../lib/http-error";
 import { isProjectKeyConflict } from "./project-key";
 
 /** Initial colors for the default columns. The same hexes are used by migration 0005, which backfilled projects created before this field existed. */
-const DEFAULT_COLUMNS = [
-    { name: "To Do", color: "#eaaa08" },
-    { name: "In Progress", color: "#7a5af8" },
-    { name: "Done", color: "#17b26a" },
-];
+const DEFAULT_COLUMNS: Record<Locale, Array<{ name: string; color: string }>> = {
+    en: [
+        { name: "To Do", color: "#eaaa08" },
+        { name: "In Progress", color: "#7a5af8" },
+        { name: "Done", color: "#17b26a" },
+    ],
+    "pt-BR": [
+        { name: "A fazer", color: "#eaaa08" },
+        { name: "Em andamento", color: "#7a5af8" },
+        { name: "Concluído", color: "#17b26a" },
+    ],
+};
 
 const PROJECT_LIST_COLUMNS = {
     id: true,
@@ -39,6 +46,8 @@ async function resolveProjectKey(name: string) {
 }
 
 export async function createProject(input: CreateProjectInput, creatorId: string) {
+    const creator = await db.query.users.findFirst({ where: eq(users.id, creatorId), columns: { locale: true } });
+    const locale: Locale = resolveLocale(creator?.locale);
     for (let attempt = 0; attempt < 5; attempt += 1) {
         const issueKey = input.issueKey ?? await resolveProjectKey(input.name);
 
@@ -59,7 +68,7 @@ export async function createProject(input: CreateProjectInput, creatorId: string
                 await tx.insert(projectMembers).values({ projectId: project.id, userId: creatorId, role: "owner" });
 
                 await tx.insert(boardColumns).values(
-                    DEFAULT_COLUMNS.map((column, index) => ({
+                    DEFAULT_COLUMNS[locale].map((column, index) => ({
                         projectId: project.id,
                         name: column.name,
                         color: column.color,

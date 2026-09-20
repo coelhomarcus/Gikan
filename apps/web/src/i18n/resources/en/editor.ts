@@ -1,0 +1,12 @@
+const editor = {
+        text: "Text", paragraph: "Plain paragraph", heading: "Heading {{level}}", sectionHeading: "Section heading", bulletList: "Bullet list", unorderedList: "Unordered list",
+        numberedList: "Numbered list", orderedList: "Ordered list", todoList: "To-do list", checklist: "Checklist", quote: "Quote", blockquote: "Block quote",
+        codeBlock: "Code block", preformatted: "Preformatted text", divider: "Divider", horizontalRule: "Horizontal rule", image: "Image", insertImageUrl: "Insert an image URL",
+        table: "Table", tableDimensions: "3 × 3 with a header row", blocks: "Blocks", lists: "Lists", media: "Media", commands: "Editor commands", mentions: "Mention suggestions",
+        noResults: "No results", addBlock: "Add block", blockActions: "Block actions", addBlockBelow: "Add block below", duplicate: "Duplicate", moveUp: "Move up", moveDown: "Move down", deleteBlock: "Delete block", turnInto: "Turn into", currentBlock: "Current block",
+        imageCouldNotLoad: "Image could not be loaded. Edit its URL to try again.", addImageUrl: "Add an image using a URL", editImage: "Edit image", imageUrl: "Image URL", altText: "Alternative text", applyImage: "Apply image", imageWidth: "Image width", enterImageUrl: "Enter an HTTP or HTTPS image URL.",
+        documentContent: "Document content", writeOrSlash: "Write something, or type ‘/’ for commands…", writeSomething: "Write something…", bold: "Bold", italic: "Italic", strikethrough: "Strikethrough", inlineCode: "Inline code", editLink: "Edit link", link: "Link", linkUrl: "Link URL", validLink: "Use an HTTP, HTTPS, or email link.", apply: "Apply", tableActions: "Table actions", addRowAbove: "Add row above", addRowBelow: "Add row below", addColumnBefore: "Add column before", addColumnAfter: "Add column after", toggleHeaderRow: "Toggle header row", deleteRow: "Delete row", deleteColumn: "Delete column", deleteTable: "Delete table",
+        editorSuggestions: "Editor suggestions", noMatchingCommands: "No matching commands", startParagraph: "Start with a plain paragraph", addHeading: "Add a section heading", createSimpleList: "Create a simple list", createNumberedList: "Create a numbered list", trackChecklist: "Track a checklist", highlightQuote: "Highlight a quotation", addFormattedCode: "Add formatted code", separateSections: "Separate sections", textFormatting: "Text formatting", headingFormat: "Heading", linkAction: "Link", moreFormatting: "More formatting", removeLink: "Remove link", saveLink: "Save link",
+    } as const;
+
+export default editor;

@@ -16,6 +16,8 @@ import { clearDocumentSession, getDocumentSession } from "@/features/documents/s
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { useProjectPermissions } from "@/features/projects/hooks/use-project-permissions";
+import { ApiError } from "@/lib/api-client";
+import { useTranslation } from "react-i18next";
 
 export function ProjectDocumentsPage() {
     const { projectId = "" } = useParams();
@@ -23,6 +25,7 @@ export function ProjectDocumentsPage() {
 }
 
 function DocumentList({ projectId }: { projectId: string }) {
+    const { t, i18n } = useTranslation();
     const { data: pages, isError } = useDocuments(projectId);
     const create = useCreateDocument(projectId);
     const navigate = useNavigate();
@@ -42,18 +45,18 @@ function DocumentList({ projectId }: { projectId: string }) {
             <main className="min-h-0 flex-1 overflow-y-auto px-5 py-6 lg:px-8">
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-display-xs font-semibold text-primary">Documents</h1>
-                        <p className="mt-1 text-sm text-tertiary">A place for your project’s ideas, plans, and knowledge.</p>
+                        <h1 className="text-display-xs font-semibold text-primary">{t("documents.documents")}</h1>
+                        <p className="mt-1 text-sm text-tertiary">{t("documents.pageDescription")}</p>
                     </div>
                     <Button iconLeading={Plus} isLoading={create.isPending} onClick={addPage}>
-                        New page
+                        {t("documents.newPage")}
                     </Button>
                 </div>
                 <div className="mb-4 max-w-xs">
-                    <Input aria-label="Search pages" icon={Search} placeholder="Search pages…" value={search} onChange={setSearch} />
+                    <Input aria-label={t("documents.searchPages")} icon={Search} placeholder={`${t("documents.searchPages")}…`} value={search} onChange={setSearch} />
                 </div>
-                {create.isError && <ErrorMessage message="Could not create the page. Please try again." />}
-                {isError && <ErrorMessage message="Could not load the pages. Please try again." />}
+                {create.isError && <ErrorMessage message={t("documents.createFailed")} />}
+                {isError && <ErrorMessage message={t("documents.loadFailed")} />}
                 {!pages && !isError ? (
                     <DocumentSkeleton />
                 ) : filtered?.length ? (
@@ -75,7 +78,7 @@ function DocumentList({ projectId }: { projectId: string }) {
                                     <FileText className="size-5 shrink-0 text-tertiary" />
                                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{page.title}</span>
                                     <span className="hidden text-xs text-tertiary sm:block">
-                                        Created {new Date(page.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                        {t("documents.created", { date: new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }).format(new Date(page.createdAt)) })}
                                     </span>
                                 </Link>
                                 <ContextMenuButton
@@ -89,13 +92,13 @@ function DocumentList({ projectId }: { projectId: string }) {
                     pages && (
                         <div className="flex min-h-64 flex-col items-center justify-center gap-3 text-center">
                             <FileText className="size-8 text-placeholder" />
-                            <h2 className="text-lg font-medium">{search ? "No pages found" : "Start with a blank page"}</h2>
+                            <h2 className="text-lg font-medium">{search ? t("documents.noPagesFound") : t("documents.startBlank")}</h2>
                             <p className="max-w-sm text-sm text-tertiary">
-                                {search ? "Try a different title." : "Write freely, organize your thoughts, and share them with your project."}
+                                {search ? t("documents.tryDifferentTitle") : t("documents.writeFreely")}
                             </p>
                             {!search && (
                                 <Button color="secondary" iconLeading={Plus} isLoading={create.isPending} onClick={addPage}>
-                                    Create a page
+                                    {t("documents.createPage")}
                                 </Button>
                             )}
                         </div>
@@ -108,22 +111,23 @@ function DocumentList({ projectId }: { projectId: string }) {
 
 export function ProjectDocumentPage() {
     const { projectId = "", documentId = "" } = useParams();
+    const { t } = useTranslation();
     const { data: page, isError } = useDocument(projectId, documentId);
     const { user } = useAuth();
     return (
         <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId} activeView="documents" />
-            {isError && page && <ErrorMessage message="Could not refresh this page. Your local work is still available." />}
+            {isError && page && <ErrorMessage message={t("documents.couldNotRefresh")} />}
             {page && user ? (
                 <DocumentWorkspace key={`${user.id}:${projectId}:${documentId}`} page={page} userId={user.id} />
             ) : (
                 <main className="flex-1 px-5 py-6 lg:px-8">
                     <Link to={`/projects/${projectId}/documents`} className="mb-5 inline-flex items-center gap-2 text-sm text-tertiary">
                         <ArrowLeft className="size-4" />
-                        All pages
+                        {t("documents.allPages")}
                     </Link>
                     {isError ? (
-                        <ErrorMessage message="This page could not be loaded. It may have been deleted or you may no longer have access." />
+                        <ErrorMessage message={t("documents.couldNotLoad")} />
                     ) : (
                         <DocumentSkeleton />
                     )}
@@ -134,6 +138,7 @@ export function ProjectDocumentPage() {
 }
 
 function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: string }) {
+    const { t } = useTranslation();
     const client = useQueryClient();
     const navigate = useNavigate();
     const { isProjectOwner } = useProjectPermissions(page.projectId);
@@ -196,7 +201,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
             setConfirm(null);
         } catch (error) {
             session.resume();
-            setActionError(error instanceof Error ? error.message : "Could not complete the action.");
+            setActionError(error instanceof ApiError ? error.message : t("documents.couldNotComplete"));
         } finally {
             setBusy(false);
         }
@@ -205,29 +210,29 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
         setActionError("");
         try {
             const draft = session.getSnapshot();
-            const copy = await create.mutateAsync({ title: `${draft.title || "Untitled"} (local copy)`.slice(0, 200), contentJson: draft.contentJson });
+            const copy = await create.mutateAsync({ title: `${draft.title || t("documents.untitled")} ${t("documents.localCopy")}`.slice(0, 200), contentJson: draft.contentJson });
             // The source draft remains intact until the user explicitly opens the saved version.
             navigate(`/projects/${page.projectId}/documents/${copy.id}`);
         } catch (error) {
-            setActionError(error instanceof Error ? error.message : "Could not create a copy.");
+            setActionError(error instanceof ApiError ? error.message : t("documents.couldNotCopy"));
         }
     }
     const status = {
-        loading: "Loading…",
-        saved: "Saved",
-        pending: "Unsaved changes",
-        saving: "Saving…",
-        offline: "Offline",
-        error: "Save failed",
-        conflict: "Changes to resolve",
-        deleted: "Page deleted",
+        loading: t("common.loading"),
+        saved: t("documents.saved"),
+        pending: t("documents.unsaved"),
+        saving: t("documents.saving"),
+        offline: t("documents.offline"),
+        error: t("documents.saveFailed"),
+        conflict: t("documents.resolveChanges"),
+        deleted: t("documents.pageDeleted"),
     }[state.status];
     return (
         <>
             <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-3 lg:px-8">
                 <Link to={`/projects/${page.projectId}/documents`} className="inline-flex items-center gap-2 text-sm text-tertiary hover:text-primary">
                     <ArrowLeft className="size-4" />
-                    All pages
+                    {t("documents.allPages")}
                 </Link>
                 <div className="flex items-center gap-3">
                     <span role="status" aria-live="polite" className="text-xs text-tertiary">
@@ -237,7 +242,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         <Button
                             color="tertiary"
                             size="sm"
-                            aria-label="Delete page"
+                            aria-label={t("documents.deletePage")}
                             iconLeading={Trash2}
                             isDisabled={busy}
                             onClick={() => {
@@ -255,22 +260,22 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                     </div>
                 ) : (
                     <div className="document-writing-surface">
-                        {state.storageError && <ErrorMessage message={state.storageError} />}
+                        {state.storageError && <ErrorMessage message={t(state.storageError as "documents.localDraftUnavailable")} />}
                         {state.status === "error" && (
-                            <ErrorMessage message={`${state.error || "Could not save the page."} Your draft is kept. Press Ctrl/Cmd+S to retry.`} />
+                            <ErrorMessage message={`${t((state.error || "documents.couldNotSave") as "documents.couldNotSave")} ${t("documents.keepDraft")} ${t("documents.retrySave")}`} />
                         )}
                         {state.status === "offline" && (
-                            <p className="mb-4 text-sm text-tertiary">You’re offline. Your draft is kept on this device and will sync when you reconnect.</p>
+                            <p className="mb-4 text-sm text-tertiary">{t("documents.offlineHint")}</p>
                         )}
                         {(state.status === "conflict" || state.status === "deleted") && (
                             <div role="alert" className="mb-5 rounded-md border border-strong bg-layer-1 p-4">
                                 <p className="text-sm font-medium">
-                                    {state.status === "deleted" ? "This page was deleted." : "A newer version was saved elsewhere."}
+                                    {state.status === "deleted" ? t("documents.deletedMessage") : t("documents.newerVersion")}
                                 </p>
-                                <p className="mt-1 text-sm text-tertiary">Your local draft is preserved. Create a separate page to keep these changes.</p>
+                                <p className="mt-1 text-sm text-tertiary">{t("documents.draftPreserved")}</p>
                                 <div className="mt-3 flex flex-wrap gap-2">
                                     <Button color="secondary" isLoading={create.isPending} onClick={copyDraft}>
-                                        Create page from draft
+                                        {t("documents.createFromDraft")}
                                     </Button>
                                     {state.status === "conflict" && (
                                         <Button
@@ -280,7 +285,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                                                 setConfirm("discard");
                                             }}
                                         >
-                                            Open saved version
+                                            {t("documents.openSavedVersion")}
                                         </Button>
                                     )}
                                 </div>
@@ -289,11 +294,11 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         {actionError && !confirm && <ErrorMessage message={actionError} />}
                         <textarea
                             ref={titleRef}
-                            aria-label="Page title"
+                            aria-label={t("documents.pageTitle")}
                             rows={1}
                             maxLength={200}
                             value={state.title}
-                            placeholder="Untitled"
+                            placeholder={t("documents.untitled")}
                             className="document-title"
                             disabled={busy || state.status === "deleted"}
                             onChange={(event) => session.edit({ title: event.target.value.replace(/\n/g, " ") })}
@@ -325,20 +330,20 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                     <Dialog.Viewport className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <Dialog.Popup className="w-full max-w-md rounded-lg border border-subtle bg-layer-2 p-6 shadow-overlay-200">
                             <Dialog.Title className="text-lg font-semibold">
-                                {confirm === "delete" ? "Delete this page?" : "Open the saved version?"}
+                                {confirm === "delete" ? t("documents.deleteTitle") : t("documents.openSavedTitle")}
                             </Dialog.Title>
                             <Dialog.Description className="mt-2 text-sm text-tertiary">
                                 {confirm === "delete"
-                                    ? "This permanently deletes the page and its local draft. This cannot be undone."
-                                    : "This replaces your local draft with the saved version. Create a page from your draft first if you want to keep both."}
+                                    ? t("documents.deleteWarning")
+                                    : t("documents.openSavedWarning")}
                             </Dialog.Description>
                             {actionError && <ErrorMessage message={actionError} />}
                             <div className="mt-6 flex justify-end gap-2">
                                 <Button color="secondary" isDisabled={busy} onClick={() => setConfirm(null)}>
-                                    Cancel
+                                    {t("common.cancel")}
                                 </Button>
                                 <Button color={confirm === "delete" ? "primary-destructive" : "primary"} isLoading={busy} onClick={confirmAction}>
-                                    {confirm === "delete" ? "Delete page" : "Open saved version"}
+                                    {confirm === "delete" ? t("documents.deletePage") : t("documents.openSavedVersion")}
                                 </Button>
                             </div>
                         </Dialog.Popup>
@@ -350,8 +355,9 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
 }
 
 function DocumentSkeleton() {
+    const { t } = useTranslation();
     return (
-        <div role="status" aria-label="Loading documents" className="space-y-5">
+        <div role="status" aria-label={t("documents.loading")} className="space-y-5">
             <Skeleton className="h-8 w-2/5" />
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-4/5" />

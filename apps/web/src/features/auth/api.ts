@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, UpdateProfileInput } from "@gikan/shared";
+import type { LoginInput, RegisterInput, UpdateLocaleInput, UpdateProfileInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface AuthUser {
@@ -7,6 +7,7 @@ export interface AuthUser {
     username: string;
     email: string;
     avatarUrl: string | null;
+    locale: "pt-BR" | "en";
     isAdmin: boolean;
     createdAt: string;
     updatedAt: string;
@@ -35,5 +36,10 @@ export function logout(): Promise<void> {
 
 export async function updateProfile(input: UpdateProfileInput): Promise<AuthUser> {
     const { user } = await apiClient.patch<{ user: AuthUser }>("/users/me", input);
+    return user;
+}
+
+export async function updateLocale(locale: UpdateLocaleInput["locale"]): Promise<AuthUser> {
+    const { user } = await apiClient.patch<{ user: AuthUser }>("/users/me/locale", { locale });
     return user;
 }

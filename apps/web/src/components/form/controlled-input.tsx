@@ -1,6 +1,8 @@
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Input, type InputProps } from "@/components/base/input/input";
+import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/i18n/validation";
 
 interface ControlledInputProps<TFieldValues extends FieldValues> extends Omit<InputProps, "value" | "onChange" | "onBlur" | "name" | "isInvalid"> {
     control: Control<TFieldValues>;
@@ -8,6 +10,7 @@ interface ControlledInputProps<TFieldValues extends FieldValues> extends Omit<In
 }
 
 export function ControlledInput<TFieldValues extends FieldValues>({ control, name, ...inputProps }: ControlledInputProps<TFieldValues>) {
+    const { t } = useTranslation();
     return (
         <Controller
             control={control}
@@ -21,7 +24,7 @@ export function ControlledInput<TFieldValues extends FieldValues>({ control, nam
                     onBlur={field.onBlur}
                     ref={field.ref}
                     isInvalid={!!fieldState.error}
-                    hint={fieldState.error?.message ?? inputProps.hint}
+                    hint={translateValidationMessage(fieldState.error?.message, t) ?? inputProps.hint}
                 />
             )}
         />

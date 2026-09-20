@@ -2,10 +2,9 @@ import { z } from "zod";
 import { tiptapDocumentSchema } from "./issues";
 
 const documentTitle = z
-  .string()
-  .trim()
-  .max(200)
-  .transform((value) => value || "Untitled");
+    .string()
+    .trim()
+    .max(200);
 // Preserve arbitrary existing Tiptap nodes; only enforce the URL-only image contract.
 const documentContentSchema = tiptapDocumentSchema.superRefine(
   (document, context) => {
@@ -30,7 +29,7 @@ const documentContentSchema = tiptapDocumentSchema.superRefine(
   },
 );
 export const createDocumentSchema = z.object({
-  title: documentTitle.default("Untitled"),
+  title: documentTitle.optional(),
   contentJson: documentContentSchema.default({ type: "doc", content: [] }),
 });
 export const updateDocumentSchema = z.object({

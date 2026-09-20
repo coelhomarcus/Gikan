@@ -7,6 +7,7 @@ import { Input } from "@/components/base/input/input";
 import { ApiError } from "@/lib/api-client";
 import { EMPTY_TIPTAP_DOCUMENT } from "./rich-text-editor";
 import { useCreateIssue } from "../hooks/use-issues";
+import { useTranslation } from "react-i18next";
 
 interface IssueQuickCreateModalProps {
     projectId: string;
@@ -16,6 +17,7 @@ interface IssueQuickCreateModalProps {
 }
 
 export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated }: IssueQuickCreateModalProps) => {
+    const { t } = useTranslation();
     const [title, setTitle] = useState("");
     const [error, setError] = useState<string | null>(null);
     const createIssue = useCreateIssue(projectId);
@@ -24,7 +26,7 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
         event.preventDefault();
         const trimmedTitle = title.trim();
         if (!trimmedTitle) {
-            setError("Add a title to create the issue.");
+            setError(t("validation.required"));
             return;
         }
 
@@ -36,7 +38,7 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
                     onCreated?.(issue.identifier);
                     onClose();
                 },
-                onError: (reason) => setError(reason instanceof ApiError ? reason.message : "Could not create the issue."),
+                onError: (reason) => setError(reason instanceof ApiError ? reason.message : t("errors.requestFailed")),
             },
         );
     }
@@ -50,16 +52,16 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
                             <div>
                                 <div className="flex items-center gap-2 text-accent-primary">
                                     <FilePlus2 className="size-4" aria-hidden="true" />
-                                    <span className="text-xs font-medium uppercase tracking-wide">New issue</span>
+                                    <span className="text-xs font-medium uppercase tracking-wide">{t("issue.newIssue")}</span>
                                 </div>
-                                <h2 className="mt-2 text-lg font-semibold text-primary">What needs to be done?</h2>
-                                <p className="mt-1 text-sm text-tertiary">The issue will be added to this status. You can edit its properties next.</p>
+                                <h2 className="mt-2 text-lg font-semibold text-primary">{t("issue.newIssuePrompt")}</h2>
+                                <p className="mt-1 text-sm text-tertiary">{t("issue.issueStatusAdded")}</p>
                             </div>
                             <CloseButton size="sm" onPress={onClose} />
                         </div>
 
                         <form className="flex flex-col gap-4" onSubmit={submit}>
-                            <Input autoFocus label="Title" placeholder="Describe the work" value={title} onChange={setTitle} isRequired />
+                            <Input autoFocus label={t("issue.title")} placeholder={t("issue.describeWork")} value={title} onChange={setTitle} isRequired />
                             {error && (
                                 <p role="alert" className="flex items-center gap-2 text-sm text-danger-primary">
                                     <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
@@ -68,10 +70,10 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
                             )}
                             <div className="flex justify-end gap-2">
                                 <Button type="button" color="secondary" onClick={onClose}>
-                                    Cancel
+                                    {t("common.cancel")}
                                 </Button>
                                 <Button type="submit" isLoading={createIssue.isPending}>
-                                    Create issue
+                                    {t("issue.newIssue")}
                                 </Button>
                             </div>
                         </form>

@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
+import i18n from "@/i18n/i18n";
 
 interface AppErrorBoundaryProps {
     children: ReactNode;
@@ -30,14 +31,14 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
                     <div className="flex size-10 items-center justify-center rounded-lg bg-danger-subtle/10 text-danger-primary">
                         <AlertTriangle className="size-5" aria-hidden="true" />
                     </div>
-                    <h1 className="mt-5 text-display-xs font-semibold tracking-tight">Something went wrong</h1>
-                    <p className="mt-2 text-sm leading-relaxed text-tertiary">Gikan could not render this screen. Reload the page or return to your projects.</p>
+                    <h1 className="mt-5 text-display-xs font-semibold tracking-tight">{i18n.t("errors.screenFailureTitle")}</h1>
+                    <p className="mt-2 text-sm leading-relaxed text-tertiary">{i18n.t("errors.screenFailureDescription")}</p>
                     <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row">
                         <Button color="secondary" size="md" href="/">
-                            Go to projects
+                            {i18n.t("errors.goToProjects")}
                         </Button>
                         <Button size="md" iconLeading={RefreshCw} onClick={() => window.location.reload()}>
-                            Reload page
+                            {i18n.t("errors.reloadPage")}
                         </Button>
                     </div>
                 </section>

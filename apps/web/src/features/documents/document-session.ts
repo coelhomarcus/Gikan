@@ -73,14 +73,14 @@ export class DocumentSession {
                 this.emit({ status: "saved" });
             }
         } catch {
-            this.emit({ status: "saved", storageError: "Local drafts are unavailable. Keep this page open until your changes are saved." });
+            this.emit({ status: "saved", storageError: "documents.localDraftUnavailable" });
         }
     }
     private persist() {
         const { title, contentJson, revision } = this.state;
         void this.deps
             .write({ title, contentJson, revision })
-            .catch(() => this.emit({ storageError: "Could not store a local draft. Keep this page open until it is saved." }));
+            .catch(() => this.emit({ storageError: "documents.localDraftFailed" }));
     }
     edit(patch: { title?: string; contentJson?: TiptapDocument }) {
         if (this.suspended || this.state.status === "loading" || this.state.status === "deleted") return;
@@ -133,7 +133,7 @@ export class DocumentSession {
                 this.deps.onSaved(page);
                 if (changes === this.changes) {
                     this.emit({ title: page.title, revision: page.revision, dirty: false, status: "saved" });
-                    await this.deps.remove().catch(() => this.emit({ storageError: "The page was saved, but the local draft could not be cleared." }));
+                    await this.deps.remove().catch(() => this.emit({ storageError: "documents.draftClearFailed" }));
                 } else {
                     this.emit({ revision: page.revision, status: "pending" });
                     this.persist();
@@ -143,7 +143,9 @@ export class DocumentSession {
                 const status = (error as { status?: number }).status;
                 this.emit({
                     status: status === 409 ? "conflict" : status === 404 ? "deleted" : !this.deps.online() ? "offline" : "error",
-                    error: error instanceof Error ? error.message : "Could not save the page.",
+                    error: typeof error === "object" && error !== null && "code" in error && typeof error.code === "string"
+                        ? error.code
+                        : "documents.couldNotSave",
                 });
             } finally {
                 this.flight = undefined;

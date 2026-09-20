@@ -1,4 +1,4 @@
-import type { UpdateProfileInput } from "@gikan/shared";
+import type { Locale, UpdateProfileInput } from "@gikan/shared";
 import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { users } from "../../db/schema";
@@ -16,5 +16,11 @@ export async function updateProfile(userId: string, input: UpdateProfileInput) {
         throw new HttpError(404, "User not found");
     }
 
+    return toPublicUser(user);
+}
+
+export async function updateUserLocale(userId: string, locale: Locale) {
+    const [user] = await db.update(users).set({ locale, updatedAt: new Date() }).where(eq(users.id, userId)).returning();
+    if (!user) throw new HttpError(404, "User not found");
     return toPublicUser(user);
 }

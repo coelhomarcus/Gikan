@@ -2,6 +2,8 @@ import type { ComponentProps } from "react";
 import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { TextArea } from "@/components/base/textarea/textarea";
+import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/i18n/validation";
 
 type TextAreaProps = ComponentProps<typeof TextArea>;
 
@@ -11,6 +13,7 @@ interface ControlledTextareaProps<TFieldValues extends FieldValues> extends Omit
 }
 
 export function ControlledTextarea<TFieldValues extends FieldValues>({ control, name, ...textareaProps }: ControlledTextareaProps<TFieldValues>) {
+    const { t } = useTranslation();
     return (
         <Controller
             control={control}
@@ -24,7 +27,7 @@ export function ControlledTextarea<TFieldValues extends FieldValues>({ control, 
                     onBlur={field.onBlur}
                     textAreaRef={field.ref}
                     isInvalid={!!fieldState.error}
-                    hint={fieldState.error?.message ?? textareaProps.hint}
+                    hint={translateValidationMessage(fieldState.error?.message, t) ?? textareaProps.hint}
                 />
             )}
         />

@@ -5,8 +5,10 @@ import { type NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tip
 import { ImageIcon, Pencil } from "lucide-react";
 import { Button } from "@/components/base/buttons/button";
 import { Input } from "@/components/base/input/input";
+import { useTranslation } from "react-i18next";
 
 function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeViewProps) {
+    const { t } = useTranslation();
     const [failed, setFailed] = useState(false);
     const [open, setOpen] = useState(!node.attrs.src);
     const [url, setUrl] = useState<string>(node.attrs.src ?? "");
@@ -37,7 +39,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                 ) : (
                     <div className="flex min-h-32 items-center justify-center gap-2 rounded-md border border-dashed border-strong bg-layer-1 px-4 text-sm text-tertiary">
                         <ImageIcon className="size-5" />
-                        {failed ? "Image could not be loaded. Edit its URL to try again." : "Add an image using a URL"}
+                        {failed ? t("editor.imageCouldNotLoad") : t("editor.addImageUrl")}
                     </div>
                 )}
                 <Popover.Root
@@ -53,7 +55,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                 >
                     <Popover.Trigger
                         className="shadow-sm absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary"
-                        aria-label="Edit image"
+                        aria-label={t("editor.editImage")}
                         data-node-view-control=""
                         onMouseDown={(event) => {
                             event.preventDefault();
@@ -65,7 +67,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                     <Popover.Portal>
                         <Popover.Positioner side="bottom" align="end" sideOffset={8} collisionPadding={12} className="document-overlay">
                             <Popover.Popup finalFocus={() => editor.view.dom} className="document-popover w-80">
-                                <Popover.Title className="mb-3 text-sm font-medium">Image</Popover.Title>
+                                <Popover.Title className="mb-3 text-sm font-medium">{t("editor.image")}</Popover.Title>
                                 <form
                                     className="space-y-3"
                                     onSubmit={(event) => {
@@ -75,7 +77,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                                             const parsed = new URL(url.trim());
                                             if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
                                         } catch {
-                                            setError("Enter an HTTP or HTTPS image URL.");
+                                            setError(t("editor.enterImageUrl"));
                                             return;
                                         }
                                         updateAttributes({ src: url.trim(), alt });
@@ -83,9 +85,9 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                                         setOpen(false);
                                     }}
                                 >
-                                    <Input label="Image URL" value={url} onChange={setUrl} placeholder="https://..." isInvalid={!!error} hint={error} />
-                                    <Input label="Alternative text" value={alt} onChange={setAlt} />
-                                    <Button type="submit">Apply image</Button>
+                                    <Input label={t("editor.imageUrl")} value={url} onChange={setUrl} placeholder="https://..." isInvalid={!!error} hint={error} />
+                                    <Input label={t("editor.altText")} value={alt} onChange={setAlt} />
+                                    <Button type="submit">{t("editor.applyImage")}</Button>
                                 </form>
                             </Popover.Popup>
                         </Popover.Positioner>
@@ -94,7 +96,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                 <button
                     type="button"
                     role="slider"
-                    aria-label="Image width"
+                    aria-label={t("editor.imageWidth")}
                     aria-valuemin={10}
                     aria-valuemax={100}
                     aria-valuenow={Math.round(width)}

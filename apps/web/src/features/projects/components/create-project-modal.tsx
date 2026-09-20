@@ -13,6 +13,7 @@ import { ModalDialog } from "@/components/overlay/modal-dialog";
 import { ApiError } from "@/lib/api-client";
 import { useCreateProject } from "../hooks/use-projects";
 import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
+import { useTranslation } from "react-i18next";
 
 const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((module) => ({ default: module.ProjectIconPicker })));
 
@@ -20,6 +21,7 @@ export const CreateProjectModal = () => {
     const mutation = useCreateProject();
     const navigate = useNavigate();
     const [iconPickerOpen, setIconPickerOpen] = useState(false);
+    const { t } = useTranslation();
     const { control, handleSubmit, reset, setError, watch, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
         defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
@@ -28,7 +30,7 @@ export const CreateProjectModal = () => {
     const generatedIssueKey = suggestProjectKey(projectName);
 
     return (
-        <ModalDialog trigger={<Button iconLeading={Plus}>New project</Button>} title="New project" size="2xl">
+        <ModalDialog trigger={<Button iconLeading={Plus}>{t("nav.newProject")}</Button>} title={t("nav.newProject")} size="2xl">
             {({ close }) => (
                 <form
                     className="flex flex-col gap-5"
@@ -42,7 +44,7 @@ export const CreateProjectModal = () => {
                             },
                             onError: (error) => {
                                 setError(error instanceof ApiError && error.status === 409 ? "issueKey" : "root", {
-                                    message: error instanceof ApiError ? error.message : "Could not create the project",
+                                    message: error instanceof ApiError ? error.message : t("projects.couldNotCreate"),
                                 });
                             },
                         });
@@ -58,8 +60,8 @@ export const CreateProjectModal = () => {
                                         render={
                                             <button
                                                 type="button"
-                                                aria-label="Choose project icon"
-                                                title="Choose project icon"
+                                                aria-label={t("projects.chooseIcon")}
+                                                title={t("projects.chooseIcon")}
                                                 className="flex size-15 shrink-0 cursor-pointer items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary outline-accent-strong transition-colors hover:bg-layer-2-hover hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong"
                                             />
                                         }
@@ -69,11 +71,11 @@ export const CreateProjectModal = () => {
                                     <Popover.Portal>
                                         <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-[60]">
                                             <Popover.Popup className="max-h-[calc(100dvh-1.5rem)] w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
-                                                <Popover.Title className="sr-only">Choose project icon</Popover.Title>
-                                                <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-surface-2" aria-label="Loading icons" />}>
+                                                <Popover.Title className="sr-only">{t("projects.chooseIcon")}</Popover.Title>
+                                                <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-surface-2" aria-label={t("projects.loadingIcons")} />}>
                                                     <ProjectIconPicker
                                                         value={field.value}
-                                                        label="Choose an icon"
+                                                        label={t("projects.chooseAnIcon")}
                                                         onChange={(icon) => {
                                                             field.onChange(icon);
                                                             setIconPickerOpen(false);
@@ -87,7 +89,7 @@ export const CreateProjectModal = () => {
                             )}
                         />
                         <div className="min-w-0 flex-1">
-                            <ControlledInput control={control} name="name" label="Name" isRequired autoFocus />
+                            <ControlledInput control={control} name="name" label={t("projects.projectName")} isRequired autoFocus />
                         </div>
                     </div>
                     <Controller
@@ -98,30 +100,26 @@ export const CreateProjectModal = () => {
                                 {...field}
                                 value={field.value ?? ""}
                                 onChange={(value) => field.onChange(value.toUpperCase())}
-                                label="Project ID"
+                                label={t("projects.projectId")}
                                 placeholder={projectName.trim() ? generatedIssueKey : "PRJ"}
                                 maxLength={8}
                                 isInvalid={!!fieldState.error}
                                 inputClassName="uppercase"
-                                hint={
-                                    fieldState.error?.message ?? (
-                                        <span className="text-xs text-tertiary/60">2–8 letters or numbers, used in issue identifiers. Leave blank to generate automatically.</span>
-                                    )
-                                }
+                                hint={fieldState.error?.message ?? <span className="text-xs text-tertiary/60">{t("projects.projectIssueKeyHint")}</span>}
                             />
                         )}
                     />
-                    <ControlledTextarea control={control} name="description" label="Description" rows={3} />
-                    <ControlledInput control={control} name="repositoryUrl" label="Repository URL" placeholder="https://github.com/..." />
+                    <ControlledTextarea control={control} name="description" label={t("projects.description")} rows={3} />
+                    <ControlledInput control={control} name="repositoryUrl" label={t("projects.repository")} placeholder="https://github.com/..." />
 
                     {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 
                     <div className="mt-1 flex justify-end gap-2 border-t border-subtle pt-4">
                         <Button type="button" color="secondary" onClick={close}>
-                            Cancel
+                                {t("common.cancel")}
                         </Button>
                         <Button type="submit" isLoading={mutation.isPending}>
-                            Create project
+                            {t("projects.createProject")}
                         </Button>
                     </div>
                 </form>

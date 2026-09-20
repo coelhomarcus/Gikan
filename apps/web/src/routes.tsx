@@ -6,6 +6,7 @@ import { LoadingState } from "@/components/feedback/loading-state";
 import { AppShell } from "@/components/layout/app-shell";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { RequireAuth } from "@/features/auth/components/require-auth";
+import { useTranslation } from "react-i18next";
 
 const ProjectSettingsPage = lazy(() => import("@/pages/project-settings-page").then((module) => ({ default: module.ProjectSettingsPage })));
 const ProfileSettingsPage = lazy(() => import("@/pages/profile-settings-page").then((module) => ({ default: module.ProfileSettingsPage })));
@@ -29,6 +30,7 @@ function ProjectSettingsRedirect() {
 }
 
 export const AppRoutes = () => {
+    const { t } = useTranslation();
     const location = useLocation();
     const navigate = useNavigate();
     const backgroundLocation = (location.state as { backgroundLocation?: typeof location } | null)?.backgroundLocation;
@@ -67,7 +69,7 @@ export const AppRoutes = () => {
                     <Route
                         path="/__design-system"
                         element={
-                            <Suspense fallback={<LoadingState label="Loading design system..." className="p-6" />}>
+                            <Suspense fallback={<LoadingState label={t("common.loadingPage")} className="p-6" />}>
                                 <DesignSystemPage />
                             </Suspense>
                         }
@@ -76,7 +78,7 @@ export const AppRoutes = () => {
                 <Route
                     path="*"
                     element={
-                        <Suspense fallback={<LoadingState label="Loading page..." className="p-6" />}>
+                        <Suspense fallback={<LoadingState label={t("common.loadingPage")} className="p-6" />}>
                             <NotFound />
                         </Suspense>
                     }
@@ -95,9 +97,10 @@ export const AppRoutes = () => {
 };
 
 function IssuePeekLoadingFallback({ onClose }: { onClose: () => void }) {
+    const { t } = useTranslation();
     return (
-        <Sheet open onOpenChange={(open) => !open && onClose()} title="Loading issue">
-            <div className="flex h-full min-h-0 flex-col" role="status" aria-label="Loading issue">
+        <Sheet open onOpenChange={(open) => !open && onClose()} title={t("issue.loadingIssue")}>
+            <div className="flex h-full min-h-0 flex-col" role="status" aria-label={t("issue.loadingIssue")}>
                 <div className="flex h-12 shrink-0 items-center border-b border-subtle px-4">
                     <Skeleton className="h-4 w-24" />
                 </div>

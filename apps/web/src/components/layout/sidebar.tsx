@@ -13,11 +13,13 @@ import { useDocuments } from "@/features/documents/hooks/use-documents";
 import { IssueQuickCreateModal } from "@/features/issues/components/issue-quick-create-modal";
 import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { useProjects } from "@/features/projects/hooks/use-projects";
+import { useTranslation } from "react-i18next";
 
 export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const location = useLocation();
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { data: projects } = useProjects();
     const projectId = location.pathname.match(/^\/projects\/([^/]+)/)?.[1] ?? "";
     const { data: columns } = useColumns(projectId);
@@ -28,17 +30,17 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
     const projectSettings = location.pathname.includes("/settings/");
     const navClass = "flex min-h-7 items-center gap-2 rounded-md px-2 py-1 text-sm text-secondary hover:bg-layer-transparent-hover";
     useEffect(() => setCreatingProjectId(null), [projectId]);
-    const views: Array<[string, string, AppIcon]> = [
-        ["", "Overview", AppIcons.Overview],
-        ["/issues", "Issues", AppIcons.Issues],
-        ["/cycles", "Cycles", AppIcons.Cycles],
-        ["/documents", "Documents", AppIcons.Documents],
+    const views: Array<[string, "overview" | "issues" | "cycles" | "documents", AppIcon]> = [
+        ["", "overview", AppIcons.Overview],
+        ["/issues", "issues", AppIcons.Issues],
+        ["/cycles", "cycles", AppIcons.Cycles],
+        ["/documents", "documents", AppIcons.Documents],
     ];
     return (
         <div className="flex h-full flex-col pt-3">
             <div className="flex items-center justify-between px-5 pb-3">
-                <span className="text-lg font-medium">{settings ? "Settings" : projectSettings ? "Project settings" : "Projects"}</span>
-                <ButtonUtility icon={AppIcons.Menu} tooltip="Collapse navigation" color="tertiary" onClick={onCollapse} />
+                <span className="text-lg font-medium">{settings ? t("nav.settings") : projectSettings ? t("nav.projectSettings") : t("nav.projects")}</span>
+                <ButtonUtility icon={AppIcons.Menu} tooltip={t("nav.collapse")} color="tertiary" onClick={onCollapse} />
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-3">
                 {settings ? (
@@ -50,23 +52,23 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                 <p className="truncate text-caption-md-regular text-tertiary">{user?.email}</p>
                             </div>
                         </div>
-                        <p className="px-2 py-2 text-caption-md-medium text-tertiary">Account</p>
+                        <p className="px-2 py-2 text-caption-md-medium text-tertiary">{t("nav.account")}</p>
                         <Link to="/settings/profile" className={`${navClass} bg-layer-1`} aria-current="page">
                             <AppIcons.General className="size-4" />
-                            General
+                            {t("settings.general")}
                         </Link>
                     </>
                 ) : projectSettings ? (
                     <>
                         <Link to={`/projects/${projectId}`} className={`${navClass} mb-4`}>
                             <AppIcons.Back className="size-4" />
-                            Back to project
+                            {t("common.back")}
                         </Link>
                         {[
-                            { section: "general", label: "General", Icon: AppIcons.General },
-                            { section: "states", label: "States", Icon: StateOutline },
-                            { section: "members", label: "Members", Icon: MembersOutline },
-                            { section: "labels", label: "Labels", Icon: LabelsOutline },
+                            { section: "general", label: t("settings.general"), Icon: AppIcons.General },
+                            { section: "states", label: t("settings.states"), Icon: StateOutline },
+                            { section: "members", label: t("settings.members"), Icon: MembersOutline },
+                            { section: "labels", label: t("settings.labels"), Icon: LabelsOutline },
                         ].map(({ section, label, Icon }) => (
                             <Link
                                 key={section}
@@ -83,7 +85,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                     <>
                         {projectId && (
                             <Button color="secondary" className="mb-3 w-full justify-start" iconLeading={AddOutline} onClick={() => setCreatingProjectId(projectId)}>
-                                New issue
+                                {t("nav.newIssue")}
                             </Button>
                         )}
                         <Link
@@ -92,7 +94,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                             aria-current={location.pathname === "/" ? "page" : undefined}
                         >
                             <AppIcons.Projects className="size-4" />
-                            All projects
+                            {t("nav.allProjects")}
                         </Link>
                         <button
                             className="mt-5 mb-1 flex w-full items-center gap-1 px-2 py-1 text-xs font-medium text-tertiary"
@@ -105,7 +107,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                             }
                         >
                             <ChevronDownOutline className={`size-3 transition-transform ${expanded ? "" : "-rotate-90"}`} />
-                            Your projects
+                            {t("nav.projects")}
                         </button>
                         {expanded &&
                             (projects ?? []).map((project) => (
@@ -132,7 +134,8 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                     </div>
                                     {projectId === project.id && (
                                         <nav aria-label={`${project.name} views`} className="ml-4 border-l border-subtle pl-2">
-                                            {views.map(([suffix, label, Icon]) => {
+                                            {views.map(([suffix, key, Icon]) => {
+                                                const label = t(`nav.${key}`);
                                                 const active =
                                                     suffix === "/issues"
                                                         ? /\/(issues|board)(\/|$)/.test(location.pathname)

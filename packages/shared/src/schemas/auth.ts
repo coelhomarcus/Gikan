@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { defaultLocale, localeSchema } from "../locales";
 
 export const registerSchema = z.object({
     name: z.string().trim().min(2).max(80),
@@ -10,6 +11,7 @@ export const registerSchema = z.object({
     email: z.string().trim().toLowerCase().email(),
     password: z.string().min(8).max(72),
     specialCode: z.string().min(1),
+    locale: localeSchema.default(defaultLocale),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 

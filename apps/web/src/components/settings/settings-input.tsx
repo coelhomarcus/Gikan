@@ -3,6 +3,8 @@ import { Field } from "@makeplane/propel/components/field";
 import { Input, InputGroup } from "@makeplane/propel/components/input";
 import { TextArea, TextAreaGroup } from "@makeplane/propel/components/text-area";
 import { type Control, Controller, type FieldPath, type FieldValues } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/i18n/validation";
 
 interface SettingsInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "size" | "onChange" | "value" | "className" | "style"> {
     label: string;
@@ -52,12 +54,13 @@ interface ControlledSettingsInputProps<T extends FieldValues> extends Omit<Setti
 }
 
 export function ControlledSettingsInput<T extends FieldValues>({ control, name, ...props }: ControlledSettingsInputProps<T>) {
+    const { t } = useTranslation();
     return (
         <Controller
             control={control}
             name={name}
             render={({ field, fieldState }) => (
-                <SettingsInput {...props} {...field} value={field.value ?? ""} isInvalid={!!fieldState.error} hint={fieldState.error?.message ?? props.hint} />
+                <SettingsInput {...props} {...field} value={field.value ?? ""} isInvalid={!!fieldState.error} hint={translateValidationMessage(fieldState.error?.message, t) ?? props.hint} />
             )}
         />
     );
@@ -73,6 +76,7 @@ export function ControlledSettingsDescription<T extends FieldValues>({
     isDisabled?: boolean;
 }) {
     const id = useId();
+    const { t } = useTranslation();
     return (
         <Controller
             control={control}
@@ -80,7 +84,7 @@ export function ControlledSettingsDescription<T extends FieldValues>({
             render={({ field, fieldState }) => (
                 <div className="flex flex-col gap-1">
                     <label htmlFor={id} className="text-sm text-primary">
-                        Description
+                        {t("projects.description")}
                     </label>
                     <Field name={name} disabled={isDisabled} invalid={!!fieldState.error}>
                         <TextAreaGroup resize="none">
@@ -93,14 +97,14 @@ export function ControlledSettingsDescription<T extends FieldValues>({
                                 autoResize
                                 maxRows={8}
                                 disabled={isDisabled}
-                                placeholder="Describe your project..."
+                                placeholder={t("projects.describeProject")}
                                 aria-describedby={fieldState.error ? `${id}-error` : undefined}
                             />
                         </TextAreaGroup>
                     </Field>
                     {fieldState.error && (
                         <p id={`${id}-error`} className="text-xs text-danger-primary">
-                            {fieldState.error.message}
+                            {translateValidationMessage(fieldState.error.message, t)}
                         </p>
                     )}
                 </div>

@@ -13,11 +13,13 @@ import { ApiError } from "@/lib/api-client";
 import { useProject } from "../hooks/use-project";
 import { useUpdateProject } from "../hooks/use-projects";
 import { DeleteProjectDialog } from "./delete-project-dialog";
+import { useTranslation } from "react-i18next";
 import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
 
 const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((module) => ({ default: module.ProjectIconPicker })));
 
 export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
+    const { t } = useTranslation();
     const { data: project, isLoading, isError } = useProject(projectId);
     const mutation = useUpdateProject(projectId);
     const { control, handleSubmit, setError, formState } = useForm({
@@ -32,8 +34,8 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
               }
             : undefined,
     });
-    if (isLoading) return <LoadingState label="Loading project..." />;
-    if (isError || !project) return <ErrorMessage message="Could not load the project." />;
+    if (isLoading) return <LoadingState label={t("settings.loadingProject")} />;
+    if (isError || !project) return <ErrorMessage message={t("settings.couldNotLoadProject")} />;
     const disabled = !isProjectOwner || mutation.isPending;
 
     return (
@@ -42,7 +44,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                 noValidate
                 onSubmit={handleSubmit((data) =>
                     mutation.mutate(data, {
-                        onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not save the project." }),
+                        onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : t("settings.couldNotSaveProject") }),
                     }),
                 )}
             >
@@ -55,7 +57,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                                 <Popover.Root>
                                     <Popover.Trigger
                                         disabled={disabled}
-                                        aria-label="Change project icon"
+                                        aria-label={t("settings.changeProjectIcon")}
                                         className="flex size-11 shrink-0 items-center justify-center rounded-md border border-subtle bg-layer-2 outline-accent-strong hover:bg-layer-2-hover"
                                     >
                                         <ProjectIcon icon={field.value} className="size-6" />
@@ -63,8 +65,8 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                                     <Popover.Portal>
                                         <Popover.Positioner sideOffset={8} className="z-50">
                                             <Popover.Popup className="max-h-[calc(100dvh-2rem)] w-80 max-w-[90vw] overflow-hidden rounded-md border border-subtle bg-layer-2 p-4 shadow-overlay-200 outline-none">
-                                                <Popover.Title className="sr-only">Project icon</Popover.Title>
-                                                <Suspense fallback={<LoadingState label="Loading icons..." />}>
+                                                <Popover.Title className="sr-only">{t("settings.projectIcon")}</Popover.Title>
+                                                <Suspense fallback={<LoadingState label={t("settings.loadingIcons")} />}>
                                                     <ProjectIconPicker value={field.value} onChange={field.onChange} />
                                                 </Suspense>
                                             </Popover.Popup>
@@ -80,32 +82,32 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                     </div>
                 </div>
                 <div className="mt-8 flex flex-col gap-8">
-                    <ControlledInput control={control} name="name" label="Project name" isRequired isDisabled={disabled} />
+                    <ControlledInput control={control} name="name" label={t("projects.projectName")} isRequired isDisabled={disabled} />
                     <ControlledSettingsDescription control={control} name="description" isDisabled={disabled} />
                     <div className="grid gap-6 md:grid-cols-2">
                         <ControlledInput
                             control={control}
                             name="issueKey"
-                            label="Project ID"
+                            label={t("projects.projectId")}
                             isDisabled={disabled || project.nextIssueNumber > 1}
                             hint={
-                                project.nextIssueNumber > 1 ? "Locked after the first issue is created." : "2–8 letters or numbers, used in issue identifiers."
+                                project.nextIssueNumber > 1 ? t("settings.projectIdLocked") : t("projects.projectIssueKeyHint")
                             }
                         />
                         <ControlledInput
                             control={control}
                             name="repositoryUrl"
-                            label="Repository URL"
+                            label={t("projects.repository")}
                             isDisabled={disabled}
                             placeholder="https://github.com/..."
                         />
                     </div>
                     {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
-                    {mutation.isSuccess && !formState.isDirty && <Alert tone="success">Project details saved.</Alert>}
+                    {mutation.isSuccess && !formState.isDirty && <Alert tone="success">{t("settings.projectDetailsSaved")}</Alert>}
                     {isProjectOwner && (
                         <div className="py-2">
                             <Button type="submit" size="lg" isLoading={mutation.isPending} isDisabled={!formState.isDirty}>
-                                Save changes
+                                {t("common.saveChanges")}
                             </Button>
                         </div>
                     )}
@@ -114,8 +116,8 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
             {isProjectOwner && (
                 <div className="mt-10">
                     <SettingsControl
-                        title="Delete project"
-                        description="Permanently remove this project and all of its data and resources. Deleted projects cannot be recovered."
+                        title={t("projects.deleteProject")}
+                        description={t("settings.deleteProjectDescription")}
                     >
                         <DeleteProjectDialog project={project} />
                     </SettingsControl>

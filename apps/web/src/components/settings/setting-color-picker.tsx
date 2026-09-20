@@ -1,12 +1,14 @@
 import { Popover } from "@base-ui/react/popover";
 import { ColumnColorPicker } from "@/features/board/components/column-color-picker";
+import { useTranslation } from "react-i18next";
 
 export function SettingColorPicker({ value, onChange, isDisabled }: { value: string | null; onChange: (color: string) => void; isDisabled?: boolean }) {
+    const { t } = useTranslation();
     return (
         <Popover.Root>
             <Popover.Trigger
                 disabled={isDisabled}
-                aria-label="Choose color"
+                aria-label={t("settings.chooseColor")}
                 className="flex size-8 shrink-0 items-center justify-center rounded-md border border-subtle bg-surface-1 outline-accent-strong hover:bg-layer-1-hover disabled:opacity-50"
             >
                 <span className="size-3 rounded-full" style={{ backgroundColor: value ?? "#87888c" }} />
@@ -14,7 +16,7 @@ export function SettingColorPicker({ value, onChange, isDisabled }: { value: str
             <Popover.Portal>
                 <Popover.Positioner sideOffset={8} className="z-50">
                     <Popover.Popup className="w-60 rounded-md border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
-                        <Popover.Title className="mb-3 text-sm font-medium">Color</Popover.Title>
+                        <Popover.Title className="mb-3 text-sm font-medium">{t("settings.color")}</Popover.Title>
                         <ColumnColorPicker label="" value={value} onChange={onChange} />
                     </Popover.Popup>
                 </Popover.Positioner>

@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/feedback/loading-state";
 import { useIssues } from "@/features/issues/hooks/use-issues";
 import { useProjects } from "../hooks/use-projects";
 import { ProjectIcon } from "./project-icon";
+import { useTranslation } from "react-i18next";
 
 interface ProjectSearchModalProps {
     onClose: () => void;
@@ -18,6 +19,7 @@ type SearchResult =
     | { type: "command"; id: string; title: string; key: string; description: string; icon: null; path: string };
 
 export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
+    const { t } = useTranslation();
     const [query, setQuery] = useState("");
     const [selectedIndex, setSelectedIndex] = useState(0);
     const { data: projects } = useProjects();
@@ -36,13 +38,13 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
             .map((issue) => ({ type: "issue", id: issue.identifier, title: issue.title, key: issue.identifier, description: null, icon: null }));
         const commandResults: SearchResult[] = activeProjectId
             ? [
-                  { type: "command" as const, id: "issues", title: "Open Issues", key: "Navigation", description: "Browse and filter issues in this project.", icon: null, path: `/projects/${activeProjectId}/issues` },
-                  { type: "command" as const, id: "board", title: "Open Board", key: "Navigation", description: "Move issues through project statuses.", icon: null, path: `/projects/${activeProjectId}/board` },
-                  { type: "command" as const, id: "documents", title: "Open Documents", key: "Navigation", description: "Open the project document.", icon: null, path: `/projects/${activeProjectId}/documents` },
+                  { type: "command" as const, id: "issues", title: t("search.openIssues"), key: t("search.navigation"), description: t("search.browseIssues"), icon: null, path: `/projects/${activeProjectId}/issues` },
+                  { type: "command" as const, id: "board", title: t("search.openBoard"), key: t("search.navigation"), description: t("search.moveIssues"), icon: null, path: `/projects/${activeProjectId}/board` },
+                  { type: "command" as const, id: "documents", title: t("search.openDocuments"), key: t("search.navigation"), description: t("search.openProjectDocument"), icon: null, path: `/projects/${activeProjectId}/documents` },
               ].filter((command) => !normalized || `${command.title} ${command.description}`.toLowerCase().includes(normalized))
             : [];
         return { projects: projectResults, issues: issueResults, commands: commandResults, all: [...projectResults, ...issueResults, ...commandResults] };
-    }, [activeProjectId, issues, projects, query]);
+    }, [activeProjectId, issues, projects, query, t]);
 
     useEffect(() => setSelectedIndex(0), [query]);
     useEffect(() => setSelectedIndex((index) => Math.min(index, Math.max(results.all.length - 1, 0))), [results.all.length]);
@@ -83,14 +85,14 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                         <div className="border-b border-subtle p-3">
                             <Input
                                 autoFocus
-                                aria-label="Search projects and issues"
+                                aria-label={t("search.searchProjectsAndIssues")}
                                 inputProps={{
                                     "aria-controls": "gikan-search-results",
                                     "aria-activedescendant": results.all[selectedIndex] ? resultDomId(results.all[selectedIndex]) : undefined,
                                     "aria-expanded": "true",
                                     role: "combobox",
                                 }}
-                                placeholder="Search projects and issues..."
+                                placeholder={t("search.searchProjectsAndIssues")}
                                 icon={Search}
                                 value={query}
                                 onChange={setQuery}
@@ -98,22 +100,22 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
                             />
                         </div>
 
-                        <div id="gikan-search-results" role="listbox" aria-label="Search results" className="flex flex-col overflow-y-auto p-2">
+                        <div id="gikan-search-results" role="listbox" aria-label={t("search.results")} className="flex flex-col overflow-y-auto p-2">
                             {isLoading ? (
-                                <LoadingState label="Searching..." className="px-3 py-4" />
+                                <LoadingState label={t("search.searching")} className="px-3 py-4" />
                             ) : results.all.length === 0 ? (
-                                <p className="p-4 text-center text-sm text-tertiary">{projects.length === 0 ? "You don't have any projects yet" : "No projects or issues found"}</p>
+                                <p className="p-4 text-center text-sm text-tertiary">{projects.length === 0 ? t("search.noProjects") : t("search.noResults")}</p>
                             ) : (
                                 <>
-                                    {results.projects.length > 0 && <ResultGroup label="Projects" results={results.projects} selectedIndex={selectedIndex} offset={0} onOpen={openResult} />}
+                                    {results.projects.length > 0 && <ResultGroup label={t("nav.projects")} results={results.projects} selectedIndex={selectedIndex} offset={0} onOpen={openResult} />}
                                     {results.issues.length > 0 && (
                                         <div className="mt-2">
-                                            <ResultGroup label="Issues in this project" results={results.issues} selectedIndex={selectedIndex} offset={results.projects.length} onOpen={openResult} />
+                                            <ResultGroup label={t("search.issuesInProject")} results={results.issues} selectedIndex={selectedIndex} offset={results.projects.length} onOpen={openResult} />
                                         </div>
                                     )}
                                     {results.commands.length > 0 && (
                                         <div className="mt-2">
-                                            <ResultGroup label="Commands" results={results.commands} selectedIndex={selectedIndex} offset={results.projects.length + results.issues.length} onOpen={openResult} />
+                                            <ResultGroup label={t("search.commands")} results={results.commands} selectedIndex={selectedIndex} offset={results.projects.length + results.issues.length} onOpen={openResult} />
                                         </div>
                                     )}
                                 </>

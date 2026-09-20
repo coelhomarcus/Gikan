@@ -3,6 +3,8 @@ import type { Control, FieldPath, FieldValues } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Select } from "@/components/base/select/select";
 import type { SelectItemType } from "@/components/base/select/select-shared";
+import { useTranslation } from "react-i18next";
+import { translateValidationMessage } from "@/i18n/validation";
 
 interface ControlledSelectProps<TFieldValues extends FieldValues> {
     control: Control<TFieldValues>;
@@ -34,6 +36,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
     icon,
     nullOption,
 }: ControlledSelectProps<TFieldValues>) {
+    const { t } = useTranslation();
     const allItems = nullOption ? [nullOption, ...items] : items;
 
     return (
@@ -51,7 +54,7 @@ export function ControlledSelect<TFieldValues extends FieldValues>({
                     size={size}
                     icon={icon}
                     isInvalid={!!fieldState.error}
-                    hint={fieldState.error?.message}
+                    hint={translateValidationMessage(fieldState.error?.message, t)}
                 >
                     {(item) => (
                         <Select.Item id={item.id} supportingText={item.supportingText} avatarUrl={item.avatarUrl} icon={item.icon}>

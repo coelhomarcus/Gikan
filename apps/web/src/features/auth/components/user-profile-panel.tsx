@@ -11,9 +11,14 @@ import { SettingsControl } from "@/components/settings/settings-layout";
 import { AUTH_QUERY_KEY, updateProfile } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
+import { useTranslation } from "react-i18next";
+import { LanguageSelector } from "@/i18n/language-selector";
+import { useLanguage } from "@/i18n/language-provider";
 
 export const UserProfilePanel = () => {
     const { user } = useAuth();
+    const { t } = useTranslation();
+    const { syncFailed } = useLanguage();
     const queryClient = useQueryClient();
     const { control, handleSubmit, watch, setValue, reset, setError, formState } = useForm({
         resolver: zodResolver(updateProfileSchema),
@@ -25,7 +30,7 @@ export const UserProfilePanel = () => {
             queryClient.setQueryData(AUTH_QUERY_KEY, updatedUser);
             reset({ name: updatedUser.name, avatarUrl: updatedUser.avatarUrl ?? "" });
         },
-        onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : "Could not save the profile." }),
+        onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : t("profile.couldNotSave") }),
     });
     if (!user) return null;
     const previewUrl = watch("avatarUrl");
@@ -49,14 +54,14 @@ export const UserProfilePanel = () => {
             </div>
             <form className="space-y-6" noValidate onSubmit={handleSubmit((data) => mutation.mutate(data))}>
                 <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
-                    <ControlledInput control={control} name="name" label="Full name" isRequired isDisabled={mutation.isPending} />
-                    <Input label="Username" value={user.username} isDisabled />
-                    <Input label="Email" value={user.email} isDisabled />
+                    <ControlledInput control={control} name="name" label={t("profile.fullName")} isRequired isDisabled={mutation.isPending} />
+                    <Input label={t("profile.username")} value={user.username} isDisabled />
+                    <Input label={t("profile.email")} value={user.email} isDisabled />
                     <div className="sm:col-span-2">
                         <ControlledInput
                             control={control}
                             name="avatarUrl"
-                            label="Profile photo URL"
+                            label={t("profile.profilePhotoUrl")}
                             placeholder="https://..."
                             isDisabled={mutation.isPending}
                         />
@@ -68,25 +73,31 @@ export const UserProfilePanel = () => {
                                 isDisabled={mutation.isPending}
                                 onClick={() => setValue("avatarUrl", "", { shouldDirty: true, shouldValidate: true })}
                             >
-                                Remove photo
+                                {t("profile.removePhoto")}
                             </Button>
                         )}
                     </div>
                 </div>
                 {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
-                {mutation.isSuccess && !formState.isDirty && <Alert tone="success">Profile saved.</Alert>}
+                {mutation.isSuccess && !formState.isDirty && <Alert tone="success">{t("profile.profileSaved")}</Alert>}
                 <Button type="submit" size="lg" isLoading={mutation.isPending} isDisabled={!formState.isDirty}>
-                    Save changes
+                    {t("common.saveChanges")}
                 </Button>
             </form>
+            <div className="mt-8">
+                <SettingsControl title={t("common.language")} description={t("profile.languageDescription")}>
+                    <LanguageSelector />
+                    {syncFailed && <p role="status" className="mt-2 text-sm text-warning-primary">{t("common.languageNotSynced")}</p>}
+                </SettingsControl>
+            </div>
             {user.isAdmin && (
                 <div className="mt-10">
                     <SettingsControl
-                        title="Database backup"
-                        description="Download all database data, including projects, issues, and users, for restoring the platform."
+                        title={t("profile.databaseBackup")}
+                        description={t("profile.backupDescription")}
                     >
                         <Button href="/api/admin/backup" download color="secondary" size="lg" iconLeading={Download}>
-                            Download backup
+                            {t("profile.downloadBackup")}
                         </Button>
                     </SettingsControl>
                 </div>

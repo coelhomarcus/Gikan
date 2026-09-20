@@ -3,9 +3,11 @@ import { Link } from "react-router";
 import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
 import type { ProjectSummary } from "../api";
 import { ProjectIcon } from "./project-icon";
+import { useTranslation } from "react-i18next";
 
 export const ProjectCard = ({ project }: { project: ProjectSummary }) => {
-    const updatedAt = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(project.updatedAt));
+    const { t, i18n } = useTranslation();
+    const updatedAt = new Intl.DateTimeFormat(i18n.language, { month: "short", day: "numeric" }).format(new Date(project.updatedAt));
 
     return (
         <div
@@ -27,9 +29,9 @@ export const ProjectCard = ({ project }: { project: ProjectSummary }) => {
                         <span className="truncate text-sm font-medium text-primary">{project.name}</span>
                         <span className="shrink-0 font-mono text-xs text-tertiary">{project.issueKey}</span>
                     </span>
-                    <span className="mt-0.5 block truncate text-sm text-tertiary">{project.description || "No description"}</span>
+                    <span className="mt-0.5 block truncate text-sm text-tertiary">{project.description || t("projects.noDescription")}</span>
                 </span>
-                <span className="hidden shrink-0 text-xs text-tertiary sm:block">Updated {updatedAt}</span>
+                <span className="hidden shrink-0 text-xs text-tertiary sm:block">{t("projects.updatedAt", { date: updatedAt })}</span>
                 <ArrowRight className="size-4 shrink-0 text-placeholder transition duration-100 ease-linear group-hover:translate-x-0.5 group-hover:text-accent-primary" aria-hidden="true" />
             </Link>
             <ContextMenuButton entity={{ type: "project", projectId: project.id, name: project.name, issueKey: project.issueKey }} className="mr-2" />

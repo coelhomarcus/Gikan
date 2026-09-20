@@ -1,7 +1,7 @@
-import type { CreateDocumentInput, UpdateDocumentInput } from "@gikan/shared";
+import { resolveLocale, type CreateDocumentInput, type Locale, type UpdateDocumentInput } from "@gikan/shared";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "../../db";
-import { projectDocuments, projectMembers } from "../../db/schema";
+import { projectDocuments, projectMembers, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
 
 const matchingDocument = (projectId: string, documentId: string) =>
@@ -9,6 +9,11 @@ const matchingDocument = (projectId: string, documentId: string) =>
     eq(projectDocuments.projectId, projectId),
     eq(projectDocuments.id, documentId),
   );
+
+const EMPTY_DOCUMENT_TITLES: Record<Locale, string> = {
+  "pt-BR": "Sem título",
+  en: "Untitled",
+};
 
 export function listDocuments(projectId: string) {
   return db.query.projectDocuments.findMany({
@@ -31,9 +36,11 @@ export async function createDocument(
   userId: string,
   input: CreateDocumentInput,
 ) {
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { locale: true } });
+  const title = input.title?.trim() || EMPTY_DOCUMENT_TITLES[resolveLocale(user?.locale)];
   const [document] = await db
     .insert(projectDocuments)
-    .values({ projectId, createdBy: userId, ...input })
+    .values({ projectId, createdBy: userId, ...input, title })
     .returning();
   return document;
 }
@@ -41,12 +48,15 @@ export async function createDocument(
 export async function updateDocument(
   projectId: string,
   documentId: string,
+  userId: string,
   input: UpdateDocumentInput,
 ) {
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId), columns: { locale: true } });
+  const title = input.title.trim() || EMPTY_DOCUMENT_TITLES[resolveLocale(user?.locale)];
   const [document] = await db
     .update(projectDocuments)
     .set({
-      title: input.title,
+      title,
       contentJson: input.contentJson,
       updatedAt: new Date(),
       revision: sql`${projectDocuments.revision} + 1`,

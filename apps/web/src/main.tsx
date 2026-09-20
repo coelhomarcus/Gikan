@@ -8,6 +8,7 @@ import { AuthProvider } from "@/features/auth/hooks/use-auth";
 import { queryClient } from "@/lib/query-client";
 import { RouteProvider } from "@/providers/router-provider";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { LanguageProvider } from "@/i18n/language-provider";
 import { AppRoutes } from "@/routes";
 import "@/styles/globals.css";
 
@@ -17,13 +18,15 @@ createRoot(document.getElementById("root")!).render(
             <ThemeProvider>
                 <QueryClientProvider client={queryClient}>
                     <AuthProvider>
-                        <BrowserRouter>
-                            <RouteProvider>
-                                <ContextMenuProvider>
-                                    <AppRoutes />
-                                </ContextMenuProvider>
-                            </RouteProvider>
-                        </BrowserRouter>
+                        <LanguageProvider>
+                            <BrowserRouter>
+                                <RouteProvider>
+                                    <ContextMenuProvider>
+                                        <AppRoutes />
+                                    </ContextMenuProvider>
+                                </RouteProvider>
+                            </BrowserRouter>
+                        </LanguageProvider>
                     </AuthProvider>
                 </QueryClientProvider>
             </ThemeProvider>

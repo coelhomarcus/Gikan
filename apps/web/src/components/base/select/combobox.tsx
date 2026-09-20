@@ -9,6 +9,7 @@ import { cx } from "@/utils/cx";
 import { isReactComponent } from "@/utils/is-react-component";
 import type { SelectItemType } from "./select-shared";
 import { SelectContext, sizes } from "./select-shared";
+import { useTranslation } from "react-i18next";
 
 interface ComboBoxProps extends RefAttributes<HTMLDivElement> {
     items?: SelectItemType[];
@@ -36,7 +37,7 @@ interface ComboBoxProps extends RefAttributes<HTMLDivElement> {
 export const ComboBox = ({
     items = [],
     children,
-    placeholder = "Search",
+    placeholder,
     label,
     hint,
     tooltip,
@@ -55,6 +56,8 @@ export const ComboBox = ({
     isRequired,
     className,
 }: ComboBoxProps) => {
+    const { t } = useTranslation();
+    const resolvedPlaceholder = placeholder ?? t("common.search");
     const selectedValue = selectedKey !== undefined ? selectedKey : value;
     const inputId = useId();
     const renderedItems = typeof children === "function" ? items.map((item) => children(item)) : children;
@@ -94,7 +97,7 @@ export const ComboBox = ({
                         <BaseCombobox.Input
                             id={inputId}
                             aria-label={label}
-                            placeholder={placeholder}
+                            placeholder={resolvedPlaceholder}
                             className={cx("min-w-0 flex-1 bg-transparent text-primary outline-none placeholder:text-placeholder", sizes[size].text)}
                         />
                         {shortcut && (
@@ -102,7 +105,7 @@ export const ComboBox = ({
                                 ⌘K
                             </span>
                         )}
-                        <BaseCombobox.Trigger aria-label="Open options" className="shrink-0 text-placeholder">
+                        <BaseCombobox.Trigger aria-label={t("common.openOptions")} className="shrink-0 text-placeholder">
                             <ChevronDown className="size-4" aria-hidden="true" />
                         </BaseCombobox.Trigger>
                     </BaseCombobox.InputGroup>
@@ -115,7 +118,7 @@ export const ComboBox = ({
                                 )}
                             >
                                 <BaseCombobox.List className="max-h-72 overflow-y-auto outline-none">{renderedItems}</BaseCombobox.List>
-                                <BaseCombobox.Empty className="px-3 py-4 text-center text-sm text-tertiary">No results found.</BaseCombobox.Empty>
+                                <BaseCombobox.Empty className="px-3 py-4 text-center text-sm text-tertiary">{t("common.noResults")}</BaseCombobox.Empty>
                             </BaseCombobox.Popup>
                         </BaseCombobox.Positioner>
                     </BaseCombobox.Portal>

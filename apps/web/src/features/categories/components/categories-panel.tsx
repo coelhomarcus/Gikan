@@ -13,8 +13,10 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from "../hooks/use-categories";
 import { CATEGORY_COLORS } from "./category-badge";
+import { useTranslation } from "react-i18next";
 
 export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
+    const { t } = useTranslation();
     const { user } = useAuth();
     const { data: categories, isLoading, isError } = useCategories(projectId);
     const createMutation = useCreateCategory(projectId);
@@ -27,11 +29,11 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: stri
     return (
         <div className="space-y-6">
             <SettingsHeading
-                title="Labels"
-                description="Create labels to help organize and filter issues in your project."
+                title={t("settings.labels")}
+                description={t("settings.createLabelsDescription")}
                 control={
                     <Button size="lg" iconLeading={Plus} isDisabled={pending || !!editor} onClick={() => setEditor("new")}>
-                        Add label
+                        {t("settings.addLabel")}
                     </Button>
                 }
             />
@@ -39,17 +41,17 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: stri
             {editor === "new" && (
                 <NamedColorForm
                     key="new"
-                    label="Label name"
+                    label={t("settings.labelName")}
                     initialColor={CATEGORY_COLORS[0]}
-                    submitLabel="Add label"
+                    submitLabel={t("settings.addLabel")}
                     onSave={(input) => createMutation.mutateAsync({ ...input, color: input.color ?? CATEGORY_COLORS[0] })}
                     onClose={() => setEditor(null)}
                 />
             )}
-            {isLoading && <LoadingState label="Loading labels..." />}
-            {isError && <ErrorMessage message="Could not load the project labels." />}
+            {isLoading && <LoadingState label={t("settings.loadingLabels")} />}
+            {isError && <ErrorMessage message={t("settings.couldNotLoadLabels")} />}
             {categories?.length === 0 && editor !== "new" && (
-                <EmptyState title="No labels yet" description="Create a label to organize issues in this project." />
+                <EmptyState title={t("settings.noLabels")} description={t("settings.createLabelHint")} />
             )}
             <ul className="space-y-2">
                 {categories?.map((category) => {
@@ -58,10 +60,10 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: stri
                         <li key={category.id}>
                             {editor === category.id ? (
                                 <NamedColorForm
-                                    label="Label name"
+                                    label={t("settings.labelName")}
                                     initialName={category.name}
                                     initialColor={category.color}
-                                    submitLabel="Save"
+                                    submitLabel={t("common.save")}
                                     onSave={(input) => updateMutation.mutateAsync({ categoryId: category.id, input })}
                                     onClose={() => setEditor(null)}
                                 />
@@ -77,21 +79,21 @@ export const CategoriesPanel = ({ projectId, isProjectOwner }: { projectId: stri
                                                 icon={Pencil}
                                                 size="sm"
                                                 color="tertiary"
-                                                tooltip={`Edit ${category.name}`}
+                                                tooltip={`${t("common.edit")} ${category.name}`}
                                                 isDisabled={pending || !!editor}
                                                 onClick={() => setEditor(category.id)}
                                             />
                                             <ConfirmDialog
-                                                trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip="Delete label" isDisabled={pending} />}
-                                                title="Delete label"
-                                                description={`The label "${category.name}" will be removed from all issues. The issues will not be deleted.`}
-                                                confirmLabel="Delete label"
+                                                trigger={<ButtonUtility icon={Trash2} size="sm" color="tertiary" tooltip={t("settings.deleteLabel")} isDisabled={pending} />}
+                                                title={t("settings.deleteLabel")}
+                                                description={t("settings.deleteLabelDescription", { name: category.name })}
+                                                confirmLabel={t("settings.deleteLabel")}
                                                 isPending={deleteMutation.isPending}
                                                 onConfirm={() => {
                                                     setError(null);
                                                     deleteMutation.mutate(category.id, {
                                                         onError: (reason) =>
-                                                            setError(reason instanceof ApiError ? reason.message : "Could not delete the label."),
+                                                            setError(reason instanceof ApiError ? reason.message : t("settings.couldNotDeleteLabel")),
                                                     });
                                                 }}
                                             />

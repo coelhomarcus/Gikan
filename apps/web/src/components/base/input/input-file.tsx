@@ -4,6 +4,7 @@ import { Button } from "@/components/base/buttons/button";
 import { InputBase } from "@/components/base/input/input";
 import { InputGroup } from "@/components/base/input/input-group";
 import { cx } from "@/utils/cx";
+import { useTranslation } from "react-i18next";
 
 interface InputFileProps {
     /**
@@ -46,7 +47,7 @@ export const InputFile = ({
     size = "sm",
     label,
     hint,
-    placeholder = "Choose a file",
+    placeholder,
     isDisabled,
     isInvalid,
     isRequired,
@@ -56,8 +57,11 @@ export const InputFile = ({
     allowsMultiple,
     onChange,
     className,
-    buttonText = "Upload",
+    buttonText,
 }: InputFileProps) => {
+    const { t } = useTranslation();
+    const resolvedPlaceholder = placeholder ?? t("common.chooseFile");
+    const resolvedButtonText = buttonText ?? t("common.upload");
     const inputRef = useRef<HTMLInputElement>(null);
     const [fileNames, setFileNames] = useState("");
 
@@ -95,13 +99,13 @@ export const InputFile = ({
                 className={className}
                 trailingAddon={
                     <Button size={size} color="secondary" onClick={handleClick} isDisabled={isDisabled}>
-                        {buttonText}
+                        {resolvedButtonText}
                     </Button>
                 }
             >
                 <div className="relative flex min-w-0 flex-1">
                     <InputBase
-                        placeholder={placeholder}
+                        placeholder={resolvedPlaceholder}
                         value={fileNames}
                         readOnly
                         inputClassName={cx("cursor-pointer", isLoading && "pr-9")}
