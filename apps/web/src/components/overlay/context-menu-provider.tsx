@@ -3,6 +3,7 @@ import { Copy, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useClipboard } from "@/hooks/use-clipboard";
 import { cx } from "@/utils/cx";
+import { fetchIssueClipboardContent } from "@/features/issues/lib/issue-clipboard";
 
 interface ContextMenuItem {
     key: string;
@@ -47,6 +48,18 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     icon: Copy,
                     onSelect: () => copy(`${window.location.origin}${entityUrl}`),
                 },
+                ...(isIssue
+                    ? [{
+                          key: "copy-content",
+                          label: "Copy issue content",
+                          icon: Copy,
+                          onSelect: () => {
+                              void fetchIssueClipboardContent(identifier)
+                                  .then((content) => copy(content))
+                                  .catch((error: unknown) => console.error("Could not copy issue content", error));
+                          },
+                      }]
+                    : []),
                 {
                     key: "open-entity",
                     label: `Open ${entityLabel}`,

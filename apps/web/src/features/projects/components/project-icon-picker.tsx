@@ -52,7 +52,7 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
     );
 
     return (
-        <div className="flex min-w-0 flex-col gap-3">
+        <div className="flex min-h-0 min-w-0 flex-col gap-3">
             <div className="flex items-center justify-between gap-3">
                 <p className="text-sm font-medium text-secondary">{label}</p>
                 <span className="text-xs text-tertiary">{projectIconKeys.length} icons</span>
@@ -67,12 +67,12 @@ export const ProjectIconPicker = ({ value, onChange, label = "Icon" }: ProjectIc
                 size="sm"
             />
 
-            <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
+            <div className="max-h-[min(16rem,calc(100dvh-10rem))] min-w-0 space-y-4 overflow-x-hidden overflow-y-auto pr-1">
                 {filteredGroups.length === 0 && <p className="py-3 text-center text-sm text-tertiary">No icons found.</p>}
                 {filteredGroups.map((group) => (
                     <section key={group.label} aria-label={group.label}>
                         <p className="mb-2 text-xs font-medium text-tertiary">{group.label}</p>
-                        <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
+                        <div className="grid w-full min-w-0 grid-cols-5 gap-2 sm:grid-cols-6">
                             {group.keys.map((key) => {
                                 const Icon = resolveProjectIcon(key);
                                 const isSelected = selected === key;

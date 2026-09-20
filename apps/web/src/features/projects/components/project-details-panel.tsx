@@ -62,7 +62,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                                     </Popover.Trigger>
                                     <Popover.Portal>
                                         <Popover.Positioner sideOffset={8} className="z-50">
-                                            <Popover.Popup className="max-h-80 w-80 max-w-[90vw] overflow-y-auto rounded-md border border-subtle bg-layer-2 p-4 shadow-overlay-200 outline-none">
+                                            <Popover.Popup className="max-h-[calc(100dvh-2rem)] w-80 max-w-[90vw] overflow-hidden rounded-md border border-subtle bg-layer-2 p-4 shadow-overlay-200 outline-none">
                                                 <Popover.Title className="sr-only">Project icon</Popover.Title>
                                                 <Suspense fallback={<LoadingState label="Loading icons..." />}>
                                                     <ProjectIconPicker value={field.value} onChange={field.onChange} />

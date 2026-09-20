@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { TiptapDocument, UpdateIssueInput } from "@gikan/shared";
-import { ArrowLeft, ArrowRight, Calendar, CheckCircle, ExternalLink, Link2, Plus, Trash2, User, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, CheckCircle, Copy, ExternalLink, Link2, Plus, Trash2, User, X } from "lucide-react";
 import { Link, useBeforeUnload, useNavigate, useParams } from "react-router";
 import { AssigneeOutline, CyclesOutline, EstimateOutline, HistoryOutline, LabelsOutline, MoreHorizontalOutline, ParentOutline, PriorityOutline, StateOutline } from "@makeplane/propel/icons";
 import { Popover } from "@base-ui/react/popover";
@@ -15,6 +15,7 @@ import { Select } from "@/components/base/select/select";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ConfirmDialog } from "@/components/overlay/confirm-dialog";
 import { useAuth } from "@/features/auth/hooks/use-auth";
+import { useClipboard } from "@/hooks/use-clipboard";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCategories } from "@/features/categories/hooks/use-categories";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
@@ -35,6 +36,7 @@ import {
     useUpdateIssueComment,
 } from "../hooks/use-issues";
 import type { IssueDetail } from "../api";
+import { fetchIssueClipboardContent } from "../lib/issue-clipboard";
 import { EMPTY_TIPTAP_DOCUMENT, RichTextEditor } from "./rich-text-editor";
 
 interface IssueViewProps {
@@ -63,6 +65,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const resolvedIdentifier = identifier ?? params.issueIdentifier ?? "";
     const resolvedProjectId = projectId ?? params.projectId ?? "";
     const { user } = useAuth();
+    const { copy, copied } = useClipboard();
     const { data: issue, isLoading, isError } = useIssue(resolvedIdentifier);
     const updateIssue = useUpdateIssue(issue?.projectId ?? resolvedProjectId);
     const deleteIssue = useDeleteIssue(issue?.projectId ?? resolvedProjectId);
@@ -88,6 +91,8 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
     const [descriptionSaveError, setDescriptionSaveError] = useState<string | null>(null);
     const [propertySaveError, setPropertySaveError] = useState<string | null>(null);
     const [commentSaveError, setCommentSaveError] = useState<string | null>(null);
+    const [isCopyingIssue, setIsCopyingIssue] = useState(false);
+    const [issueCopyError, setIssueCopyError] = useState(false);
     const loadedIssueId = useRef<string | null>(null);
     const titleDirty = useRef(false);
     const descriptionDirty = useRef(false);
@@ -151,6 +156,22 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
             { onError: (reason) => setPropertySaveError(errorMessage(reason)) },
         );
     };
+    const copyIssueContent = async () => {
+        setIsCopyingIssue(true);
+        setIssueCopyError(false);
+        try {
+            const content = await fetchIssueClipboardContent(issue.identifier, {
+                title: title.trim() || issue.title,
+                description,
+            });
+            const result = await copy(content, "issue-content");
+            setIssueCopyError(!result.success);
+        } catch {
+            setIssueCopyError(true);
+        } finally {
+            setIsCopyingIssue(false);
+        }
+    };
     const content = (
         <div className={cx("flex h-full min-h-0 flex-col", mode === "peek" && "plane-issue-peek")}>
             <div className={cx("issue-view-header flex items-center justify-between gap-3 px-4 py-3", mode === "page" && "border-b border-subtle")}>
@@ -171,6 +192,16 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                         tooltip="Copy issue link"
                         onClick={() => navigator.clipboard.writeText(`${window.location.origin}/projects/${issue.projectId}/issues/${issue.identifier}`)}
                     />
+                    {mode === "peek" && (
+                        <ButtonUtility
+                            icon={copied ? CheckCircle : Copy}
+                            size="sm"
+                            color="tertiary"
+                            tooltip={issueCopyError ? "Could not copy issue content" : copied ? "Copied issue content" : "Copy issue content"}
+                            isDisabled={isCopyingIssue}
+                            onClick={() => void copyIssueContent()}
+                        />
+                    )}
                     {mode === "peek" && (
                         <ButtonUtility
                             icon={ExternalLink}

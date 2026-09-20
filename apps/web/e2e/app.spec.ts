@@ -192,7 +192,7 @@ test("project settings update details, statuses, labels, and members", async ({ 
 
     await page.goto(`/projects/${projectId}/settings/members`);
     await page.getByRole("button", { name: "Add member", exact: true }).click();
-    await page.getByLabel("Username", { exact: true }).fill("sam");
+    await page.getByRole("textbox", { name: "Username *", exact: true }).fill("sam");
     const invite = page.waitForResponse((response) => response.request().method() === "POST" && response.url().endsWith(`/projects/${projectId}/members`));
     await page.getByRole("dialog").getByRole("button", { name: "Add member", exact: true }).click();
     await invite;
