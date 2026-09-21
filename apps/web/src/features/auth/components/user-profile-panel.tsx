@@ -8,6 +8,7 @@ import { Button } from "@/components/base/buttons/button";
 import { Alert } from "@/components/base/feedback/alert";
 import { ControlledSettingsInput as ControlledInput, SettingsInput as Input } from "@/components/settings/settings-input";
 import { SettingsControl } from "@/components/settings/settings-layout";
+import { AvatarUrlPicker } from "@/components/appearance/avatar-url-picker";
 import { CoverImage } from "@/components/appearance/cover-image";
 import { CoverPicker } from "@/components/appearance/cover-picker";
 import { AUTH_QUERY_KEY, updateProfile } from "@/features/auth/api";
@@ -22,7 +23,7 @@ export const UserProfilePanel = () => {
     const { t } = useTranslation();
     const { syncFailed } = useLanguage();
     const queryClient = useQueryClient();
-    const { control, handleSubmit, watch, setValue, reset, setError, formState } = useForm({
+    const { control, handleSubmit, watch, reset, setError, formState } = useForm({
         resolver: zodResolver(updateProfileSchema),
         defaultValues: { name: user?.name ?? "", avatarUrl: user?.avatarUrl ?? "", cover: user?.cover ?? null },
     });
@@ -53,6 +54,7 @@ export const UserProfilePanel = () => {
                 </div>
                 <div data-profile-avatar className="absolute -bottom-6 left-6 rounded-lg bg-surface-1 p-1">
                     <Avatar key={previewUrl} src={previewUrl || undefined} initials={initials} size="2xl" rounded={false} className="rounded-lg" />
+                    <Controller control={control} name="avatarUrl" render={({ field }) => <AvatarUrlPicker value={field.value} initials={initials} onChange={field.onChange} disabled={mutation.isPending} />} />
                 </div>
             </div>
             <div className="mt-10 mb-8 space-y-1">
@@ -64,26 +66,6 @@ export const UserProfilePanel = () => {
                     <ControlledInput control={control} name="name" label={t("profile.fullName")} isRequired isDisabled={mutation.isPending} />
                     <Input label={t("profile.username")} value={user.username} isDisabled />
                     <Input label={t("profile.email")} value={user.email} isDisabled />
-                    <div className="sm:col-span-2">
-                        <ControlledInput
-                            control={control}
-                            name="avatarUrl"
-                            label={t("profile.profilePhotoUrl")}
-                            placeholder="https://..."
-                            isDisabled={mutation.isPending}
-                        />
-                        {previewUrl && (
-                            <Button
-                                color="link-gray"
-                                size="sm"
-                                className="mt-2"
-                                isDisabled={mutation.isPending}
-                                onClick={() => setValue("avatarUrl", "", { shouldDirty: true, shouldValidate: true })}
-                            >
-                                {t("profile.removePhoto")}
-                            </Button>
-                        )}
-                    </div>
                 </div>
                 {formState.errors.root && <Alert tone="error">{formState.errors.root.message}</Alert>}
                 {mutation.isSuccess && !formState.isDirty && <Alert tone="success">{t("profile.profileSaved")}</Alert>}

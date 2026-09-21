@@ -440,10 +440,16 @@ test("profile edits are saved and administration export respects account permiss
         const bounds = element.getBoundingClientRect();
         return document.elementFromPoint(bounds.left + bounds.width / 2, bounds.bottom - 4)?.closest("[data-profile-avatar]") === element;
     })).toBe(true);
+    await expect(page.getByLabel("Profile photo URL")).toHaveCount(0);
+    await page.getByRole("button", { name: "Add profile photo" }).click();
+    await page.getByLabel("Profile photo URL").fill("http://127.0.0.1:5173/appearance-project-cover.svg");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await expect(avatar.locator("img")).toHaveAttribute("src", "http://127.0.0.1:5173/appearance-project-cover.svg");
+    await expect(page.getByRole("button", { name: "Change profile photo" })).toBeVisible();
     await page.getByRole("textbox", { name: "Full name", exact: true }).fill("Alex Morgan Updated");
-    const profileSave = page.waitForResponse((response) => response.request().method() === "PATCH" && response.url().endsWith("/users/me"));
+    const profileSave = page.waitForRequest((request) => request.method() === "PATCH" && request.url().endsWith("/users/me"));
     await page.getByRole("button", { name: "Save changes", exact: true }).click();
-    await profileSave;
+    expect((await profileSave).postDataJSON()).toMatchObject({ name: "Alex Morgan Updated", avatarUrl: "http://127.0.0.1:5173/appearance-project-cover.svg" });
     await expect(page.getByText("Profile saved.")).toBeVisible();
     await expect(page.getByRole("link", { name: "Download backup" })).toHaveAttribute("href", "/api/admin/backup");
 
