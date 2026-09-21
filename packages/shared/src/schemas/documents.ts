@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { coverSchema, entityIconSchema } from "./appearance";
 import { tiptapDocumentSchema } from "./issues";
 
 const documentTitle = z
@@ -31,10 +32,14 @@ const documentContentSchema = tiptapDocumentSchema.superRefine(
 export const createDocumentSchema = z.object({
   title: documentTitle.optional(),
   contentJson: documentContentSchema.default({ type: "doc", content: [] }),
+  iconAppearance: entityIconSchema.nullable().optional(),
+  cover: coverSchema.nullable().optional(),
 });
 export const updateDocumentSchema = z.object({
   title: documentTitle,
   contentJson: documentContentSchema,
+  iconAppearance: entityIconSchema.nullable().optional(),
+  cover: coverSchema.nullable().optional(),
   expectedRevision: z.number().int().positive(),
 });
 export const documentParamsSchema = z.object({

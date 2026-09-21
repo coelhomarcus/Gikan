@@ -12,6 +12,7 @@ export const user = {
     email: "alex@example.test",
     locale: "en" as const,
     avatarUrl: null,
+    cover: { url: "http://127.0.0.1:5173/appearance-profile-cover.svg", position: { x: 50, y: 50 } },
     isAdmin: true,
     createdAt: timestamp,
     updatedAt: timestamp,
@@ -24,6 +25,8 @@ export const project = {
     description: "Building a better workspace for our team.",
     repositoryUrl: "https://example.test/platform",
     icon: "layers",
+    iconAppearance: { type: "emoji" as const, value: "🧩" },
+    cover: { url: "http://127.0.0.1:5173/appearance-project-cover.svg", position: { x: 50, y: 50 } },
     pageContent: "",
     createdBy: userId,
     createdAt: timestamp,
@@ -90,7 +93,7 @@ export async function mockApi(
     });
     let authenticated = options.authenticated ?? true;
     const currentUser = { ...user, isAdmin: options.admin ?? true };
-    const currentProject = { ...project };
+    const currentProject = { ...project, memberCount: 1, memberPreview: [{ id: userId, name: user.name, avatarUrl: user.avatarUrl }] };
     const currentIssues = structuredClone(options.empty ? [] : issues);
     if (options.issueReferences && currentIssues.length > 1) currentIssues[1]!.parentIssueId = currentIssues[0]!.id;
     const currentColumns = structuredClone(columns);
@@ -102,6 +105,8 @@ export async function mockApi(
             id: documentId,
             projectId,
             title: "Overview notes",
+            iconAppearance: { type: "emoji" as const, value: "📚" },
+            cover: { url: "http://127.0.0.1:5173/appearance-document-cover.svg", position: { x: 50, y: 50 } },
             contentJson: structuredClone(options.documentContent ?? documentJson),
             createdBy: options.documentAuthorId ?? userId,
             createdAt: timestamp,
@@ -109,6 +114,17 @@ export async function mockApi(
             revision: 1,
         },
     ];
+    const covers: Record<string, string> = {
+        "appearance-project-cover.svg": "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='500'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='#2563eb'/><stop offset='.55' stop-color='#7c3aed'/><stop offset='1' stop-color='#0f172a'/></linearGradient></defs><rect width='1200' height='500' fill='url(#g)'/><circle cx='940' cy='90' r='190' fill='#60a5fa' opacity='.35'/><path d='M0 410C240 315 460 500 720 390s330-20 480-100v210H0z' fill='#020617' opacity='.45'/></svg>",
+        "appearance-document-cover.svg": "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='500'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='0'><stop stop-color='#0f766e'/><stop offset='.5' stop-color='#0891b2'/><stop offset='1' stop-color='#1e293b'/></linearGradient></defs><rect width='1200' height='500' fill='url(#g)'/><path d='M0 120h1200v120H0z' fill='#f0fdfa' opacity='.08'/><path d='M0 320h1200v80H0z' fill='#f0fdfa' opacity='.08'/></svg>",
+        "appearance-profile-cover.svg": "<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='500'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop stop-color='#be123c'/><stop offset='.5' stop-color='#7c2d12'/><stop offset='1' stop-color='#111827'/></linearGradient></defs><rect width='1200' height='500' fill='url(#g)'/><circle cx='180' cy='100' r='160' fill='#fbbf24' opacity='.2'/></svg>",
+    };
+    await page.route("**/appearance-*-cover.svg", async (route) => {
+        const name = new URL(route.request().url()).pathname.split("/").at(-1) ?? "";
+        const body = covers[name];
+        if (!body) return route.fallback();
+        return route.fulfill({ contentType: "image/svg+xml", body });
+    });
     const comments: Record<string, unknown>[] = [];
     const relations: Record<string, unknown>[] = options.issueReferences && currentIssues[2]
         ? [{
@@ -178,7 +194,13 @@ export async function mockApi(
             const document = documents[index];
             if (method === "PATCH") {
                 if (body.expectedRevision !== document.revision) return json({ error: "This page was updated elsewhere." }, 409);
-                Object.assign(document, { title: body.title || "Untitled", contentJson: body.contentJson, revision: document.revision + 1 });
+                Object.assign(document, {
+                    title: body.title || "Untitled",
+                    contentJson: body.contentJson,
+                    ...(body.iconAppearance === undefined ? {} : { iconAppearance: body.iconAppearance }),
+                    ...(body.cover === undefined ? {} : { cover: body.cover }),
+                    revision: document.revision + 1,
+                });
             }
             if (method === "DELETE") {
                 documents.splice(index, 1);

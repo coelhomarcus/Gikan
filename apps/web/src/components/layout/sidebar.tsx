@@ -123,7 +123,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                             to={`/projects/${project.id}`}
                                             className={`${navClass} min-w-0 flex-1 font-medium ${projectId === project.id ? "text-primary" : ""}`}
                                         >
-                                            <ProjectIcon icon={project.icon} className="size-4 shrink-0 text-tertiary" />
+                                            <ProjectIcon icon={project.iconAppearance ?? project.icon} className="size-4 shrink-0 text-tertiary" />
                                             <span className="truncate">{project.name}</span>
                                             <ChevronRightOutline className={`ml-auto size-3 shrink-0 ${projectId === project.id ? "rotate-90" : ""}`} />
                                         </Link>
@@ -166,7 +166,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                                                         className={`${navClass} min-w-0 flex-1 ${location.pathname.endsWith(`/documents/${page.id}`) ? "bg-layer-1 text-primary" : ""}`}
                                                                         aria-current={location.pathname.endsWith(`/documents/${page.id}`) ? "page" : undefined}
                                                                     >
-                                                                        <AppIcons.Documents className="size-3 shrink-0" />
+                                                                        {page.iconAppearance ? <ProjectIcon icon={page.iconAppearance} className="size-3 shrink-0" /> : <AppIcons.Documents className="size-3 shrink-0" />}
                                                                         <span className="truncate">{page.title}</span>
                                                                     </Link>
                                                                     <ContextMenuButton

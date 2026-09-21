@@ -30,6 +30,7 @@ test("capture stable dark Gikan route references at desktop widths", async ({ pa
             await page.goto(path);
             await expect(page.locator("[data-app-content]")).toBeVisible();
             await expect(page.getByText(landmark, { exact: false }).first()).toBeVisible();
+            if (name === "projects") await expect(page.locator("article[data-project-context]")).toContainText("Platform");
             if (name === "settings-general") await expect(page.getByLabel("Loading icon picker")).toHaveCount(0);
             if (name === "document-editor") await expect(page.getByRole("textbox", { name: "Page title" })).toHaveValue("Overview notes");
             await page.evaluate(() => document.fonts.ready);

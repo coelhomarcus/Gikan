@@ -66,6 +66,15 @@ test("document schemas preserve existing JSON and allow localized empty-title fa
   );
 });
 
+test("document appearance accepts catalog, emoji, and remote image icons", () => {
+  const base = { contentJson: legacy };
+  assert.equal(createDocumentSchema.safeParse({ ...base, iconAppearance: { type: "icon", key: "rocket" } }).success, true);
+  assert.equal(createDocumentSchema.safeParse({ ...base, iconAppearance: { type: "emoji", value: "👩🏽‍💻" } }).success, true);
+  assert.equal(createDocumentSchema.safeParse({ ...base, iconAppearance: { type: "image", url: "https://images.example.test/icon.png" }, cover: { url: "https://images.example.test/cover.png", position: { x: 50, y: 50 } } }).success, true);
+  assert.equal(createDocumentSchema.safeParse({ ...base, iconAppearance: { type: "image", url: "data:image/png;base64,x" } }).success, false);
+  assert.equal(createDocumentSchema.safeParse({ ...base, cover: { url: "https://user:pass@example.test/cover.png", position: { x: 50, y: 50 } } }).success, false);
+});
+
 test("document schemas accept URL images and reject non-HTTP schemes", () => {
   const contentJson = {
     type: "doc" as const,

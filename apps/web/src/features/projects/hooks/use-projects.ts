@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { clearDocumentDrafts } from "@/features/documents/sessions";
-import { type Project, type ProjectSummary, createProject, deleteProject, listProjects, updateProject, updateProjectPage } from "../api";
+import { type Project, type ProjectCardSummary, createProject, deleteProject, listProjects, updateProject, updateProjectPage } from "../api";
 import { projectQueryKey } from "./use-project";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
@@ -28,9 +28,28 @@ export function useUpdateProject(projectId: string) {
 
     return useMutation({
         mutationFn: (input: UpdateProjectInput) => updateProject(projectId, input),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY });
-            queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId) });
+        onMutate: async (input) => {
+            await Promise.all([
+                queryClient.cancelQueries({ queryKey: PROJECTS_QUERY_KEY, exact: true }),
+                queryClient.cancelQueries({ queryKey: projectQueryKey(projectId), exact: true }),
+            ]);
+            const previousProject = queryClient.getQueryData<Project>(projectQueryKey(projectId));
+            const previousProjects = queryClient.getQueryData<ProjectCardSummary[]>(PROJECTS_QUERY_KEY);
+            queryClient.setQueryData<Project>(projectQueryKey(projectId), (current) => current ? { ...current, ...input } : current);
+            queryClient.setQueryData<ProjectCardSummary[]>(PROJECTS_QUERY_KEY, (current) => current?.map((project) => project.id === projectId ? { ...project, ...input } : project));
+            return { previousProject, previousProjects };
+        },
+        onError: (_error, _input, context) => {
+            if (context?.previousProject) queryClient.setQueryData(projectQueryKey(projectId), context.previousProject);
+            if (context?.previousProjects) queryClient.setQueryData(PROJECTS_QUERY_KEY, context.previousProjects);
+        },
+        onSuccess: (project) => {
+            queryClient.setQueryData(projectQueryKey(projectId), project);
+            queryClient.setQueryData<ProjectCardSummary[]>(PROJECTS_QUERY_KEY, (current) => current?.map((item) => item.id === project.id ? { ...item, ...project } : item));
+        },
+        onSettled: () => {
+            void queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY, exact: true });
+            void queryClient.invalidateQueries({ queryKey: projectQueryKey(projectId), exact: true });
         },
     });
 }
@@ -51,7 +70,7 @@ export function useDeleteProject(project: Pick<Project, "id" | "issueKey">) {
             };
             await queryClient.cancelQueries(filters);
             queryClient.removeQueries(filters);
-            queryClient.setQueryData<ProjectSummary[]>(PROJECTS_QUERY_KEY, (old) => old?.filter((item) => item.id !== project.id));
+            queryClient.setQueryData<ProjectCardSummary[]>(PROJECTS_QUERY_KEY, (old) => old?.filter((item) => item.id !== project.id));
             await queryClient.invalidateQueries({ queryKey: PROJECTS_QUERY_KEY, exact: true });
         },
     });

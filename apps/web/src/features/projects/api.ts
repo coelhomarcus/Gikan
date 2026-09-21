@@ -1,4 +1,4 @@
-import type { CreateProjectInput, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
+import type { CreateProjectInput, EntityCover, EntityIcon, UpdateProjectInput, UpdateProjectPageInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface Project {
@@ -9,6 +9,8 @@ export interface Project {
     description: string | null;
     repositoryUrl: string | null;
     icon: string | null;
+    iconAppearance: EntityIcon | null;
+    cover: EntityCover | null;
     pageContent: string;
     createdBy: string;
     createdAt: string;
@@ -16,6 +18,8 @@ export interface Project {
 }
 
 export type ProjectSummary = Omit<Project, "pageContent">;
+export interface ProjectMemberPreview { id: string; name: string; avatarUrl: string | null }
+export type ProjectCardSummary = ProjectSummary & { memberCount: number; memberPreview: ProjectMemberPreview[] };
 
 export interface ProjectMember {
     id: string;
@@ -27,8 +31,8 @@ export interface ProjectMember {
     joinedAt: string;
 }
 
-export function listProjects(): Promise<ProjectSummary[]> {
-    return apiClient.get<{ projects: ProjectSummary[] }>("/projects").then((res) => res.projects);
+export function listProjects(): Promise<ProjectCardSummary[]> {
+    return apiClient.get<{ projects: ProjectCardSummary[] }>("/projects").then((res) => res.projects);
 }
 
 export function getProject(projectId: string): Promise<Project> {

@@ -24,6 +24,14 @@ test("creation accepts a custom key, normalizes it, and keeps old clients compat
     }
 });
 
+test("project appearance validates custom icons and remote covers while keeping legacy icon clients", () => {
+    assert.deepEqual(createProjectSchema.parse({ name: "My project", icon: "rocket" }).icon, "rocket");
+    assert.equal(createProjectSchema.safeParse({ name: "My project", iconAppearance: { type: "emoji", value: "🧠" } }).success, true);
+    assert.equal(createProjectSchema.safeParse({ name: "My project", iconAppearance: { type: "image", url: "https://images.example.test/logo.svg" }, cover: { url: "https://images.example.test/banner.jpg", position: { x: 45, y: 55 } } }).success, true);
+    assert.equal(createProjectSchema.safeParse({ name: "My project", iconAppearance: { type: "icon", key: "unknown" } }).success, false);
+    assert.equal(createProjectSchema.safeParse({ name: "My project", cover: { url: "javascript:alert(1)", position: { x: 50, y: 50 } } }).success, false);
+});
+
 test("custom key is persisted verbatim without querying automatic suggestions", async () => {
     mockProjectCreator();
     const inserts: Array<{ table: unknown; values: Record<string, unknown> | unknown[] }> = [];

@@ -351,6 +351,7 @@ test("image edit and resize controls do not dispatch stale mouse or pointer sele
     await page.getByRole("button", { name: "Apply image" }).click();
 
     const resize = page.getByRole("slider", { name: "Image width" });
+    await resize.scrollIntoViewIfNeeded();
     const bounds = await resize.boundingBox();
     if (!bounds) throw new Error("Image resize control did not render.");
     await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);

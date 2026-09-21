@@ -10,6 +10,7 @@ const projects = {
         chooseIcon: "Choose project icon", chooseAnIcon: "Choose an icon", loadingIcons: "Loading icons…", deleteDescription: "All issues, documents, cycles, states, labels, and memberships in {{name}} will be permanently deleted. This cannot be undone.", enterProjectName: "Enter the project name", couldNotDelete: "Could not delete the project. Try again.",
         projectCreated: "Project created.", projectKeyInUse: "Project ID is already in use.", deleteProject: "Delete project", openRepository: "Open repository", couldNotCreate: "Could not create the project.",
         noDescription: "No description", updatedAt: "Updated {{date}}",
+        createdOn: "Created {{date}}", noMembers: "No members yet",
         deleteProjectPrompt: "To confirm, type “{{phrase}}”", deletePhrase: "delete my project", confirmDelete: "Delete my project",
     } as const;
 

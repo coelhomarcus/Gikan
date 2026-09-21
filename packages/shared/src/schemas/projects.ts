@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { coverSchema, emojiIconSchema, imageIconSchema } from "./appearance";
 
 const repositoryUrlSchema = z
     .union([z.string().trim().url("Invalid URL"), z.literal("")])
@@ -80,6 +81,11 @@ export const projectIconKeys = [
 export type ProjectIconKey = (typeof projectIconKeys)[number];
 
 const iconSchema = z.enum(projectIconKeys).nullable().optional();
+const projectIconAppearanceSchema = z.union([
+    z.object({ type: z.literal("icon"), key: z.enum(projectIconKeys) }),
+    emojiIconSchema,
+    imageIconSchema,
+]);
 const projectPageContentSchema = z.string().max(100_000, "The page can contain at most 100,000 characters");
 const projectKeySchema = z
     .string()
@@ -102,13 +108,20 @@ export function suggestProjectKey(name: string): string {
     return candidate.length >= 2 ? candidate : "PRJ";
 }
 
-export const createProjectSchema = z.object({
+const projectInputSchema = z.object({
     name: z.string().trim().min(2).max(120),
     issueKey: optionalProjectKeySchema,
     description: z.string().trim().max(2000).optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,
+    iconAppearance: projectIconAppearanceSchema.nullable().optional(),
+    cover: coverSchema.nullable().optional(),
+}).superRefine((value, context) => {
+    if (value.icon !== undefined && value.iconAppearance !== undefined) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["iconAppearance"], message: "Use either icon or iconAppearance, not both" });
+    }
 });
+export const createProjectSchema = projectInputSchema;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 
 export const updateProjectSchema = z.object({
@@ -117,6 +130,12 @@ export const updateProjectSchema = z.object({
     description: z.string().trim().max(2000).nullable().optional(),
     repositoryUrl: repositoryUrlSchema,
     icon: iconSchema,
+    iconAppearance: projectIconAppearanceSchema.nullable().optional(),
+    cover: coverSchema.nullable().optional(),
+}).superRefine((value, context) => {
+    if (value.icon !== undefined && value.iconAppearance !== undefined) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["iconAppearance"], message: "Use either icon or iconAppearance, not both" });
+    }
 });
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 

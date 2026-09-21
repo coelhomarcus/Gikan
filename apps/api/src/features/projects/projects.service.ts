@@ -1,5 +1,5 @@
 import { resolveLocale, suggestProjectKey, type CreateProjectInput, type Locale, type UpdateProjectInput, type UpdateProjectPageInput } from "@gikan/shared";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../db";
 import { boardColumns, issues, projectMembers, projects, users } from "../../db/schema";
 import { HttpError } from "../../lib/http-error";
@@ -26,10 +26,25 @@ const PROJECT_LIST_COLUMNS = {
     description: true,
     repositoryUrl: true,
     icon: true,
+    iconAppearance: true,
+    cover: true,
     createdBy: true,
     createdAt: true,
     updatedAt: true,
 } as const;
+
+type ProjectAppearanceInput = Pick<CreateProjectInput, "icon" | "iconAppearance" | "cover">;
+
+function projectAppearance(input: ProjectAppearanceInput) {
+    if (input.iconAppearance !== undefined) {
+        return {
+            iconAppearance: input.iconAppearance,
+            // Preserve the old field for older clients only when this is a catalog icon.
+            icon: input.iconAppearance?.type === "icon" ? input.iconAppearance.key : null,
+        };
+    }
+    return input.icon === undefined ? {} : { icon: input.icon, iconAppearance: input.icon ? { type: "icon" as const, key: input.icon } : null };
+}
 
 async function resolveProjectKey(name: string) {
     const existing = await db.query.projects.findMany({ columns: { issueKey: true } });
@@ -53,14 +68,14 @@ export async function createProject(input: CreateProjectInput, creatorId: string
 
         try {
             return await db.transaction(async (tx) => {
+                const { icon: _icon, iconAppearance: _iconAppearance, cover, issueKey: _inputIssueKey, ...projectInput } = input;
                 const [project] = await tx
                     .insert(projects)
                     .values({
                         issueKey,
-                        name: input.name,
-                        description: input.description,
-                        repositoryUrl: input.repositoryUrl,
-                        icon: input.icon,
+                        ...projectInput,
+                        cover: cover ?? null,
+                        ...projectAppearance(input),
                         createdBy: creatorId,
                     })
                     .returning();
@@ -88,16 +103,30 @@ export async function createProject(input: CreateProjectInput, creatorId: string
 }
 
 export async function listProjectsForUser(userId: string, isAdmin: boolean) {
-    if (isAdmin) {
-        return db.query.projects.findMany({ columns: PROJECT_LIST_COLUMNS, orderBy: [desc(projects.createdAt)] });
-    }
+    const projectList = isAdmin
+        ? await db.query.projects.findMany({ columns: PROJECT_LIST_COLUMNS, orderBy: [desc(projects.createdAt)] })
+        : (await db.query.projectMembers.findMany({
+              where: eq(projectMembers.userId, userId),
+              with: { project: { columns: PROJECT_LIST_COLUMNS } },
+          })).map((membership) => membership.project);
 
+    if (projectList.length === 0) return projectList.map((project) => ({ ...project, memberCount: 0, memberPreview: [] }));
+    const projectIds = projectList.map((project) => project.id);
     const memberships = await db.query.projectMembers.findMany({
-        where: eq(projectMembers.userId, userId),
-        with: { project: { columns: PROJECT_LIST_COLUMNS } },
+        where: inArray(projectMembers.projectId, projectIds),
+        orderBy: [projectMembers.joinedAt],
+        with: { user: { columns: { id: true, name: true, avatarUrl: true } } },
     });
-
-    return memberships.map((membership) => membership.project);
+    const memberMap = new Map<string, Array<{ id: string; name: string; avatarUrl: string | null }>>();
+    for (const membership of memberships) {
+        const members = memberMap.get(membership.projectId) ?? [];
+        members.push(membership.user);
+        memberMap.set(membership.projectId, members);
+    }
+    return projectList.map((project) => {
+        const members = memberMap.get(project.id) ?? [];
+        return { ...project, memberCount: members.length, memberPreview: members.slice(0, 3) };
+    });
 }
 
 export async function getProjectById(projectId: string) {
@@ -118,9 +147,15 @@ export async function updateProject(projectId: string, input: UpdateProjectInput
         const duplicate = await db.query.projects.findFirst({ where: and(eq(projects.issueKey, input.issueKey), sql`${projects.id} <> ${projectId}`), columns: { id: true } });
         if (duplicate) throw new HttpError(409, "Project key is already in use");
     }
+    const { icon: _icon, iconAppearance: _iconAppearance, cover: _cover, ...projectInput } = input;
     const [project] = await db
         .update(projects)
-        .set({ ...input, updatedAt: new Date() })
+        .set({
+            ...projectInput,
+            ...(input.cover === undefined ? {} : { cover: input.cover }),
+            ...projectAppearance(input),
+            updatedAt: new Date(),
+        })
         .where(eq(projects.id, projectId))
         .returning()
         .catch((error: unknown) => {

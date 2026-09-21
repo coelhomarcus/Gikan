@@ -4,9 +4,11 @@ import { Skeleton } from "@/components/base/feedback/skeleton";
 import { EmptyState } from "@/components/feedback/empty-state";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { AppIcons } from "@/components/foundations/icons";
+import { CoverImage } from "@/components/appearance/cover-image";
 import { useColumns } from "@/features/board/hooks/use-board";
 import { useCycles, useIssues } from "@/features/issues/hooks/use-issues";
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
+import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { useProject } from "@/features/projects/hooks/use-project";
 import { useTranslation } from "react-i18next";
 
@@ -32,11 +34,15 @@ export const ProjectOverviewPage = () => {
                     <ErrorMessage message={t("errors.requestFailed")} />
                 ) : (
                 <div className="flex flex-col">
-                    <header className="flex flex-wrap items-start justify-between gap-6 border-b border-subtle pb-6">
-                        <div className="min-w-0">
-                            <p className="font-mono text-xs text-accent-primary">{project.issueKey}</p>
-                            <h1 className="mt-1 text-display-sm font-semibold tracking-tight text-primary">{project.name}</h1>
-                            {project.description && <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{project.description}</p>}
+                    <header className="overflow-hidden rounded-lg border border-subtle">
+                        <CoverImage cover={project.cover} className="h-36 sm:h-48" />
+                        <div className={`relative px-5 pb-6 sm:px-6 ${project.cover ? "-mt-8" : "pt-6"}`}>
+                            <span className="grid size-16 place-items-center rounded-lg border border-subtle bg-layer-2 text-primary shadow-raised-100"><ProjectIcon icon={project.iconAppearance ?? project.icon} className="size-9" /></span>
+                            <div className="mt-4 min-w-0">
+                                <p className="font-mono text-xs text-accent-primary">{project.issueKey}</p>
+                                <h1 className="mt-1 text-display-sm font-semibold tracking-tight text-primary">{project.name}</h1>
+                                {project.description && <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{project.description}</p>}
+                            </div>
                         </div>
                     </header>
 

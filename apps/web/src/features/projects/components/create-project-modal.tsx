@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { useState } from "react";
 import { createProjectSchema, suggestProjectKey } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
@@ -10,12 +10,12 @@ import { Input } from "@/components/base/input/input";
 import { ControlledInput } from "@/components/form/controlled-input";
 import { ControlledTextarea } from "@/components/form/controlled-textarea";
 import { ModalDialog } from "@/components/overlay/modal-dialog";
+import { AppearancePicker } from "@/components/appearance/appearance-picker";
+import { CoverPicker } from "@/components/appearance/cover-picker";
 import { ApiError } from "@/lib/api-client";
 import { useCreateProject } from "../hooks/use-projects";
 import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
 import { useTranslation } from "react-i18next";
-
-const ProjectIconPicker = lazy(() => import("./project-icon-picker").then((module) => ({ default: module.ProjectIconPicker })));
 
 export const CreateProjectModal = () => {
     const mutation = useCreateProject();
@@ -24,7 +24,7 @@ export const CreateProjectModal = () => {
     const { t } = useTranslation();
     const { control, handleSubmit, reset, setError, watch, formState } = useForm({
         resolver: zodResolver(createProjectSchema),
-        defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", icon: DEFAULT_PROJECT_ICON },
+        defaultValues: { name: "", issueKey: "", description: "", repositoryUrl: "", iconAppearance: { type: "icon" as const, key: DEFAULT_PROJECT_ICON }, cover: null },
     });
     const projectName = watch("name");
     const generatedIssueKey = suggestProjectKey(projectName);
@@ -53,7 +53,7 @@ export const CreateProjectModal = () => {
                     <div className="flex min-w-0 items-stretch gap-2">
                         <Controller
                             control={control}
-                            name="icon"
+                            name="iconAppearance"
                             render={({ field }) => (
                                 <Popover.Root open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
                                     <Popover.Trigger
@@ -72,16 +72,7 @@ export const CreateProjectModal = () => {
                                         <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-[60]">
                                             <Popover.Popup className="max-h-[calc(100dvh-1.5rem)] w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
                                                 <Popover.Title className="sr-only">{t("projects.chooseIcon")}</Popover.Title>
-                                                <Suspense fallback={<div className="h-40 animate-pulse rounded-md bg-surface-2" aria-label={t("projects.loadingIcons")} />}>
-                                                    <ProjectIconPicker
-                                                        value={field.value}
-                                                        label={t("projects.chooseAnIcon")}
-                                                        onChange={(icon) => {
-                                                            field.onChange(icon);
-                                                            setIconPickerOpen(false);
-                                                        }}
-                                                    />
-                                                </Suspense>
+                                                <AppearancePicker value={field.value} onChange={field.onChange} onComplete={() => setIconPickerOpen(false)} />
                                             </Popover.Popup>
                                         </Popover.Positioner>
                                     </Popover.Portal>
@@ -111,6 +102,7 @@ export const CreateProjectModal = () => {
                     />
                     <ControlledTextarea control={control} name="description" label={t("projects.description")} rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label={t("projects.repository")} placeholder="https://github.com/..." />
+                    <Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} />} />
 
                     {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 

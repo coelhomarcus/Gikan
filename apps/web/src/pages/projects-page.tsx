@@ -23,21 +23,7 @@ export const ProjectsPage = () => {
                     <EmptyState title={t("projects.noProjects")} description={t("projects.createFirst")} action={<CreateProjectModal />} />
                 )}
 
-                {projects && projects.length > 0 && (
-                    <div className="overflow-hidden rounded-lg border border-subtle">
-                        <div className="hidden items-center gap-3 border-b border-subtle bg-surface-2 px-3 py-2 text-xs font-medium text-tertiary sm:flex">
-                            <span className="w-8 shrink-0" />
-                            <span className="flex-1">{t("projects.project")}</span>
-                            <span className="w-28 text-right">{t("projects.updated")}</span>
-                            <span className="w-4 shrink-0" />
-                        </div>
-                        <div className="divide-y divide-subtle">
-                            {projects.map((project) => (
-                                <ProjectCard key={project.id} project={project} />
-                            ))}
-                        </div>
-                    </div>
-                )}
+                {projects && projects.length > 0 && <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">{projects.map((project) => <ProjectCard key={project.id} project={project} />)}</div>}
             </div>
         </div>
     );
@@ -45,14 +31,5 @@ export const ProjectsPage = () => {
 
 function ProjectListSkeleton() {
     const { t } = useTranslation();
-    return <div className="overflow-hidden rounded-lg border border-subtle" aria-label={t("common.loading")} role="status">
-        <div className="hidden h-9 border-b border-subtle bg-surface-2 sm:block" />
-        <div className="divide-y divide-subtle">
-            {["one", "two", "three"].map((key) => <div key={key} className="flex min-h-16 items-center gap-4 px-3 py-3">
-                <Skeleton className="size-8 shrink-0 rounded-md" />
-                <div className="min-w-0 flex-1 space-y-2"><Skeleton className="h-3 w-40" /><Skeleton className="h-3 w-64 max-w-full" /></div>
-                <Skeleton className="hidden h-3 w-20 sm:block" />
-            </div>)}
-        </div>
-    </div>;
+    return <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3" aria-label={t("common.loading")} role="status">{["one", "two", "three"].map((key) => <div key={key} className="h-[222px] overflow-hidden rounded-lg border border-subtle"><Skeleton className="h-[118px] rounded-none" /><div className="space-y-3 p-4"><Skeleton className="h-3 w-full" /><Skeleton className="h-3 w-3/5" /></div></div>)}</div>;
 }

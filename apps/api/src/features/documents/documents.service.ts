@@ -40,7 +40,7 @@ export async function createDocument(
   const title = input.title?.trim() || EMPTY_DOCUMENT_TITLES[resolveLocale(user?.locale)];
   const [document] = await db
     .insert(projectDocuments)
-    .values({ projectId, createdBy: userId, ...input, title })
+    .values({ projectId, createdBy: userId, ...input, iconAppearance: input.iconAppearance ?? null, cover: input.cover ?? null, title })
     .returning();
   return document;
 }
@@ -58,6 +58,8 @@ export async function updateDocument(
     .set({
       title,
       contentJson: input.contentJson,
+      ...(input.iconAppearance === undefined ? {} : { iconAppearance: input.iconAppearance }),
+      ...(input.cover === undefined ? {} : { cover: input.cover }),
       updatedAt: new Date(),
       revision: sql`${projectDocuments.revision} + 1`,
     })

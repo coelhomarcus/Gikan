@@ -1,10 +1,12 @@
-import type { CreateDocumentInput, TiptapDocument, UpdateDocumentInput } from "@gikan/shared";
+import type { CreateDocumentInput, EntityCover, EntityIcon, TiptapDocument, UpdateDocumentInput } from "@gikan/shared";
 import { apiClient } from "@/lib/api-client";
 
 export interface DocumentPage {
     id: string;
     projectId: string;
     title: string;
+    iconAppearance: EntityIcon | null;
+    cover: EntityCover | null;
     contentJson: TiptapDocument;
     createdBy: string;
     createdAt: string;

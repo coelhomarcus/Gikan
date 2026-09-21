@@ -1,19 +1,24 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { Dialog } from "@base-ui/react/dialog";
+import { Popover } from "@base-ui/react/popover";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileText, Plus, Search, Trash2 } from "lucide-react";
+import { ArrowLeft, FileText, Plus, Search, Sparkles, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/base/buttons/button";
 import { Skeleton } from "@/components/base/feedback/skeleton";
 import { Input } from "@/components/base/input/input";
 import { ErrorMessage } from "@/components/feedback/error-message";
 import { ContextMenuButton } from "@/components/overlay/context-menu-provider";
+import { AppearancePicker } from "@/components/appearance/appearance-picker";
+import { CoverImage } from "@/components/appearance/cover-image";
+import { CoverPicker } from "@/components/appearance/cover-picker";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { type DocumentPage, deleteDocument, getDocument } from "@/features/documents/api";
 import { DocumentEditor } from "@/features/documents/components/document-editor";
 import { documentKey, documentsKey, useCreateDocument, useDocument, useDocuments } from "@/features/documents/hooks/use-documents";
 import { clearDocumentSession, getDocumentSession } from "@/features/documents/sessions";
 import { ProjectWorkspaceHeader } from "@/features/projects/components/project-workspace-header";
+import { ProjectIcon } from "@/features/projects/components/project-icon";
 import { useProjectMembers } from "@/features/projects/hooks/use-project-members";
 import { useProjectPermissions } from "@/features/projects/hooks/use-project-permissions";
 import { ApiError } from "@/lib/api-client";
@@ -75,7 +80,7 @@ function DocumentList({ projectId }: { projectId: string }) {
                                     to={`/projects/${projectId}/documents/${page.id}`}
                                     className="flex min-w-0 flex-1 items-center gap-3 px-2 py-4"
                                 >
-                                    <FileText className="size-5 shrink-0 text-tertiary" />
+                                    {page.iconAppearance ? <ProjectIcon icon={page.iconAppearance} className="size-5 shrink-0 text-tertiary" /> : <FileText className="size-5 shrink-0 text-tertiary" />}
                                     <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{page.title}</span>
                                     <span className="hidden text-xs text-tertiary sm:block">
                                         {t("documents.created", { date: new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }).format(new Date(page.createdAt)) })}
@@ -149,6 +154,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
     const [confirm, setConfirm] = useState<"delete" | "discard" | null>(null);
     const [busy, setBusy] = useState(false);
     const [actionError, setActionError] = useState("");
+    const [iconPickerOpen, setIconPickerOpen] = useState(false);
     const titleRef = useRef<HTMLTextAreaElement>(null);
     useEffect(() => session.observe(page), [session, page]);
     useEffect(() => {
@@ -210,7 +216,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
         setActionError("");
         try {
             const draft = session.getSnapshot();
-            const copy = await create.mutateAsync({ title: `${draft.title || t("documents.untitled")} ${t("documents.localCopy")}`.slice(0, 200), contentJson: draft.contentJson });
+            const copy = await create.mutateAsync({ title: `${draft.title || t("documents.untitled")} ${t("documents.localCopy")}`.slice(0, 200), contentJson: draft.contentJson, iconAppearance: draft.iconAppearance, cover: draft.cover });
             // The source draft remains intact until the user explicitly opens the saved version.
             navigate(`/projects/${page.projectId}/documents/${copy.id}`);
         } catch (error) {
@@ -292,6 +298,22 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                             </div>
                         )}
                         {actionError && !confirm && <ErrorMessage message={actionError} />}
+                        <div className="mb-3 flex justify-end">
+                            <CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} />
+                        </div>
+                        {state.cover && (
+                            <div className="document-cover-shell -mx-5 sm:-mx-8 lg:-mx-16">
+                                <CoverImage cover={state.cover} className="h-40 sm:h-52" />
+                            </div>
+                        )}
+                        <div className={`relative z-10 mb-5 flex flex-wrap items-end gap-2 ${state.cover ? "-mt-8" : ""}`}>
+                            <Popover.Root open={iconPickerOpen} onOpenChange={setIconPickerOpen}>
+                                <Popover.Trigger disabled={busy || state.status === "deleted"} aria-label={state.iconAppearance ? t("appearance.changePageIcon") : t("appearance.addPageIcon")} className={`flex items-center justify-center rounded-lg border border-subtle bg-layer-2 text-secondary hover:bg-layer-2-hover ${state.iconAppearance ? "size-16" : "h-8 gap-2 px-2 text-xs font-medium"}`}>
+                                    {state.iconAppearance ? <ProjectIcon icon={state.iconAppearance} className="size-9" /> : <><Sparkles className="size-3.5" /> {t("appearance.addPageIcon")}</>}
+                                </Popover.Trigger>
+                                <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-[60]"><Popover.Popup className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none"><Popover.Title className="sr-only">{t("appearance.pageIcon")}</Popover.Title><AppearancePicker value={state.iconAppearance} onChange={(iconAppearance) => session.edit({ iconAppearance })} onComplete={() => setIconPickerOpen(false)} /></Popover.Popup></Popover.Positioner></Popover.Portal>
+                            </Popover.Root>
+                        </div>
                         <textarea
                             ref={titleRef}
                             aria-label={t("documents.pageTitle")}

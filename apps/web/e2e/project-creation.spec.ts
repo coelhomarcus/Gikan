@@ -52,7 +52,7 @@ test("new project modal validates fields, chooses a compact icon, and submits ex
         issueKey: "GIKAN7",
         description: "A project created from the redesigned dialog.",
         repositoryUrl: "https://github.com/example/gikan",
-        icon: "rocket",
+        iconAppearance: { type: "icon", key: "rocket" },
     });
     await expect(page).toHaveURL(new RegExp(`/projects/${projectId}$`));
 });
@@ -78,4 +78,27 @@ test("duplicate project ID stays in the modal and displays the API field error",
 
     await page.getByRole("button", { name: "Cancel" }).click();
     await expect(page.getByRole("heading", { name: "New project" })).toBeHidden();
+});
+
+test("new projects persist a URL icon and cover as appearance metadata", async ({ page }) => {
+    await mockApi(page, { empty: true });
+    await page.goto("/");
+    await page.getByRole("button", { name: "New project" }).first().click();
+    await page.getByRole("button", { name: "Choose project icon" }).click();
+    await page.getByRole("tab", { name: "Image" }).click();
+    await page.getByLabel("Image URL").fill("http://127.0.0.1:5173/appearance-project-cover.svg");
+    await page.getByRole("button", { name: "Use image" }).click();
+    await expect(page.getByRole("tab", { name: "Image" })).toBeHidden();
+
+    await page.getByRole("button", { name: "Add cover" }).click();
+    await page.getByLabel("Cover image URL").fill("http://127.0.0.1:5173/appearance-document-cover.svg");
+    await page.getByRole("button", { name: "Apply" }).click();
+    await page.getByLabel("Name").fill("Visual platform");
+
+    const requestPromise = page.waitForRequest((request) => request.method() === "POST" && new URL(request.url()).pathname === "/api/projects");
+    await page.getByRole("button", { name: "Create project" }).click();
+    expect((await requestPromise).postDataJSON()).toMatchObject({
+        iconAppearance: { type: "image", url: "http://127.0.0.1:5173/appearance-project-cover.svg" },
+        cover: { url: "http://127.0.0.1:5173/appearance-document-cover.svg", position: { x: 50, y: 50 } },
+    });
 });

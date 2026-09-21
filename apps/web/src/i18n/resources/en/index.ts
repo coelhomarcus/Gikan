@@ -14,6 +14,7 @@ import contextMenuExtra from "./contextMenuExtra";
 import errors from "./errors";
 import validation from "./validation";
 import designSystem from "./designSystem";
+import appearance from "./appearance";
 
 export const en = {
     common,
@@ -32,4 +33,5 @@ export const en = {
     errors,
     validation,
     designSystem,
+    appearance,
 } as const;

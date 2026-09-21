@@ -1,4 +1,5 @@
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import type { EntityCover, EntityIcon } from "@gikan/shared";
 import { users } from "./users";
 
 export const projects = pgTable("projects", {
@@ -9,6 +10,8 @@ export const projects = pgTable("projects", {
     description: text("description"),
     repositoryUrl: text("repository_url"),
     icon: text("icon"),
+    iconAppearance: jsonb("icon_appearance").$type<EntityIcon | null>(),
+    cover: jsonb("cover").$type<EntityCover | null>(),
     pageContent: text("page_content").notNull().default(""),
     createdBy: uuid("created_by")
         .notNull()

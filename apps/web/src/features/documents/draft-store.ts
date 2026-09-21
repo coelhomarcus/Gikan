@@ -1,4 +1,4 @@
-import type { TiptapDocument } from "@gikan/shared";
+import type { EntityCover, EntityIcon, TiptapDocument } from "@gikan/shared";
 
 export interface DocumentDraft {
     key: string;
@@ -7,6 +7,8 @@ export interface DocumentDraft {
     documentId: string;
     title: string;
     contentJson: TiptapDocument;
+    iconAppearance?: EntityIcon | null;
+    cover?: EntityCover | null;
     revision: number;
 }
 

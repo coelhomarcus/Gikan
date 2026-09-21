@@ -18,8 +18,8 @@ export function getDocumentSession(userId: string, page: DocumentPage, client: Q
             save: (input, signal) => saveDocument(page.projectId, page.id, input, signal),
             onSaved: (saved) => {
                 client.setQueryData(documentKey(page.projectId, page.id), saved);
-                client.setQueryData<DocumentSummary[]>(documentsKey(page.projectId), (old) =>
-                    old?.map((item) => (item.id === saved.id ? { ...item, title: saved.title, updatedAt: saved.updatedAt, revision: saved.revision } : item)),
+            client.setQueryData<DocumentSummary[]>(documentsKey(page.projectId), (old) =>
+                    old?.map((item) => (item.id === saved.id ? { ...item, title: saved.title, iconAppearance: saved.iconAppearance, cover: saved.cover, updatedAt: saved.updatedAt, revision: saved.revision } : item)),
                 );
             },
         });

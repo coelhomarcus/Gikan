@@ -10,6 +10,7 @@ import {
 import { projects } from "./projects";
 import { users } from "./users";
 import type { TiptapDocument } from "./issues";
+import type { EntityCover, EntityIcon } from "@gikan/shared";
 
 export const projectDocuments = pgTable(
   "project_documents",
@@ -19,6 +20,8 @@ export const projectDocuments = pgTable(
       .notNull()
       .references(() => projects.id, { onDelete: "cascade" }),
     title: text("title").notNull().default("Untitled"),
+    iconAppearance: jsonb("icon_appearance").$type<EntityIcon | null>(),
+    cover: jsonb("cover").$type<EntityCover | null>(),
     createdBy: uuid("created_by")
       .notNull()
       .references(() => users.id),

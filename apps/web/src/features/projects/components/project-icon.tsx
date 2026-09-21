@@ -1,5 +1,6 @@
-import type { ProjectIconKey } from "@gikan/shared";
+import type { EntityIcon, ProjectIconKey } from "@gikan/shared";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
     Activity,
     AppWindow,
@@ -145,11 +146,27 @@ export function resolveProjectIcon(key: string | null | undefined): LucideIcon {
 }
 
 interface ProjectIconProps {
-    icon: string | null | undefined;
+    icon: EntityIcon | string | null | undefined;
     className?: string;
 }
 
 export const ProjectIcon = ({ icon, className }: ProjectIconProps) => {
+    if (icon && typeof icon === "object") {
+        if (icon.type === "emoji") return <span className={`inline-grid place-items-center leading-none ${className ?? ""}`} style={{ fontSize: "1.25em" }}>{icon.value}</span>;
+        if (icon.type === "image") return <ProjectImageIcon url={icon.url} className={className} />;
+        const Icon = resolveProjectIcon(icon.key);
+        return <Icon className={className} />;
+    }
     const Icon = resolveProjectIcon(icon);
     return <Icon className={className} />;
 };
+
+function ProjectImageIcon({ url, className }: { url: string; className?: string }) {
+    const [failed, setFailed] = useState(false);
+    useEffect(() => setFailed(false), [url]);
+    if (failed) {
+        const Fallback = resolveProjectIcon(DEFAULT_PROJECT_ICON);
+        return <Fallback className={className} />;
+    }
+    return <img src={url} alt="" referrerPolicy="no-referrer" decoding="async" onError={() => setFailed(true)} className={`object-contain ${className ?? ""}`} />;
+}

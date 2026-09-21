@@ -19,11 +19,23 @@ test("capture the project creation dialog and compact icon selector on desktop a
     await expect(page.getByRole("textbox", { name: "Search icons" })).toBeVisible();
     await page.screenshot({ path: path.join(outputDirectory, "project-create-icons-desktop.png"), animations: "disabled" });
 
-    await page.keyboard.press("Escape");
+    await page.getByRole("tab", { name: "Emoji" }).click();
+    await expect(page.getByRole("textbox", { name: "Emoji" })).toBeVisible();
+    await page.screenshot({ path: path.join(outputDirectory, "project-create-emojis-desktop.png"), animations: "disabled" });
+
+    await page.getByRole("tab", { name: "Image" }).click();
+    await expect(page.getByLabel("Image URL")).toBeVisible();
+    await page.screenshot({ path: path.join(outputDirectory, "project-create-image-desktop.png"), animations: "disabled" });
+    await page.getByLabel("Image URL").fill("http://127.0.0.1:5173/appearance-project-cover.svg");
+    await page.getByRole("button", { name: "Use image" }).click();
+    await expect(page.getByRole("tab", { name: "Image" })).toBeHidden();
+    await page.screenshot({ path: path.join(outputDirectory, "project-create-image-selected-desktop.png"), animations: "disabled" });
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByLabel("Name").focus();
     await page.screenshot({ path: path.join(outputDirectory, "project-create-mobile.png"), animations: "disabled" });
     await iconTrigger.click();
+    await page.getByRole("tab", { name: "Icons" }).click();
     await expect(page.getByRole("textbox", { name: "Search icons" })).toBeVisible();
     const popup = page.getByRole("textbox", { name: "Search icons" }).locator("xpath=ancestor::div[contains(@class, 'rounded-lg')]");
     const bounds = await popup.boundingBox();

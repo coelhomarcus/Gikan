@@ -8,13 +8,14 @@ import { useIssues } from "@/features/issues/hooks/use-issues";
 import { useProjects } from "../hooks/use-projects";
 import { ProjectIcon } from "./project-icon";
 import { useTranslation } from "react-i18next";
+import type { EntityIcon } from "@gikan/shared";
 
 interface ProjectSearchModalProps {
     onClose: () => void;
 }
 
 type SearchResult =
-    | { type: "project"; id: string; title: string; key: string; description: string | null; icon: string | null }
+    | { type: "project"; id: string; title: string; key: string; description: string | null; icon: EntityIcon | string | null }
     | { type: "issue"; id: string; title: string; key: string; description: string | null; icon: null }
     | { type: "command"; id: string; title: string; key: string; description: string; icon: null; path: string };
 
@@ -32,7 +33,7 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
         const normalized = query.trim().toLowerCase();
         const projectResults: SearchResult[] = (projects ?? [])
             .filter((project) => !normalized || `${project.name} ${project.issueKey} ${project.description ?? ""}`.toLowerCase().includes(normalized))
-            .map((project) => ({ type: "project", id: project.id, title: project.name, key: project.issueKey, description: project.description, icon: project.icon }));
+            .map((project) => ({ type: "project", id: project.id, title: project.name, key: project.issueKey, description: project.description, icon: project.iconAppearance ?? project.icon }));
         const issueResults: SearchResult[] = (issues ?? [])
             .filter((issue) => !normalized || `${issue.identifier} ${issue.title}`.toLowerCase().includes(normalized))
             .map((issue) => ({ type: "issue", id: issue.identifier, title: issue.title, key: issue.identifier, description: null, icon: null }));

@@ -2,12 +2,14 @@ import { updateProfileSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
 import { Alert } from "@/components/base/feedback/alert";
 import { ControlledSettingsInput as ControlledInput, SettingsInput as Input } from "@/components/settings/settings-input";
 import { SettingsControl } from "@/components/settings/settings-layout";
+import { CoverImage } from "@/components/appearance/cover-image";
+import { CoverPicker } from "@/components/appearance/cover-picker";
 import { AUTH_QUERY_KEY, updateProfile } from "@/features/auth/api";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 import { ApiError } from "@/lib/api-client";
@@ -22,18 +24,19 @@ export const UserProfilePanel = () => {
     const queryClient = useQueryClient();
     const { control, handleSubmit, watch, setValue, reset, setError, formState } = useForm({
         resolver: zodResolver(updateProfileSchema),
-        defaultValues: { name: user?.name ?? "", avatarUrl: user?.avatarUrl ?? "" },
+        defaultValues: { name: user?.name ?? "", avatarUrl: user?.avatarUrl ?? "", cover: user?.cover ?? null },
     });
     const mutation = useMutation({
         mutationFn: updateProfile,
         onSuccess: (updatedUser) => {
             queryClient.setQueryData(AUTH_QUERY_KEY, updatedUser);
-            reset({ name: updatedUser.name, avatarUrl: updatedUser.avatarUrl ?? "" });
+            reset({ name: updatedUser.name, avatarUrl: updatedUser.avatarUrl ?? "", cover: updatedUser.cover ?? null });
         },
         onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : t("profile.couldNotSave") }),
     });
     if (!user) return null;
     const previewUrl = watch("avatarUrl");
+    const previewCover = watch("cover");
     const initials = user.name
         .split(" ")
         .filter(Boolean)
@@ -43,7 +46,9 @@ export const UserProfilePanel = () => {
 
     return (
         <div className="w-full">
-            <div className="relative h-44 rounded-lg border border-subtle bg-surface-2">
+            <div className="relative h-44 overflow-hidden rounded-lg border border-subtle bg-surface-2">
+                <CoverImage cover={previewCover} className="absolute inset-0" />
+                <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={mutation.isPending} />} /></div>
                 <div className="absolute -bottom-6 left-6 rounded-lg bg-surface-1 p-1">
                     <Avatar key={previewUrl} src={previewUrl || undefined} initials={initials} size="2xl" rounded={false} className="rounded-lg" />
                 </div>

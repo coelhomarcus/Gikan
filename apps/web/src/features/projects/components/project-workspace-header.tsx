@@ -36,7 +36,7 @@ export function ProjectWorkspaceHeader({
                         data-project-name={project?.name ?? t("projects.project")}
                         data-project-issue-key={project?.issueKey ?? ""}
                     >
-                    <ProjectIcon icon={project?.icon} className="size-4 shrink-0 text-tertiary" />
+                    <ProjectIcon icon={project?.iconAppearance ?? project?.icon} className="size-4 shrink-0 text-tertiary" />
                     <Link
                         to={`/projects/${projectId}`}
                         className="truncate text-secondary hover:text-primary"
