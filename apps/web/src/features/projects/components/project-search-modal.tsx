@@ -67,13 +67,23 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
     function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
         if (event.key === "ArrowDown") {
             event.preventDefault();
+            event.stopPropagation();
             setSelectedIndex((index) => Math.min(index + 1, Math.max(results.all.length - 1, 0)));
+            return;
         }
         if (event.key === "ArrowUp") {
             event.preventDefault();
+            event.stopPropagation();
             setSelectedIndex((index) => Math.max(index - 1, 0));
+            return;
         }
-        if (event.key === "Enter" && results.all[selectedIndex]) openResult(results.all[selectedIndex]);
+        if (event.key === "Enter") {
+            // The dialog closes synchronously when a result opens. Consume Enter first so it
+            // cannot become a synthetic click on the element that receives restored focus.
+            event.preventDefault();
+            event.stopPropagation();
+            if (results.all[selectedIndex]) openResult(results.all[selectedIndex]);
+        }
     }
 
     const isLoading = !projects || (Boolean(activeProjectId) && issuesLoading);

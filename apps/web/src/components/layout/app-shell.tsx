@@ -44,6 +44,7 @@ export const AppShell = () => {
         "mod+k",
         (event) => {
             event.preventDefault();
+            event.stopPropagation();
             setSearchOpen(true);
         },
         { enableOnFormTags: true, enableOnContentEditable: true, eventListenerOptions: { capture: true } },

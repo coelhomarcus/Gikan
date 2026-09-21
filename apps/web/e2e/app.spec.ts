@@ -32,6 +32,22 @@ test("dark theme, URL filters, and issue peek preserve the current workspace", a
     await expect(page.locator('[data-issue-identifier="PLAT-2"]')).toBeFocused();
 });
 
+test("opening a search result with Enter does not replay the key on the account menu", async ({ page }) => {
+    await mockApi(page);
+    await page.goto(`/projects/${projectId}/issues`);
+    const account = page.getByRole("button", { name: "Account" });
+    await account.focus();
+
+    await page.keyboard.press("ControlOrMeta+k");
+    const search = page.getByRole("combobox", { name: "Search projects and issues" });
+    await expect(search).toBeVisible();
+    await page.keyboard.press("Enter");
+
+    await expect(search).toBeHidden();
+    await expect(page.getByRole("menu")).toHaveCount(0);
+    await expect(page).toHaveURL(new RegExp(`/projects/${projectId}$`));
+});
+
 test("Peek Assignee property shows the selected member's profile photo", async ({ page }) => {
     await mockApi(page);
     await page.route(`**/api/projects/${projectId}/members`, (route) =>
