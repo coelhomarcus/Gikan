@@ -430,6 +430,16 @@ test("board drag and drop moves an issue into its new status", async ({ page }) 
 test("profile edits are saved and administration export respects account permissions", async ({ page }) => {
     await mockApi(page);
     await page.goto("/settings/profile");
+    const cover = page.locator("[data-profile-cover]");
+    const avatar = page.locator("[data-profile-avatar]");
+    await expect(avatar).toBeVisible();
+    const [coverBounds, avatarBounds] = await Promise.all([cover.boundingBox(), avatar.boundingBox()]);
+    if (!coverBounds || !avatarBounds) throw new Error("Profile appearance did not render.");
+    expect(avatarBounds.y + avatarBounds.height).toBeGreaterThan(coverBounds.y + coverBounds.height);
+    expect(await avatar.evaluate((element) => {
+        const bounds = element.getBoundingClientRect();
+        return document.elementFromPoint(bounds.left + bounds.width / 2, bounds.bottom - 4)?.closest("[data-profile-avatar]") === element;
+    })).toBe(true);
     await page.getByRole("textbox", { name: "Full name", exact: true }).fill("Alex Morgan Updated");
     const profileSave = page.waitForResponse((response) => response.request().method() === "PATCH" && response.url().endsWith("/users/me"));
     await page.getByRole("button", { name: "Save changes", exact: true }).click();

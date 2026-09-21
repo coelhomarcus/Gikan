@@ -44,7 +44,24 @@ export function CoverPicker({ cover, onChange, disabled }: CoverPickerProps) {
                 <Popover.Title className="sr-only">{t("appearance.cover")}</Popover.Title>
                 <div className="space-y-3">
                     <Input label={t("appearance.coverImageUrl")} value={url} onChange={(value) => { setUrl(value); setError(""); }} placeholder="https://..." isInvalid={!!error} hint={error || t("appearance.dragCover")} />
-                    <div ref={preview} className="relative h-28 cursor-crosshair overflow-hidden rounded border border-subtle" onPointerDown={(event) => { event.currentTarget.setPointerCapture(event.pointerId); move(event); }} onPointerMove={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) move(event); }}>
+                    <div
+                        ref={preview}
+                        data-cover-positioner
+                        aria-label={t("appearance.dragCover")}
+                        className="relative h-28 cursor-crosshair touch-none select-none overflow-hidden rounded border border-subtle"
+                        onDragStart={(event) => event.preventDefault()}
+                        onPointerDown={(event) => {
+                            if (event.button !== 0) return;
+                            // Prevent the browser from starting a native image drag. Pointer capture
+                            // keeps the crop interaction active even when the cursor leaves the preview.
+                            event.preventDefault();
+                            event.currentTarget.setPointerCapture(event.pointerId);
+                            move(event);
+                        }}
+                        onPointerMove={(event) => {
+                            if (event.currentTarget.hasPointerCapture(event.pointerId)) move(event);
+                        }}
+                    >
                         <CoverImage cover={url ? { url, position } : null} className="size-full" />
                         {url && <span className="pointer-events-none absolute inset-0 grid place-items-center text-xs text-white drop-shadow"> <Move className="size-4" /> </span>}
                     </div>

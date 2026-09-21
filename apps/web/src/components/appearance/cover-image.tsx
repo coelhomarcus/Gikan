@@ -21,7 +21,9 @@ export function CoverImage({ cover, alt = "", className, imageClassName }: Cover
                     alt={alt}
                     referrerPolicy="no-referrer"
                     decoding="async"
+                    draggable={false}
                     onError={() => setFailed(true)}
+                    onDragStart={(event) => event.preventDefault()}
                     className={cx("size-full object-cover", imageClassName)}
                     style={{ objectPosition: `${cover.position.x}% ${cover.position.y}%` }}
                 />

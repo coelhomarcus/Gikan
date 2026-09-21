@@ -92,6 +92,18 @@ test("new projects persist a URL icon and cover as appearance metadata", async (
 
     await page.getByRole("button", { name: "Add cover" }).click();
     await page.getByLabel("Cover image URL").fill("http://127.0.0.1:5173/appearance-document-cover.svg");
+    const cropPreview = page.locator("[data-cover-positioner]");
+    await expect(cropPreview.locator("img")).toBeVisible();
+    expect(await cropPreview.locator("img").evaluate((image) => !image.dispatchEvent(new DragEvent("dragstart", { bubbles: true, cancelable: true })))).toBe(true);
+    const cropBounds = await cropPreview.boundingBox();
+    if (!cropBounds) throw new Error("Cover crop preview did not render.");
+    await page.mouse.move(cropBounds.x + cropBounds.width * 0.75, cropBounds.y + cropBounds.height * 0.75);
+    await page.mouse.down();
+    await page.mouse.move(cropBounds.x + cropBounds.width * 0.25, cropBounds.y + cropBounds.height * 0.75);
+    await page.mouse.up();
+    const cropInputs = page.locator('input[type="number"]');
+    const cropPosition = await cropInputs.evaluateAll((inputs) => inputs.map((input) => Number((input as HTMLInputElement).value)));
+    await expect(cropInputs.first()).not.toHaveValue("50");
     await page.getByRole("button", { name: "Apply" }).click();
     await page.getByLabel("Name").fill("Visual platform");
 
@@ -99,6 +111,6 @@ test("new projects persist a URL icon and cover as appearance metadata", async (
     await page.getByRole("button", { name: "Create project" }).click();
     expect((await requestPromise).postDataJSON()).toMatchObject({
         iconAppearance: { type: "image", url: "http://127.0.0.1:5173/appearance-project-cover.svg" },
-        cover: { url: "http://127.0.0.1:5173/appearance-document-cover.svg", position: { x: 50, y: 50 } },
+        cover: { url: "http://127.0.0.1:5173/appearance-document-cover.svg", position: { x: Number(cropPosition[0]), y: Number(cropPosition[1]) } },
     });
 });
