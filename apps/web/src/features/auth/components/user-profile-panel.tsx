@@ -2,6 +2,7 @@ import { updateProfileSchema } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Download } from "lucide-react";
+import { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Avatar } from "@/components/base/avatar/avatar";
 import { Button } from "@/components/base/buttons/button";
@@ -35,6 +36,7 @@ export const UserProfilePanel = () => {
         },
         onError: (error) => setError("root", { message: error instanceof ApiError ? error.message : t("profile.couldNotSave") }),
     });
+    const coverRef = useRef<HTMLDivElement>(null);
     if (!user) return null;
     const previewUrl = watch("avatarUrl");
     const previewCover = watch("cover");
@@ -48,9 +50,9 @@ export const UserProfilePanel = () => {
     return (
         <div className="w-full">
             <div className="relative">
-                <div data-profile-cover className="relative h-44 overflow-hidden rounded-lg border border-subtle bg-surface-2">
+                <div ref={coverRef} data-profile-cover className="relative h-44 overflow-hidden rounded-lg border border-subtle bg-surface-2">
                     <CoverImage cover={previewCover} className="absolute inset-0" />
-                    <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={mutation.isPending} />} /></div>
+                    <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={mutation.isPending} containerRef={coverRef} />} /></div>
                 </div>
                 <div data-profile-avatar className="absolute -bottom-6 left-6 rounded-lg bg-surface-1 p-1">
                     <Avatar key={previewUrl} src={previewUrl || undefined} initials={initials} size="2xl" rounded={false} className="rounded-lg" />

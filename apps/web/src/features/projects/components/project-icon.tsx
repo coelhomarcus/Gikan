@@ -152,7 +152,13 @@ interface ProjectIconProps {
 
 export const ProjectIcon = ({ icon, className }: ProjectIconProps) => {
     if (icon && typeof icon === "object") {
-        if (icon.type === "emoji") return <span className={`inline-grid place-items-center leading-none ${className ?? ""}`} style={{ fontSize: "1.25em" }}>{icon.value}</span>;
+        if (icon.type === "emoji") {
+            return (
+                <span className={`inline-grid place-items-center overflow-hidden leading-none ${className ?? ""}`} style={{ containerType: "inline-size" }}>
+                    <span style={{ fontSize: "82cqw", lineHeight: 1 }}>{icon.value}</span>
+                </span>
+            );
+        }
         if (icon.type === "image") return <ProjectImageIcon url={icon.url} className={className} />;
         const Icon = resolveProjectIcon(icon.key);
         return <Icon className={className} />;
@@ -168,5 +174,9 @@ function ProjectImageIcon({ url, className }: { url: string; className?: string 
         const Fallback = resolveProjectIcon(DEFAULT_PROJECT_ICON);
         return <Fallback className={className} />;
     }
-    return <img src={url} alt="" referrerPolicy="no-referrer" decoding="async" onError={() => setFailed(true)} className={`object-contain ${className ?? ""}`} />;
+    return (
+        <span className={`inline-grid place-items-center overflow-hidden ${className ?? ""}`}>
+            <img src={url} alt="" referrerPolicy="no-referrer" decoding="async" onError={() => setFailed(true)} className="size-full object-cover" />
+        </span>
+    );
 }

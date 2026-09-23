@@ -1,6 +1,7 @@
 import { Popover } from "@base-ui/react/popover";
 import { updateProjectSchema, type UpdateProjectInput } from "@gikan/shared";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/base/buttons/button";
 import { Alert } from "@/components/base/feedback/alert";
@@ -35,6 +36,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
               }
             : undefined,
     });
+    const coverRef = useRef<HTMLDivElement>(null);
     if (isLoading) return <LoadingState label={t("settings.loadingProject")} />;
     if (isError || !project) return <ErrorMessage message={t("settings.couldNotLoadProject")} />;
     const disabled = !isProjectOwner || mutation.isPending;
@@ -50,7 +52,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                     }),
                 )}
             >
-                <div className="relative flex h-44 items-end overflow-hidden rounded-md border border-subtle bg-surface-2 p-4">
+                <div ref={coverRef} className="relative flex h-44 items-end overflow-hidden rounded-md border border-subtle bg-surface-2 p-4">
                     <CoverImage cover={previewCover} className="absolute inset-0" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     <div className="flex min-w-0 items-center gap-3">
@@ -82,7 +84,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                             <p className="mt-1 text-sm text-tertiary">{project.issueKey}</p>
                         </div>
                     </div>
-                    <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={disabled} />} /></div>
+                    <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={disabled} containerRef={coverRef} />} /></div>
                 </div>
                 <div className="mt-8 flex flex-col gap-8">
                     <ControlledInput control={control} name="name" label={t("projects.projectName")} isRequired isDisabled={disabled} />

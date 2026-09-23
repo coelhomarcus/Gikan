@@ -7,20 +7,39 @@ import { Input } from "@/components/base/input/input";
 import { CoverImage } from "./cover-image";
 import { useTranslation } from "react-i18next";
 
+/**
+ * Fallback used when no `containerRef` is available to measure (e.g. a cover being set before
+ * the entity it belongs to exists yet, such as in the create-project modal).
+ */
+const DEFAULT_ASPECT_RATIO = 16 / 5;
+
 interface CoverPickerProps {
     cover: EntityCover | null | undefined;
     onChange: (cover: EntityCover | null) => void;
     disabled?: boolean;
+    /** Ref to the element the cover is actually rendered into elsewhere on the page. Its
+     * aspect ratio is measured when the popover opens so the drag preview matches how
+     * `object-position` will crop the image there — the stored x/y percentages only line up
+     * with what the user sees while dragging when the two boxes share the same aspect ratio. */
+    containerRef?: React.RefObject<HTMLElement | null>;
 }
 
-export function CoverPicker({ cover, onChange, disabled }: CoverPickerProps) {
+export function CoverPicker({ cover, onChange, disabled, containerRef }: CoverPickerProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [url, setUrl] = useState(cover?.url ?? "");
     const [position, setPosition] = useState(cover?.position ?? { x: 50, y: 50 });
     const [error, setError] = useState("");
+    const [aspectRatio, setAspectRatio] = useState(DEFAULT_ASPECT_RATIO);
     const preview = useRef<HTMLDivElement>(null);
-    useEffect(() => { if (open) { setUrl(cover?.url ?? ""); setPosition(cover?.position ?? { x: 50, y: 50 }); setError(""); } }, [open, cover]);
+    useEffect(() => {
+        if (!open) return;
+        setUrl(cover?.url ?? "");
+        setPosition(cover?.position ?? { x: 50, y: 50 });
+        setError("");
+        const rect = containerRef?.current?.getBoundingClientRect();
+        setAspectRatio(rect && rect.width > 0 && rect.height > 0 ? rect.width / rect.height : DEFAULT_ASPECT_RATIO);
+    }, [open, cover, containerRef]);
     const apply = () => {
         try {
             const parsed = new URL(url.trim());
@@ -48,7 +67,8 @@ export function CoverPicker({ cover, onChange, disabled }: CoverPickerProps) {
                         ref={preview}
                         data-cover-positioner
                         aria-label={t("appearance.dragCover")}
-                        className="relative h-28 cursor-crosshair touch-none select-none overflow-hidden rounded border border-subtle"
+                        className="relative w-full max-h-56 min-h-12 cursor-crosshair touch-none select-none overflow-hidden rounded border border-subtle"
+                        style={{ aspectRatio }}
                         onDragStart={(event) => event.preventDefault()}
                         onPointerDown={(event) => {
                             if (event.button !== 0) return;

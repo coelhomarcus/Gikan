@@ -156,6 +156,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
     const [actionError, setActionError] = useState("");
     const [iconPickerOpen, setIconPickerOpen] = useState(false);
     const titleRef = useRef<HTMLTextAreaElement>(null);
+    const coverRef = useRef<HTMLDivElement>(null);
     useEffect(() => session.observe(page), [session, page]);
     useEffect(() => {
         const save = (event: KeyboardEvent) => {
@@ -299,10 +300,10 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         )}
                         {actionError && !confirm && <ErrorMessage message={actionError} />}
                         <div className="mb-3 flex justify-end">
-                            <CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} />
+                            <CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} />
                         </div>
                         {state.cover && (
-                            <div className="document-cover-shell -mx-5 sm:-mx-8 lg:-mx-16">
+                            <div ref={coverRef} className="document-cover-shell -mx-5 sm:-mx-8 lg:-mx-16">
                                 <CoverImage cover={state.cover} className="h-40 sm:h-52" />
                             </div>
                         )}
