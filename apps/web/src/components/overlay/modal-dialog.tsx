@@ -18,7 +18,7 @@ export const ModalDialog = ({ trigger, title, description, size = "md", children
                 <Modal className={size === "2xl" ? "max-w-2xl" : "max-w-md"}>
                     <Dialog>
                         {({ close }) => (
-                            <div className="w-full rounded-xl bg-surface-1 p-6 shadow-xl ring-1 ring-subtle">
+                            <div className="shadow-xl w-full rounded-xl bg-surface-1 p-6 ring-1 ring-subtle">
                                 <div className="mb-4 flex items-start justify-between gap-4">
                                     <div>
                                         <h2 className="text-lg font-semibold text-primary">{title}</h2>

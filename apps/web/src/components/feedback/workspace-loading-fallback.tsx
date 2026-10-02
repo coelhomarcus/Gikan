@@ -9,7 +9,7 @@ export function WorkspaceLoadingFallback() {
             <div className="flex h-12 shrink-0 items-center border-b border-subtle px-4">
                 <Skeleton className="h-4 w-48" />
             </div>
-            <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 overflow-hidden px-4 py-6 lg:px-8 lg:py-8">
+            <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 overflow-hidden px-4 py-6 lg:p-8">
                 <div className="space-y-3 border-b border-subtle pb-6">
                     <Skeleton className="h-3 w-16" />
                     <Skeleton className="h-7 w-64 max-w-full" />

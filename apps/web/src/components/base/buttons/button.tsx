@@ -219,7 +219,7 @@ export const Button = ({
                     fill="none"
                     data-icon="loading"
                     viewBox="0 0 20 20"
-                    className={cx(styles.common.icon, !showTextWhileLoading && "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2")}
+                    className={cx(styles.common.icon, !showTextWhileLoading && "absolute top-1/2 left-1/2 -translate-1/2")}
                 >
                     {/* Background circle */}
                     <circle className="stroke-current opacity-30" cx="10" cy="10" r="8" fill="none" strokeWidth="2" />

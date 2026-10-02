@@ -150,7 +150,7 @@ export const InputBase = ({
                         sizes[inputSize].shortcut,
                     )}
                 >
-                    <span className="rounded px-1 py-px text-xs font-medium text-placeholder ring-1 ring-subtle ring-inset">
+                    <span className="rounded-sm px-1 py-px text-xs font-medium text-placeholder ring-1 ring-subtle ring-inset">
                         {typeof shortcut === "string" ? shortcut : "⌘K"}
                     </span>
                 </div>

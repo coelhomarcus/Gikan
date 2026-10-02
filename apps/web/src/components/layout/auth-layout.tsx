@@ -9,7 +9,7 @@ export function AuthLayout() {
     const { t } = useTranslation();
     return (
         <div className="flex min-h-dvh flex-col bg-canvas text-primary">
-            <header className="flex items-center justify-between px-6 py-6 md:px-10">
+            <header className="flex items-center justify-between p-6 md:px-10">
                 <GikanLogo />
                 <LanguageSelector compact />
             </header>

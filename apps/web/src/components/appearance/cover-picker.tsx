@@ -61,7 +61,7 @@ export function CoverPicker({ cover, onChange, disabled, containerRef, variant =
             <Popover.Trigger disabled={disabled} className={`inline-flex h-8 items-center gap-2 rounded-md px-2.5 text-xs font-medium disabled:opacity-50 ${variant === "overlay" ? "bg-black/40 text-white backdrop-blur-sm hover:bg-black/55" : "border border-subtle bg-layer-1 text-secondary hover:bg-layer-1-hover"}`}>
                 <ImagePlus className="size-3.5" /> {cover ? t("appearance.changeCover") : t("appearance.addCover")}
             </Popover.Trigger>
-            <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-[60]"><Popover.Popup className="w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
+            <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-60"><Popover.Popup className="w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
                 <Popover.Title className="sr-only">{t("appearance.cover")}</Popover.Title>
                 <div className="space-y-3">
                     <Input label={t("appearance.coverImageUrl")} value={url} onChange={(value) => { setUrl(value); setError(""); }} placeholder="https://..." isInvalid={!!error} hint={error || t("appearance.dragCover")} />
@@ -69,7 +69,7 @@ export function CoverPicker({ cover, onChange, disabled, containerRef, variant =
                         ref={preview}
                         data-cover-positioner
                         aria-label={t("appearance.dragCover")}
-                        className="relative w-full max-h-56 min-h-12 cursor-crosshair touch-none select-none overflow-hidden rounded border border-subtle"
+                        className="relative max-h-56 min-h-12 w-full cursor-crosshair touch-none overflow-hidden rounded-sm border border-subtle select-none"
                         style={{ aspectRatio }}
                         onDragStart={(event) => event.preventDefault()}
                         onPointerDown={(event) => {
@@ -85,9 +85,9 @@ export function CoverPicker({ cover, onChange, disabled, containerRef, variant =
                         }}
                     >
                         <CoverImage cover={url ? { url, position } : null} className="size-full" />
-                        {url && <span className="pointer-events-none absolute inset-0 grid place-items-center text-xs text-white drop-shadow"> <Move className="size-4" /> </span>}
+                        {url && <span className="pointer-events-none absolute inset-0 grid place-items-center text-xs text-white drop-shadow-sm"> <Move className="size-4" /> </span>}
                     </div>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-tertiary"><label>X <input className="ml-1 w-12 rounded border border-subtle bg-surface-1 px-1 py-0.5 text-primary" type="number" min="0" max="100" value={position.x} onChange={(event) => setPosition((current) => ({ ...current, x: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))} /></label><label>Y <input className="ml-1 w-12 rounded border border-subtle bg-surface-1 px-1 py-0.5 text-primary" type="number" min="0" max="100" value={position.y} onChange={(event) => setPosition((current) => ({ ...current, y: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))} /></label></div>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-tertiary"><label>X <input className="ml-1 w-12 rounded-sm border border-subtle bg-surface-1 px-1 py-0.5 text-primary" type="number" min="0" max="100" value={position.x} onChange={(event) => setPosition((current) => ({ ...current, x: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))} /></label><label>Y <input className="ml-1 w-12 rounded-sm border border-subtle bg-surface-1 px-1 py-0.5 text-primary" type="number" min="0" max="100" value={position.y} onChange={(event) => setPosition((current) => ({ ...current, y: Math.max(0, Math.min(100, Number(event.target.value) || 0)) }))} /></label></div>
                     <div className="flex justify-between gap-2"><Button color="tertiary-destructive" size="sm" iconLeading={Trash2} isDisabled={!cover} onClick={() => { onChange(null); setOpen(false); }}>{t("appearance.removeCover")}</Button><Button size="sm" onClick={apply}>{t("appearance.apply")}</Button></div>
                 </div>
             </Popover.Popup></Popover.Positioner></Popover.Portal>

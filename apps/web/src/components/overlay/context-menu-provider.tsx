@@ -404,8 +404,8 @@ export const ContextMenuProvider = ({ children }: { children: ReactNode }) => {
                     }}
                 >
                     <Dialog.Portal>
-                        <Dialog.Backdrop className="fixed inset-0 z-[110] bg-backdrop" />
-                        <Dialog.Viewport className="fixed inset-0 z-[110] flex items-center justify-center overflow-y-auto p-4">
+                        <Dialog.Backdrop className="fixed inset-0 z-110 bg-backdrop" />
+                        <Dialog.Viewport className="fixed inset-0 z-110 flex items-center justify-center overflow-y-auto p-4">
                             <Dialog.Popup className="w-full max-w-md rounded-lg border border-subtle bg-surface-1 p-6 shadow-overlay-200 outline-none">
                                 <Dialog.Title className="text-lg font-semibold text-primary">
                                     {confirmation.type === "issue" ? t("contextMenu.deleteIssueTitle") : t("contextMenu.deletePageTitle")}

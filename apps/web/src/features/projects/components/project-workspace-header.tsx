@@ -85,7 +85,7 @@ export function ProjectWorkspaceHeader({
                     {!actions && <Link
                         to={`/projects/${projectId}/settings/general`}
                         aria-label={t("nav.projectSettings")}
-                        className="flex size-6 items-center justify-center rounded text-tertiary hover:bg-layer-1-hover"
+                        className="flex size-6 items-center justify-center rounded-sm text-tertiary hover:bg-layer-1-hover"
                     >
                         <AppIcons.Settings className="size-4" />
                     </Link>}

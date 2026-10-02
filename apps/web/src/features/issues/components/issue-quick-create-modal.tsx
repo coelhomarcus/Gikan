@@ -47,12 +47,12 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()} isDismissable>
             <Modal className="max-w-md">
                 <Dialog>
-                    <div className="w-full rounded-xl bg-surface-1 p-6 shadow-xl ring-1 ring-subtle">
+                    <div className="shadow-xl w-full rounded-xl bg-surface-1 p-6 ring-1 ring-subtle">
                         <div className="mb-4 flex items-start justify-between gap-4">
                             <div>
                                 <div className="flex items-center gap-2 text-accent-primary">
                                     <FilePlus2 className="size-4" aria-hidden="true" />
-                                    <span className="text-xs font-medium uppercase tracking-wide">{t("issue.newIssue")}</span>
+                                    <span className="text-xs font-medium tracking-wide uppercase">{t("issue.newIssue")}</span>
                                 </div>
                                 <h2 className="mt-2 text-lg font-semibold text-primary">{t("issue.newIssuePrompt")}</h2>
                                 <p className="mt-1 text-sm text-tertiary">{t("issue.issueStatusAdded")}</p>

@@ -140,7 +140,7 @@ export function IssueToolbar({ projectId, onCreate, layout = "list", compact = f
                             <button
                                 key={filter.key}
                                 onClick={() => update(filter.key, "")}
-                                className="flex items-center gap-1 rounded border border-subtle bg-layer-1 px-2 py-0.5 text-xs text-secondary"
+                                className="flex items-center gap-1 rounded-sm border border-subtle bg-layer-1 px-2 py-0.5 text-xs text-secondary"
                                 aria-label={t("issue.clearFilter", { filter: filter.label })}
                             >
                                 {filter.label}: {filter.items.find((item) => item.id === query.get(filter.key))?.name ?? t("issue.selected")}

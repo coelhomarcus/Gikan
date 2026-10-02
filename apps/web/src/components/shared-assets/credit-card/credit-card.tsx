@@ -175,18 +175,18 @@ export const CreditCard = ({
             >
                 {/* Horizontal strip */}
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
-                    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2 bg-neutral-800"></div>
+                    <div className="bg-neutral-800 pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2"></div>
                 )}
                 {/* Vertical stripe */}
                 {VERTICAL_STRIP_TYPES.includes(type as (typeof VERTICAL_STRIP_TYPES)[number]) && (
-                    <div className="pointer-events-none absolute inset-y-0 right-22 left-0 z-0 bg-neutral-800"></div>
+                    <div className="bg-neutral-800 pointer-events-none absolute inset-y-0 right-22 left-0 z-0"></div>
                 )}
                 {/* Gradient diffusor */}
                 {type === "transparent-gradient" && (
                     <div className="absolute -top-4 -left-4 grid grid-cols-2 blur-3xl">
-                        <div className="size-20 rounded-tl-full bg-pink-500 opacity-30 mix-blend-normal" />
-                        <div className="size-20 rounded-tr-full bg-orange-500 opacity-50 mix-blend-normal" />
-                        <div className="size-20 rounded-bl-full bg-blue-500 opacity-30 mix-blend-normal" />
+                        <div className="bg-pink-500 size-20 rounded-tl-full opacity-30 mix-blend-normal" />
+                        <div className="bg-orange-500 size-20 rounded-tr-full opacity-50 mix-blend-normal" />
+                        <div className="bg-blue-500 size-20 rounded-bl-full opacity-30 mix-blend-normal" />
                         <div className="bg-green-500 size-20 rounded-br-full opacity-30 mix-blend-normal" />
                     </div>
                 )}
@@ -204,7 +204,7 @@ export const CreditCard = ({
                                 style={{
                                     wordBreak: "break-word",
                                 }}
-                                className={cx("text-xs leading-snug font-semibold tracking-[0.6px] uppercase", styles[type].footerText)}
+                                className={cx("text-12/snug font-semibold tracking-[0.6px] uppercase", styles[type].footerText)}
                             >
                                 {cardHolder}
                             </p>
@@ -225,7 +225,7 @@ export const CreditCard = ({
                         </div>
                     </div>
 
-                    <div className={cx("flex h-8 w-11.5 shrink-0 items-center justify-center rounded", styles[type].cardTypeRoot)}>
+                    <div className={cx("flex h-8 w-11.5 shrink-0 items-center justify-center rounded-sm", styles[type].cardTypeRoot)}>
                         {CARD_WITH_COLOR_LOGO.includes(type as (typeof CARD_WITH_COLOR_LOGO)[number]) ? <MastercardIcon /> : <MastercardIconWhite />}
                     </div>
                 </div>

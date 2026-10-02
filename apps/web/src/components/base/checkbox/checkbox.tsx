@@ -15,7 +15,7 @@ export const CheckboxBase = ({ className, isSelected, isDisabled, isIndeterminat
     <span
         aria-hidden="true"
         className={cx(
-            "relative flex size-4 shrink-0 cursor-pointer appearance-none items-center justify-center rounded bg-surface-1 ring-1 ring-strong ring-inset",
+            "relative flex size-4 shrink-0 cursor-pointer appearance-none items-center justify-center rounded-sm bg-surface-1 ring-1 ring-strong ring-inset",
             size === "md" && "size-5 rounded-md",
             (isSelected || isIndeterminate) && "bg-accent-primary ring-brand-solid",
             isDisabled && "cursor-not-allowed opacity-50",

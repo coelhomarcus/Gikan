@@ -43,12 +43,12 @@ export function AvatarUrlPicker({ value, initials, onChange, disabled }: AvatarU
             <Popover.Trigger
                 disabled={disabled}
                 aria-label={value ? t("profile.changePhoto") : t("profile.addPhoto")}
-                className="absolute -right-2 -bottom-2 z-10 flex size-7 items-center justify-center rounded-md border border-strong bg-layer-2 text-secondary shadow-sm transition hover:bg-layer-2-hover disabled:opacity-50"
+                className="shadow-sm absolute -right-2 -bottom-2 z-10 flex size-7 items-center justify-center rounded-md border border-strong bg-layer-2 text-secondary transition hover:bg-layer-2-hover disabled:opacity-50"
             >
                 <Pencil className="size-3.5" />
             </Popover.Trigger>
             <Popover.Portal>
-                <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-[60]">
+                <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-60">
                     <Popover.Popup className="w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
                         <Popover.Title className="mb-3 text-sm font-medium text-primary">{t("profile.profilePhoto")}</Popover.Title>
                         <div className="space-y-3">

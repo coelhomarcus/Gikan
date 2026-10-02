@@ -37,7 +37,7 @@ export const SelectItem = ({
             value={value ?? id}
             label={text}
             disabled={isDisabled}
-            className={(state) => cx("w-full rounded-md outline-none", "data-[highlighted]:bg-layer-1-hover", "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50", state.highlighted && "bg-layer-1-hover", className)}
+            className={(state) => cx("w-full rounded-md outline-none", "data-highlighted:bg-layer-1-hover", "data-disabled:cursor-not-allowed data-disabled:opacity-50", state.highlighted && "bg-layer-1-hover", className)}
         >
             <div className={cx("flex cursor-pointer items-center select-none", sizes[size].root)}>
                 {isLeft && selectionIndicator === "checkbox" && <CheckboxBase size={size === "lg" ? "md" : "sm"} />}

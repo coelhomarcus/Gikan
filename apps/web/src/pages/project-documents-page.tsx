@@ -69,7 +69,7 @@ function DocumentList({ projectId }: { projectId: string }) {
                         {filtered.map((page) => (
                             <div
                                 key={page.id}
-                                className="group/page flex min-w-0 items-center rounded px-1 hover:bg-layer-1"
+                                className="group/page flex min-w-0 items-center rounded-sm px-1 hover:bg-layer-1"
                                 data-document-context="true"
                                 data-project-id={projectId}
                                 data-document-id={page.id}
@@ -88,7 +88,7 @@ function DocumentList({ projectId }: { projectId: string }) {
                                 </Link>
                                 <ContextMenuButton
                                     entity={{ type: "document", projectId, documentId: page.id, title: page.title, authorId: page.createdBy }}
-                                    className="mr-2 opacity-100 md:opacity-0 md:group-hover/page:opacity-100 md:group-focus-within/page:opacity-100"
+                                    className="mr-2 opacity-100 md:opacity-0 md:group-focus-within/page:opacity-100 md:group-hover/page:opacity-100"
                                 />
                             </div>
                         ))}
@@ -270,7 +270,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         {state.cover && (
                             <div ref={coverRef} className="document-cover-shell relative shrink-0">
                                 <CoverImage cover={state.cover} className="h-40 sm:h-52" />
-                                <div className="absolute right-3 top-3"><CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} /></div>
+                                <div className="absolute top-3 right-3"><CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} /></div>
                             </div>
                         )}
                     <div className="document-writing-surface" data-has-cover={state.cover ? "" : undefined}>
@@ -316,7 +316,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                                 <Popover.Trigger disabled={busy || state.status === "deleted"} aria-label={state.iconAppearance ? t("appearance.changePageIcon") : t("appearance.addPageIcon")} className={`flex items-center justify-center overflow-hidden rounded-lg border border-subtle bg-layer-2 text-secondary hover:bg-layer-2-hover ${state.iconAppearance ? "size-16" : "h-8 gap-2 px-2 text-xs font-medium"}`}>
                                     {state.iconAppearance ? <ProjectIcon icon={state.iconAppearance} className={iconFillClass(state.iconAppearance, "size-9")} /> : <><Sparkles className="size-3.5" /> {t("appearance.addPageIcon")}</>}
                                 </Popover.Trigger>
-                                <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-[60]"><Popover.Popup className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none"><Popover.Title className="sr-only">{t("appearance.pageIcon")}</Popover.Title><AppearancePicker value={state.iconAppearance} onChange={(iconAppearance) => session.edit({ iconAppearance })} onComplete={() => setIconPickerOpen(false)} /></Popover.Popup></Popover.Positioner></Popover.Portal>
+                                <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-60"><Popover.Popup className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none"><Popover.Title className="sr-only">{t("appearance.pageIcon")}</Popover.Title><AppearancePicker value={state.iconAppearance} onChange={(iconAppearance) => session.edit({ iconAppearance })} onComplete={() => setIconPickerOpen(false)} /></Popover.Popup></Popover.Positioner></Popover.Portal>
                             </Popover.Root>
                         </div>
                         <textarea

@@ -242,7 +242,7 @@ export const Board = ({ projectId, filters = new URLSearchParams() }: { projectI
                     {activeIssue && (
                         <div
                             style={{ width: activeIssueWidth }}
-                            className="block cursor-grabbing rounded-lg border border-accent-strong bg-layer-2 p-3 shadow-lg"
+                            className="shadow-lg block cursor-grabbing rounded-lg border border-accent-strong bg-layer-2 p-3"
                         >
                             <IssueCardContent issue={activeIssue} category={activeCategory} assignee={activeAssignee} column={columns?.find((column) => column.id === activeIssue.columnId)} cycle={activeIssue.cycleId ? cyclesById.get(activeIssue.cycleId) : undefined} />
                         </div>

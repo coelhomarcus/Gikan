@@ -16,7 +16,7 @@ export function ProjectBoardPage() {
     return (
         <div className="plane-board-page flex h-full min-h-0 flex-col">
             <ProjectWorkspaceHeader projectId={projectId} activeView="board" actions={<IssueToolbar compact projectId={projectId} layout="board" onCreate={() => setCreating(true)} />} />
-            <div className="min-h-0 flex-1 overflow-x-auto bg-layer-1 px-[22px] pt-4 pb-4">
+            <div className="min-h-0 flex-1 overflow-x-auto bg-layer-1 px-[22px] py-4">
                 <Board projectId={projectId} filters={params} />
             </div>
             {creating && columns?.[0] && (

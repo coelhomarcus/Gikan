@@ -7,11 +7,11 @@ export const FieldGroup = ({ className, ...props }: ComponentProps<"div">) => <d
 
 export const FieldLabel = ({ className, ...props }: ComponentProps<"label">) => <label {...props} className={cx("text-sm font-medium text-secondary", className)} />;
 
-export const FieldDescription = ({ className, ...props }: ComponentProps<"p">) => <p {...props} className={cx("text-xs leading-5 text-tertiary", className)} />;
+export const FieldDescription = ({ className, ...props }: ComponentProps<"p">) => <p {...props} className={cx("text-12/5 text-tertiary", className)} />;
 
 export const FieldError = ({ children, className, ...props }: Omit<ComponentProps<"p">, "children"> & { children?: ReactNode }) => {
     if (!children) return null;
-    return <p {...props} role="alert" className={cx("text-xs leading-5 text-danger-primary", className)}>{children}</p>;
+    return <p {...props} role="alert" className={cx("text-12/5 text-danger-primary", className)}>{children}</p>;
 };
 
 export const FieldContent = ({ className, ...props }: ComponentProps<"div">) => <div {...props} className={cx("flex min-w-0 flex-1 flex-col gap-1", className)} />;

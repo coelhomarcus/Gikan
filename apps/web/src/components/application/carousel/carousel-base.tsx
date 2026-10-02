@@ -152,7 +152,7 @@ const CarouselContent = ({ className, overflowHidden = true, ...props }: Carouse
     const { carouselRef, orientation } = useCarousel();
 
     return (
-        <div ref={carouselRef} className={cx("h-full w-full", overflowHidden && "overflow-hidden")}>
+        <div ref={carouselRef} className={cx("size-full", overflowHidden && "overflow-hidden")}>
             <div className={cx("flex max-h-full", orientation === "horizontal" ? "" : "flex-col", className)} {...props} />
         </div>
     );

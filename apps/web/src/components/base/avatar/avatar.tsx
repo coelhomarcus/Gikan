@@ -144,7 +144,7 @@ export const Avatar = ({
         >
             <div
                 className={cx(
-                    "relative inline-flex size-full shrink-0 items-center justify-center overflow-hidden rounded-md bg-layer-2 outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:inset-[0.5px]",
+                    "relative inline-flex size-full shrink-0 items-center justify-center overflow-hidden rounded-md bg-layer-2 outline-[0.5px] outline-offset-[-0.5px] outline-black/16 before:inset-[0.5px]",
                     rounded && "rounded-full",
                     canShowImage &&
                         size !== "xs" &&

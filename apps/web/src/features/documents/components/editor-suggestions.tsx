@@ -208,7 +208,7 @@ export function documentSuggestions(pluginKey: PluginKey) {
         const t = i18n.getFixedT(null, "translation");
         root.render(
             <div role="listbox" aria-label={t(pluginKey === documentMentionKey ? "editor.mentions" : "editor.commands")} className="document-command-list">
-                {list.length === 0 && <p className="px-3 py-3 text-sm text-tertiary">{t("editor.noResults")}</p>}
+                {list.length === 0 && <p className="p-3 text-sm text-tertiary">{t("editor.noResults")}</p>}
                 {list.map((item, i) => {
                     const Icon = commandIcons[item.id];
                     const previous = list[i - 1];

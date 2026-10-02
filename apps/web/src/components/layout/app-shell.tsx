@@ -87,7 +87,7 @@ export const AppShell = () => {
                     >
                         <AppIcons.Search className="size-3.5" />
                         <span className="truncate">{t("nav.search")}</span>
-                        <kbd className="ml-auto shrink-0 rounded border border-subtle px-1 text-[10px]">⌘ K</kbd>
+                        <kbd className="ml-auto shrink-0 rounded-sm border border-subtle px-1 text-[10px]">⌘ K</kbd>
                     </button>
                     <div className="flex flex-1 justify-end">
                         <SidebarAccount />
@@ -159,7 +159,7 @@ export const AppShell = () => {
                             <Dialog.Title className="sr-only">{t("nav.navigation")}</Dialog.Title>
                             <Sidebar onCollapse={() => setMobileOpen(false)} />
                             <button
-                                className="m-3 flex items-center gap-2 rounded px-2 py-1 text-sm text-secondary hover:bg-layer-1"
+                                className="m-3 flex items-center gap-2 rounded-sm px-2 py-1 text-sm text-secondary hover:bg-layer-1"
                                 onClick={() => {
                                     setMobileOpen(false);
                                     navigate("/settings/profile");

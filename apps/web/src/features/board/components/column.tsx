@@ -95,7 +95,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                     <button
                         type="button"
                         onClick={startEditing}
-                        className="flex min-w-0 items-center gap-2 rounded px-0.5 text-left text-h6-medium text-primary hover:bg-layer-1-hover"
+                        className="flex min-w-0 items-center gap-2 rounded-sm px-0.5 text-left text-h6-medium text-primary hover:bg-layer-1-hover"
                     >
                         <StateIcon name={column.name} color={column.color} />
                         {!collapsed && <span className="truncate">{translateStatusName(column.name, t)}</span>}
@@ -106,7 +106,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
                 <div className="ml-auto flex shrink-0 items-center gap-1">
                     <ButtonUtility icon={collapsed ? ArrowExpandOutline : ArrowCollapseOutline} size="xs" color="tertiary" tooltip={`${collapsed ? t("nav.expand") : t("nav.collapse")} ${translateStatusName(column.name, t)}`} onClick={() => setCollapsed(!collapsed)} />
                     {!collapsed && <ButtonUtility icon={Plus} size="xs" color="tertiary" tooltip={`${t("issue.newIssue")} · ${translateStatusName(column.name, t)}`} onClick={() => onCreateIssue(column.id)} />}
-                    <div className="hidden group-hover/column:block group-focus-within/column:block">
+                    <div className="hidden group-focus-within/column:block group-hover/column:block">
                     <ConfirmDialog
                         trigger={<ButtonUtility icon={Trash2} size="xs" color="tertiary" tooltip={t("settings.deleteState")} />}
                         title={t("settings.deleteState")}

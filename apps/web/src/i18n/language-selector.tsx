@@ -14,7 +14,7 @@ export function LanguageSelector({ compact = false }: { compact?: boolean }) {
                 aria-label={t("common.language")}
                 value={locale}
                 onChange={(event) => setLocale(event.target.value as Locale)}
-                className="rounded-md border border-subtle bg-layer-1 px-2 py-1.5 text-sm text-secondary outline-none focus-visible:ring-2 focus-visible:ring-accent-primary"
+                className="focus-visible:ring-accent-primary rounded-md border border-subtle bg-layer-1 px-2 py-1.5 text-sm text-secondary outline-none focus-visible:ring-2"
             >
                 <option value="pt-BR">{t("common.portugueseBrazil")}</option>
                 <option value="en">{t("common.english")}</option>

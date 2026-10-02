@@ -35,7 +35,7 @@ export const PlayButtonIcon = ({ isPlaying = false, ...props }: HTMLAttributes<H
         <div
             {...props}
             className={cx(
-                "flex size-20 items-center justify-center rounded-full bg-alpha-white/30 backdrop-blur transition duration-100 ease-linear group-hover:bg-alpha-white/50 hover:bg-alpha-white/50",
+                "flex size-20 items-center justify-center rounded-full bg-alpha-white/30 backdrop-blur-sm transition duration-100 ease-linear group-hover:bg-alpha-white/50 hover:bg-alpha-white/50",
                 props.className,
             )}
         >

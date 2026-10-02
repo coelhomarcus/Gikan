@@ -24,4 +24,4 @@ export const ButtonGroupItem = ({ iconLeading: IconLeading, iconTrailing: IconTr
 };
 
 interface ButtonGroupProps { size?: ButtonSize; className?: string; children: ReactNode; }
-export const ButtonGroup = ({ children, size = "md", className }: ButtonGroupProps) => <context.Provider value={{ size }}><div className={cx("relative z-0 inline-flex w-max -space-x-px rounded-md shadow-xs", className)}>{children}</div></context.Provider>;
+export const ButtonGroup = ({ children, size = "md", className }: ButtonGroupProps) => <context.Provider value={{ size }}><div className={cx("shadow-xs relative z-0 inline-flex w-max -space-x-px rounded-md", className)}>{children}</div></context.Provider>;

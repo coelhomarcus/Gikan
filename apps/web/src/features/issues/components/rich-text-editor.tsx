@@ -50,7 +50,7 @@ function SuggestionMenu<T extends { id: string; label: string; description?: str
         image: ["editor.image", "editor.insertImageUrl"],
     };
     return (
-        <div role="listbox" aria-label={t("editor.editorSuggestions")} className="min-w-60 overflow-hidden rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl">
+        <div role="listbox" aria-label={t("editor.editorSuggestions")} className="shadow-2xl min-w-60 overflow-hidden rounded-lg border border-subtle bg-surface-1 p-1">
             {items.length === 0 ? <p className="px-3 py-2 text-xs text-tertiary">{t("editor.noMatchingCommands")}</p> : items.map((item, index) => {
                 const Icon = item.icon;
                 const keys = labelKeys[item.id];
@@ -301,7 +301,7 @@ function RichTextToolbar({ editor, showImages }: { editor: NonNullable<ReturnTyp
         else editor.chain().focus().setLink({ href }).run();
         setIsLinkEditorOpen(false);
     };
-    return <div className="tiptap-toolbar sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-subtle bg-surface-1/95 px-2 py-1.5 backdrop-blur">
+    return <div className="tiptap-toolbar sticky top-0 z-10 flex flex-wrap items-center gap-1 border-b border-subtle bg-surface-1/95 px-2 py-1.5 backdrop-blur-sm">
         <ToggleGroupRoot aria-label={t("editor.textFormatting")}>
             <ToggleGroupItem value="bold" aria-label={t("editor.bold")} pressed={editor.isActive("bold")} onPressedChange={() => editor.chain().focus().toggleBold().run()}><Bold className="size-4" /></ToggleGroupItem>
             <ToggleGroupItem value="italic" aria-label={t("editor.italic")} pressed={editor.isActive("italic")} onPressedChange={() => editor.chain().focus().toggleItalic().run()}><Italic className="size-4" /></ToggleGroupItem>
@@ -318,7 +318,7 @@ function RichTextToolbar({ editor, showImages }: { editor: NonNullable<ReturnTyp
             </BasePopover.Trigger>
             <BasePopover.Portal>
                 <BasePopover.Positioner side="bottom" align="start" sideOffset={6} className="z-50">
-                    <BasePopover.Popup className="w-72 rounded-lg border border-subtle bg-surface-1 p-3 shadow-2xl outline-none">
+                    <BasePopover.Popup className="shadow-2xl w-72 rounded-lg border border-subtle bg-surface-1 p-3 outline-none">
                         <form className="flex flex-col gap-2" onSubmit={saveLink}>
                             <label className="text-xs font-medium text-secondary" htmlFor="tiptap-link-url">{t("editor.linkUrl")}</label>
                             <Input autoFocus id="tiptap-link-url" size="sm" type="url" value={url} onChange={setUrl} placeholder="https://example.com" />
@@ -333,7 +333,7 @@ function RichTextToolbar({ editor, showImages }: { editor: NonNullable<ReturnTyp
         </BasePopover.Root>
         <div className="relative">
             <FormatButton icon={MoreHorizontal} label={t("editor.moreFormatting")} active={isMoreOpen} onClick={() => setIsMoreOpen((open) => !open)} />
-            {isMoreOpen && <div className="absolute top-9 left-0 z-20 flex min-w-44 flex-col gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-xl">
+            {isMoreOpen && <div className="shadow-xl absolute top-9 left-0 z-20 flex min-w-44 flex-col gap-1 rounded-lg border border-subtle bg-surface-1 p-1">
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={List} onClick={() => editor.chain().focus().toggleBulletList().run()}>{t("editor.bulletList")}</Button>
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={ListOrdered} onClick={() => editor.chain().focus().toggleOrderedList().run()}>{t("editor.numberedList")}</Button>
                 <Button size="xs" color="tertiary" className="justify-start" iconLeading={CheckSquare} onClick={() => editor.chain().focus().toggleTaskList().run()}>{t("editor.todoList")}</Button>
@@ -351,7 +351,7 @@ function RichTextBubbleMenu({ editor }: { editor: NonNullable<ReturnType<typeof 
         editor={editor}
         appendTo={() => document.body}
         options={{ strategy: "fixed", placement: "top", offset: 8, flip: { padding: 12 }, shift: { padding: 12 } }}
-        className="z-[100] flex items-center gap-1 rounded-lg border border-subtle bg-surface-1 p-1 shadow-2xl"
+        className="shadow-2xl z-100 flex items-center gap-1 rounded-lg border border-subtle bg-surface-1 p-1"
     >
         <FormatButton icon={Bold} label={t("editor.bold")} active={editor.isActive("bold")} onClick={() => editor.chain().focus().toggleBold().run()} />
         <FormatButton icon={Italic} label={t("editor.italic")} active={editor.isActive("italic")} onClick={() => editor.chain().focus().toggleItalic().run()} />
@@ -385,8 +385,8 @@ function LinkPopover({ editor }: { editor: NonNullable<ReturnType<typeof useEdit
             <Link2 className="size-4" />
         </BasePopover.Trigger>
         <BasePopover.Portal>
-            <BasePopover.Positioner side="bottom" align="start" sideOffset={6} className="z-[110]">
-                <BasePopover.Popup className="w-72 rounded-lg border border-subtle bg-surface-1 p-3 shadow-2xl outline-none">
+            <BasePopover.Positioner side="bottom" align="start" sideOffset={6} className="z-110">
+                <BasePopover.Popup className="shadow-2xl w-72 rounded-lg border border-subtle bg-surface-1 p-3 outline-none">
                     <form className="flex flex-col gap-2" onSubmit={save}>
                         <label className="text-xs font-medium text-secondary" htmlFor="tiptap-bubble-link-url">{t("editor.linkUrl")}</label>
                         <Input autoFocus id="tiptap-bubble-link-url" size="sm" type="url" value={url} onChange={setUrl} placeholder="https://example.com" />

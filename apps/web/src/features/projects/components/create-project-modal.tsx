@@ -69,7 +69,7 @@ export const CreateProjectModal = () => {
                                         <ProjectIcon icon={field.value} className={iconFillClass(field.value, "size-7")} />
                                     </Popover.Trigger>
                                     <Popover.Portal>
-                                        <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-[60]">
+                                        <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-60">
                                             <Popover.Popup className="max-h-[calc(100dvh-1.5rem)] w-80 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">
                                                 <Popover.Title className="sr-only">{t("projects.chooseIcon")}</Popover.Title>
                                                 <AppearancePicker value={field.value} onChange={field.onChange} onComplete={() => setIconPickerOpen(false)} />

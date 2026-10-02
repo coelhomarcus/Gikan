@@ -100,7 +100,7 @@ export default function DesignSystemPage() {
                         {["canvas", "surface-1", "surface-2", "layer-1", "layer-2", "layer-3", "accent-primary", "danger-primary"].map((layer) => (
                             <div key={layer} className="rounded-md border border-subtle bg-layer-2 p-3">
                                 <p className="mb-3 text-xs text-tertiary">{layer}</p>
-                                <div className={`h-12 rounded bg-${layer}`} />
+                                <div className={`h-12 rounded-sm bg-${layer}`} />
                             </div>
                         ))}
                     </div>

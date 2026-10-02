@@ -324,7 +324,7 @@ function IssueRow({
                 state={{ backgroundLocation }}
                 tabIndex={0}
                 onFocus={onSelect}
-                className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-subtle px-4 py-2 text-left transition-colors last:border-0 hover:bg-layer-1-hover focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent-strong max-sm:grid-cols-1 max-sm:gap-2 max-sm:pr-12 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
+                className={`grid w-full grid-cols-[minmax(0,1fr)_8rem_8rem_10rem] items-center gap-3 border-b border-subtle px-4 py-2 text-left transition-colors last:border-0 hover:bg-layer-1-hover focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent-strong max-sm:grid-cols-1 max-sm:gap-2 max-sm:pr-12 lg:grid-cols-[minmax(0,1fr)_7rem_7rem_9rem_7rem_7rem_4rem] ${
                     selected ? "bg-surface-2" : ""
                 }`}
             >

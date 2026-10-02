@@ -27,12 +27,12 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
 
         return (
             <main className="flex min-h-dvh items-center justify-center bg-surface-1 px-5 py-12 text-primary sm:px-8">
-                <section className="w-full max-w-md rounded-2xl border border-subtle bg-surface-2/40 p-6 shadow-2xl sm:p-8" role="alert">
+                <section className="shadow-2xl w-full max-w-md rounded-2xl border border-subtle bg-surface-2/40 p-6 sm:p-8" role="alert">
                     <div className="flex size-10 items-center justify-center rounded-lg bg-danger-subtle/10 text-danger-primary">
                         <AlertTriangle className="size-5" aria-hidden="true" />
                     </div>
                     <h1 className="mt-5 text-display-xs font-semibold tracking-tight">{i18n.t("errors.screenFailureTitle")}</h1>
-                    <p className="mt-2 text-sm leading-relaxed text-tertiary">{i18n.t("errors.screenFailureDescription")}</p>
+                    <p className="mt-2 text-13/relaxed text-tertiary">{i18n.t("errors.screenFailureDescription")}</p>
                     <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row">
                         <Button color="secondary" size="md" href="/">
                             {i18n.t("errors.goToProjects")}

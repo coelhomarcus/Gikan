@@ -88,7 +88,7 @@ export const ComboBox = ({
                         className={cx(
                             "shadow-xs relative flex w-full items-center gap-2 rounded-md bg-surface-1 ring-1 ring-strong outline-hidden transition-shadow duration-100 ease-linear ring-inset",
                             "focus-within:ring-2 focus-within:ring-accent-strong",
-                            "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+                            "data-disabled:cursor-not-allowed data-disabled:opacity-50",
                             sizes[size].root,
                         )}
                         aria-invalid={isInvalid || undefined}
@@ -101,7 +101,7 @@ export const ComboBox = ({
                             className={cx("min-w-0 flex-1 bg-transparent text-primary outline-none placeholder:text-placeholder", sizes[size].text)}
                         />
                         {shortcut && (
-                            <span className={cx("hidden rounded px-1 py-px text-xs text-placeholder ring-1 ring-subtle md:inline-flex", shortcutClassName)}>
+                            <span className={cx("hidden rounded-sm px-1 py-px text-xs text-placeholder ring-1 ring-subtle md:inline-flex", shortcutClassName)}>
                                 ⌘K
                             </span>
                         )}
@@ -136,7 +136,7 @@ export const ComboBoxItem = ({ item, children }: { item: SelectItemType; childre
         <BaseCombobox.Item
             value={item.id}
             disabled={item.isDisabled}
-            className={(state) => cx("w-full rounded-md outline-none data-[highlighted]:bg-layer-1-hover", state.highlighted && "bg-layer-1-hover")}
+            className={(state) => cx("w-full rounded-md outline-none data-highlighted:bg-layer-1-hover", state.highlighted && "bg-layer-1-hover")}
         >
             <div className={cx("flex cursor-pointer items-center", sizes[size].root)}>
                 {item.avatarUrl && <Avatar size="xs" src={item.avatarUrl} alt={item.label} />}

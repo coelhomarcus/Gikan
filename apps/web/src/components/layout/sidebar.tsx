@@ -45,14 +45,14 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
             <div className="min-h-0 flex-1 overflow-y-auto px-3">
                 {settings ? (
                     <>
-                        <div className="mb-6 flex min-w-0 items-center gap-3 px-2 py-2">
+                        <div className="mb-6 flex min-w-0 items-center gap-3 p-2">
                             <Avatar key={user?.avatarUrl} size="md" src={user?.avatarUrl} initials={user?.name.slice(0, 2).toUpperCase()} />
                             <div className="min-w-0">
                                 <p className="truncate text-body-sm-medium text-secondary">{user?.name}</p>
                                 <p className="truncate text-caption-md-regular text-tertiary">{user?.email}</p>
                             </div>
                         </div>
-                        <p className="px-2 py-2 text-caption-md-medium text-tertiary">{t("nav.account")}</p>
+                        <p className="p-2 text-caption-md-medium text-tertiary">{t("nav.account")}</p>
                         <Link to="/settings/profile" className={`${navClass} bg-layer-1`} aria-current="page">
                             <AppIcons.General className="size-4" />
                             {t("settings.general")}
@@ -129,7 +129,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                         </Link>
                                         <ContextMenuButton
                                             entity={{ type: "project", projectId: project.id, name: project.name, issueKey: project.issueKey }}
-                                            className="opacity-100 md:opacity-0 md:group-hover/project:opacity-100 md:group-focus-within/project:opacity-100"
+                                            className="opacity-100 md:opacity-0 md:group-focus-within/project:opacity-100 md:group-hover/project:opacity-100"
                                         />
                                     </div>
                                     {projectId === project.id && (
@@ -171,7 +171,7 @@ export function Sidebar({ onCollapse }: { onCollapse: () => void }) {
                                                                     </Link>
                                                                     <ContextMenuButton
                                                                         entity={{ type: "document", projectId: project.id, documentId: page.id, title: page.title, authorId: page.createdBy }}
-                                                                        className="size-7 opacity-100 md:opacity-0 md:group-hover/project:opacity-100 md:group-focus-within/project:opacity-100"
+                                                                        className="size-7 opacity-100 md:opacity-0 md:group-focus-within/project:opacity-100 md:group-hover/project:opacity-100"
                                                                     />
                                                                 </div>
                                                             ))}

@@ -141,7 +141,7 @@ function CycleRow({ cycle, isProjectOwner, isPending, onUpdate, onStatusChange, 
     }
 
     return (
-        <div className="flex flex-wrap items-center gap-3 px-3 py-3">
+        <div className="flex flex-wrap items-center gap-3 p-3">
             <div className="min-w-0 flex-1">
                 {isEditing ? (
                     <div className="grid gap-2 sm:grid-cols-3">

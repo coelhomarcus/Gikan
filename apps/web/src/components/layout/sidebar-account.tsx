@@ -46,7 +46,7 @@ export function SidebarAccount() {
             <Menu.Portal>
                 <Menu.Positioner align="end" sideOffset={6} className="z-50">
                     <Menu.Popup className="w-64 rounded-md border border-subtle bg-layer-2 p-1 shadow-overlay-200 outline-none">
-                        <div className="border-b border-subtle px-2 py-2">
+                        <div className="border-b border-subtle p-2">
                             <p className="truncate text-sm font-medium text-primary">{user.name}</p>
                             <p className="truncate text-xs text-tertiary">{user.email}</p>
                         </div>

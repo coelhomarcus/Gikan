@@ -72,16 +72,16 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                     <table className="w-full text-left text-sm text-secondary">
                         <thead>
                             <tr className="border-b border-subtle text-xs text-tertiary">
-                                <th scope="col" className="min-w-56 px-3 py-3 font-medium">
+                                <th scope="col" className="min-w-56 p-3 font-medium">
                                     {t("settings.name")}
                                 </th>
-                                <th scope="col" className="px-3 py-3 font-medium">
+                                <th scope="col" className="p-3 font-medium">
                                     {t("settings.email")}
                                 </th>
-                                <th scope="col" className="px-3 py-3 font-medium">
+                                <th scope="col" className="p-3 font-medium">
                                     {t("settings.role")}
                                 </th>
-                                <th scope="col" className="px-3 py-3 font-medium whitespace-nowrap">
+                                <th scope="col" className="p-3 font-medium whitespace-nowrap">
                                     {t("settings.joinedOn")}
                                 </th>
                                 {isProjectOwner && (
@@ -94,7 +94,7 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                         <tbody className="divide-y divide-subtle">
                             {filtered.map((member) => (
                                 <tr key={member.id} className="group hover:bg-layer-transparent-hover">
-                                    <td className="px-3 py-3">
+                                    <td className="p-3">
                                         <div className="flex items-center gap-2">
                                             <Avatar
                                                 src={member.avatarUrl ?? undefined}
@@ -109,9 +109,9 @@ export const MembersPanel = ({ projectId, isProjectOwner }: { projectId: string;
                                             <span className="max-w-64 truncate">{member.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-3 py-3 text-tertiary">{member.email}</td>
-                                    <td className="px-3 py-3">{member.role === "owner" ? t("settings.owner") : t("settings.member")}</td>
-                                    <td className="px-3 py-3 whitespace-nowrap text-tertiary">
+                                    <td className="p-3 text-tertiary">{member.email}</td>
+                                    <td className="p-3">{member.role === "owner" ? t("settings.owner") : t("settings.member")}</td>
+                                    <td className="p-3 whitespace-nowrap text-tertiary">
                                         {new Intl.DateTimeFormat(i18n.language, { dateStyle: "medium" }).format(new Date(member.joinedAt))}
                                     </td>
                                     {isProjectOwner && (

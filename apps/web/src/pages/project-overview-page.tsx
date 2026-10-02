@@ -27,7 +27,7 @@ export const ProjectOverviewPage = () => {
     return (
         <div className="flex h-full min-h-0 flex-col bg-surface-1">
             <ProjectWorkspaceHeader projectId={projectId!} activeView="overview" />
-            <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-6 lg:px-8 lg:py-8">
+            <main className="mx-auto min-h-0 w-full max-w-6xl flex-1 overflow-y-auto px-4 py-6 lg:p-8">
                 {overviewLoading ? (
                     <OverviewSkeleton />
                 ) : overviewError || !project ? (
@@ -41,7 +41,7 @@ export const ProjectOverviewPage = () => {
                             <div className="mt-4 min-w-0">
                                 <p className="font-mono text-xs text-accent-primary">{project.issueKey}</p>
                                 <h1 className="mt-1 text-display-sm font-semibold tracking-tight text-primary">{project.name}</h1>
-                                {project.description && <p className="mt-2 max-w-2xl text-sm leading-6 text-tertiary">{project.description}</p>}
+                                {project.description && <p className="mt-2 max-w-2xl text-13/6 text-tertiary">{project.description}</p>}
                             </div>
                         </div>
                     </header>
@@ -136,7 +136,7 @@ function Fact({ icon: Icon, label, value }: { icon: typeof Gauge; label: string;
 
 function OverviewLink({ href, icon: Icon, title, description }: { href: string; icon: typeof AppIcons.Issues; title: string; description: string }) {
     return (
-        <Link to={href} className="group flex items-center gap-4 px-3 py-3 transition hover:bg-surface-2">
+        <Link to={href} className="group flex items-center gap-4 p-3 transition hover:bg-surface-2">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-placeholder group-hover:text-accent-primary">
                 <Icon className="size-4" aria-hidden="true" />
             </span>

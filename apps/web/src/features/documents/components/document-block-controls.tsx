@@ -129,7 +129,7 @@ function BlockActions({
                                 </button>
                                 {node && !["image", "table", "horizontalRule"].includes(node.type.name) && (
                                     <>
-                                        <p className="mt-2 border-t border-subtle px-2 py-2 text-xs text-tertiary">{t("editor.turnInto")}</p>
+                                        <p className="mt-2 border-t border-subtle p-2 text-xs text-tertiary">{t("editor.turnInto")}</p>
                                         {filterBlockCommands("").slice(0, 9).map((command) => (
                                             <button
                                                 key={command.id}

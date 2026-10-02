@@ -76,7 +76,7 @@ interface ChartTooltipContentProps extends TooltipProps<ValueType, NameType> {
     isPieChart?: boolean;
     label?: string;
     // We have to use `any` here because the `payload` prop is not typed correctly in the `recharts` library.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     payload?: any;
 }
 
@@ -103,7 +103,7 @@ export const ChartTooltipContent = ({ active, payload, label, isRadialChart, isP
     secondaryTitle = isSingleDataPoint && labelFormatter ? labelFormatter(secondaryTitle, payload) : secondaryTitle;
 
     return (
-        <div className="flex flex-col gap-0.5 rounded-lg bg-primary-solid px-3 py-2 shadow-lg">
+        <div className="shadow-lg flex flex-col gap-0.5 rounded-lg bg-primary-solid px-3 py-2">
             <p className="text-xs font-semibold text-white">{title}</p>
 
             {!secondaryTitle ? null : Array.isArray(secondaryTitle) ? (
@@ -123,7 +123,7 @@ export const ChartTooltipContent = ({ active, payload, label, isRadialChart, isP
 
 interface ChartActiveDotProps extends DotProps {
     // We have to use `any` here because the `payload` prop is not typed correctly in the `recharts` library.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     payload?: any;
 }
 

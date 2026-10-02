@@ -9,7 +9,7 @@ export function ProjectCyclesPage() {
     return (
         <div className="flex h-full min-h-0 flex-col">
             <ProjectWorkspaceHeader projectId={projectId} activeView="cycles" />
-            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+            <div className="min-h-0 flex-1 overflow-y-auto p-6">
                 <div className="mx-auto max-w-5xl">
                     <CyclesPanel projectId={projectId} isProjectOwner={isProjectOwner} />
                 </div>

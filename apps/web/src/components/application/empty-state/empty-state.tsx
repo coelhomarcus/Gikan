@@ -51,7 +51,7 @@ interface FileTypeIconProps extends ComponentPropsWithRef<"div"> {
 
 const FileTypeIcon = ({ type = "folder", theme = "solid", ...props }: FileTypeIconProps) => {
     return (
-        <div {...props} className={cx("relative z-10 flex rounded-full bg-linear-to-b from-neutral-50 to-neutral-200 p-8", props.className)}>
+        <div {...props} className={cx("from-neutral-50 to-neutral-200 relative z-10 flex rounded-full bg-linear-to-b p-8", props.className)}>
             <FileIcon type={type} variant={theme} className="size-10 drop-shadow-sm" />
         </div>
     );
@@ -73,7 +73,7 @@ const Header = ({ pattern = "circle", patternSize = "md", ...props }: HeaderProp
             className={cx("relative mb-4", (size === "md" || size === "lg") && "mb-5", hasIllustration && size === "lg" && "mb-6!", props.className)}
         >
             {pattern !== "none" && (
-                <BackgroundPattern size={patternSize} pattern={pattern} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                <BackgroundPattern size={patternSize} pattern={pattern} className="absolute top-1/2 left-1/2 -translate-1/2" />
             )}
             {props.children}
         </header>
@@ -148,7 +148,7 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
         <div
             aria-hidden="true"
             {...props}
-            className={cx("pointer-events-none absolute top-1/2 left-1/2 size-120 -translate-x-1/2 -translate-y-1/2", props.className)}
+            className={cx("pointer-events-none absolute top-1/2 left-1/2 size-120 -translate-1/2", props.className)}
             style={{
                 maskImage: "radial-gradient(circle, black 10%, transparent 70%)",
                 WebkitMaskImage: "radial-gradient(circle, black 10%, transparent 70%)",
@@ -158,7 +158,7 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
             {RING_RADII.map((radius) => (
                 <div
                     key={radius}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-subtle"
+                    className="absolute top-1/2 left-1/2 -translate-1/2 rounded-full border border-subtle"
                     style={{ width: radius * 2, height: radius * 2 }}
                 />
             ))}
@@ -172,10 +172,10 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
                 return (
                     <div
                         key={i}
-                        className={cx("absolute top-1/2 left-1/2 rounded-full bg-surface-1 p-px shadow-xs ring-[0.5px] ring-black/10", slot.size)}
+                        className={cx("shadow-xs absolute top-1/2 left-1/2 rounded-full bg-surface-1 p-px ring-[0.5px] ring-black/10", slot.size)}
                         style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
                     >
-                        <img src={avatar.src} alt="" className="size-full rounded-full object-cover outline-[0.5px] -outline-offset-[0.5px] outline-black/16" />
+                        <img src={avatar.src} alt="" className="size-full rounded-full object-cover outline-[0.5px] outline-offset-[-0.5px] outline-black/16" />
                     </div>
                 );
             })}
@@ -207,7 +207,7 @@ const AvatarRow = ({ avatars = [], children, ...props }: AvatarRowProps) => {
         <div
             key={key}
             className={cx(
-                "relative shrink-0 overflow-hidden outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",
+                "relative shrink-0 overflow-hidden outline-[0.5px] outline-offset-[-0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",
                 sizeClass,
             )}
         >
@@ -261,10 +261,10 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
     const row2 = [...row2Base, ...row2Base, ...row2Base];
 
     const renderGridAvatar = (avatar: { src: string; alt?: string }, key: number) => (
-        <div key={key} className={cx("shrink-0 bg-surface-1 p-px shadow-xs ring-[0.75px] ring-black/10", config.avatar)}>
+        <div key={key} className={cx("shadow-xs shrink-0 bg-surface-1 p-px ring-[0.75px] ring-black/10", config.avatar)}>
             <div
                 className={cx(
-                    "relative size-full overflow-hidden outline-[0.5px] -outline-offset-[0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",
+                    "relative size-full overflow-hidden outline-[0.5px] outline-offset-[-0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",
                     config.inner,
                 )}
             >
@@ -285,17 +285,17 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
             }}
         >
             <div className="flex">
-                <div className={cx("flex w-auto max-w-none shrink-0 animate-marquee [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
+                <div className={cx("animate-marquee flex w-auto max-w-none shrink-0 [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
                     {row1.map((avatar, i) => renderGridAvatar(avatar, i))}
                 </div>
-                <div className={cx("flex w-auto max-w-none shrink-0 animate-marquee [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
+                <div className={cx("animate-marquee flex w-auto max-w-none shrink-0 [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
                     {row1.map((avatar, i) => renderGridAvatar(avatar, i))}
                 </div>
             </div>
             <div className="flex">
                 <div
                     className={cx(
-                        "flex w-auto max-w-none shrink-0 animate-marquee [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
+                        "animate-marquee flex w-auto max-w-none shrink-0 [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
                         config.gap,
                     )}
                 >
@@ -303,7 +303,7 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
                 </div>
                 <div
                     className={cx(
-                        "flex w-auto max-w-none shrink-0 animate-marquee [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
+                        "animate-marquee flex w-auto max-w-none shrink-0 [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
                         config.gap,
                     )}
                 >

@@ -14,7 +14,7 @@ const placeholderAccounts: NavAccountType[] = [
 ];
 
 export const NavAccountMenu = ({ className, selectedAccountId = "olivia", accounts = placeholderAccounts }: { className?: string; accounts?: NavAccountType[]; selectedAccountId?: string }) => (
-    <div className={cx("w-66 rounded-xl bg-surface-2 p-1 shadow-lg ring-1 ring-secondary_alt", className)}>
+    <div className={cx("shadow-lg w-66 rounded-xl bg-surface-2 p-1 ring-1 ring-secondary_alt", className)}>
         <div className="rounded-xl bg-surface-1 ring-1 ring-subtle">
             <div className="flex flex-col gap-0.5 py-1.5"><NavAccountCardMenuItem label="View profile" icon={User} shortcut="⌘K→P" /><NavAccountCardMenuItem label="Account settings" icon={Settings} shortcut="⌘S" /><NavAccountCardMenuItem label="Documentation" icon={BookOpen} /></div>
             <div className="flex flex-col gap-0.5 border-t border-subtle py-1.5"><div className="px-3 pt-1.5 pb-1 text-xs font-semibold text-tertiary">Switch account</div><div className="flex flex-col gap-0.5 px-1.5">{accounts.map((account) => <button type="button" key={account.id} className={cx("relative w-full cursor-pointer rounded-md px-2 py-1.5 text-left hover:bg-layer-1-hover", account.id === selectedAccountId && "bg-layer-1-hover")}><AvatarLabelGroup status={account.status} size="md" src={account.avatar} title={account.name} subtitle={account.email} /><RadioButtonBase isSelected={account.id === selectedAccountId} className="absolute top-2 right-2" /></button>)}</div></div>
@@ -24,7 +24,7 @@ export const NavAccountMenu = ({ className, selectedAccountId = "olivia", accoun
     </div>
 );
 
-const NavAccountCardMenuItem = ({ icon: Icon, label, shortcut, ...buttonProps }: { icon?: FC<{ className?: string }>; label: string; shortcut?: string } & HTMLAttributes<HTMLButtonElement>) => <button type="button" {...buttonProps} className={cx("group/item w-full cursor-pointer px-1.5 focus:outline-hidden", buttonProps.className)}><span className="flex w-full items-center justify-between gap-3 rounded-md p-2 group-hover/item:bg-layer-1-hover"><span className="flex gap-2 text-sm font-semibold text-secondary group-hover/item:text-primary">{Icon && <Icon className="size-5 text-placeholder" />}{label}</span>{shortcut && <kbd className="rounded px-1 py-px font-body text-xs font-medium text-tertiary ring-1 ring-subtle ring-inset">{shortcut}</kbd>}</span></button>;
+const NavAccountCardMenuItem = ({ icon: Icon, label, shortcut, ...buttonProps }: { icon?: FC<{ className?: string }>; label: string; shortcut?: string } & HTMLAttributes<HTMLButtonElement>) => <button type="button" {...buttonProps} className={cx("group/item w-full cursor-pointer px-1.5 focus:outline-hidden", buttonProps.className)}><span className="flex w-full items-center justify-between gap-3 rounded-md p-2 group-hover/item:bg-layer-1-hover"><span className="flex gap-2 text-sm font-semibold text-secondary group-hover/item:text-primary">{Icon && <Icon className="size-5 text-placeholder" />}{label}</span>{shortcut && <kbd className="rounded-sm px-1 py-px font-body text-xs font-medium text-tertiary ring-1 ring-subtle ring-inset">{shortcut}</kbd>}</span></button>;
 
 export const NavAccountCard = ({ popoverPlacement, selectedAccountId = "caitlyn", items = placeholderAccounts, avatarRounded }: { popoverPlacement?: string; selectedAccountId?: string; items?: NavAccountType[]; avatarRounded?: boolean }) => {
     const isDesktop = useBreakpoint("lg");

@@ -9,12 +9,12 @@ export function NotFound() {
 
     return (
         <section className="flex min-h-dvh items-center justify-center bg-surface-1 px-4 py-12 sm:px-6">
-            <div className="w-full max-w-md rounded-xl border border-subtle bg-surface-2/40 p-6 shadow-2xl sm:p-8">
+            <div className="shadow-2xl w-full max-w-md rounded-xl border border-subtle bg-surface-2/40 p-6 sm:p-8">
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-3">
-                        <span className="font-mono text-xs uppercase tracking-[0.16em] text-accent-primary">{t("errors.notFoundTitle")}</span>
+                        <span className="font-mono text-xs tracking-[0.16em] text-accent-primary uppercase">{t("errors.notFoundTitle")}</span>
                         <h1 className="text-display-xs font-semibold tracking-tight text-primary">{t("errors.pageMissing")}</h1>
-                        <p className="text-sm leading-relaxed text-tertiary">{t("errors.pageMissingDescription")}</p>
+                        <p className="text-13/relaxed text-tertiary">{t("errors.pageMissingDescription")}</p>
                     </div>
 
                     <div className="flex flex-col-reverse gap-2 sm:flex-row">

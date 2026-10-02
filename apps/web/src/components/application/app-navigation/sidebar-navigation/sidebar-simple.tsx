@@ -65,7 +65,7 @@ export const SidebarNavigationSimple = ({
                 } as React.CSSProperties
             }
             className={cx(
-                "flex h-full w-full max-w-full flex-col overflow-hidden bg-surface-1 pt-3 lg:w-(--width) lg:pt-4",
+                "flex size-full max-w-full flex-col overflow-hidden bg-surface-1 pt-3 lg:w-(--width) lg:pt-4",
                 !hideBorder && "border-subtle md:border-r",
                 className,
             )}
@@ -88,7 +88,7 @@ export const SidebarNavigationSimple = ({
                 </div>
             </div>
 
-            <div className="mt-auto flex flex-col gap-2 px-3 py-3 lg:px-4 lg:py-4">
+            <div className="mt-auto flex flex-col gap-2 p-3 lg:p-4">
                 {footerItems.length > 0 && (
                     <ul className="flex flex-col">
                         {footerItems.map((item) => (
@@ -121,7 +121,7 @@ export const SidebarNavigationSimple = ({
                 style={{
                     paddingLeft: MAIN_SIDEBAR_WIDTH,
                 }}
-                className="invisible hidden lg:sticky lg:top-0 lg:bottom-0 lg:left-0 lg:block"
+                className="invisible hidden lg:sticky lg:inset-y-0 lg:left-0 lg:block"
             />
         </>
     );

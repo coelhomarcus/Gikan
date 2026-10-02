@@ -16,7 +16,7 @@ export const InputPrefix = ({ children, ...props }: InputPrefixProps) => (
     <span
         {...props}
         className={cx(
-            "flex text-tertiary shadow-xs ring-1 ring-border-primary ring-inset",
+            "shadow-xs flex text-tertiary ring-1 ring-border-primary ring-inset",
             // Styles when the prefix is within an `InputGroup`
             "in-data-input-wrapper:in-data-leading:-mr-px in-data-input-wrapper:in-data-leading:rounded-l-md",
             "in-data-input-wrapper:in-data-trailing:-ml-px in-data-input-wrapper:in-data-trailing:rounded-r-md",
@@ -25,7 +25,7 @@ export const InputPrefix = ({ children, ...props }: InputPrefixProps) => (
             // Small size styles
             "in-data-input-wrapper:in-data-[input-size=sm]:px-3 in-data-input-wrapper:in-data-[input-size=sm]:py-2 in-data-input-wrapper:in-data-[input-size=sm]:text-sm",
             // Large size styles
-            "in-data-input-wrapper:in-data-[input-size=lg]:py-2 in-data-input-wrapper:in-data-[input-size=lg]:px-3",
+            "in-data-input-wrapper:in-data-[input-size=lg]:px-3 in-data-input-wrapper:in-data-[input-size=lg]:py-2",
 
             props.className,
         )}

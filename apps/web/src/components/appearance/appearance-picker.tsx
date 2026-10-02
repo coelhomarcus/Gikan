@@ -48,18 +48,18 @@ export function AppearancePicker({ value, onChange, onComplete }: AppearancePick
                     ["emoji", Smile, t("appearance.emoji")],
                     ["image", ImagePlus, t("appearance.image")],
                 ].map(([id, Icon, label]) => (
-                    <button key={id as string} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id as Tab)} className={`flex h-7 items-center gap-1 rounded px-2 text-xs font-medium ${tab === id ? "bg-layer-1 text-primary" : "text-tertiary hover:bg-layer-1-hover hover:text-secondary"}`}>
+                    <button key={id as string} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id as Tab)} className={`flex h-7 items-center gap-1 rounded-sm px-2 text-xs font-medium ${tab === id ? "bg-layer-1 text-primary" : "text-tertiary hover:bg-layer-1-hover hover:text-secondary"}`}>
                         <Icon className="size-3.5" /> {label as string}
                     </button>
                 ))}
-                {value && <button type="button" className="ml-auto flex size-7 items-center justify-center rounded text-tertiary hover:bg-layer-1-hover hover:text-danger-primary" onClick={() => select(null)} aria-label={t("appearance.removeIcon")}><X className="size-3.5" /></button>}
+                {value && <button type="button" className="ml-auto flex size-7 items-center justify-center rounded-sm text-tertiary hover:bg-layer-1-hover hover:text-danger-primary" onClick={() => select(null)} aria-label={t("appearance.removeIcon")}><X className="size-3.5" /></button>}
             </div>
             {tab === "icons" && <ProjectIconPicker value={value?.type === "icon" ? value.key : null} onChange={(key) => select({ type: "icon", key })} />}
             {tab === "emoji" && (
                 <div className="space-y-3">
                     <Input label={t("appearance.emojiLabel")} value={emoji} onChange={setEmoji} placeholder={t("appearance.pasteEmoji")} />
                     <div className="grid grid-cols-8 gap-1" aria-label={t("appearance.emojiLabel")}>
-                        {EMOJIS.map((item) => <button key={item} type="button" className="flex size-8 items-center justify-center rounded text-lg hover:bg-layer-1-hover focus-visible:outline-2 focus-visible:outline-accent-strong" onClick={() => { setEmoji(item); select({ type: "emoji", value: item }); }}>{item}</button>)}
+                        {EMOJIS.map((item) => <button key={item} type="button" className="flex size-8 items-center justify-center rounded-sm text-lg hover:bg-layer-1-hover focus-visible:outline-2 focus-visible:outline-accent-strong" onClick={() => { setEmoji(item); select({ type: "emoji", value: item }); }}>{item}</button>)}
                     </div>
                     <Button size="sm" isDisabled={!emoji.trim()} onClick={() => select({ type: "emoji", value: emoji.trim() })}>{t("appearance.useEmoji")}</Button>
                 </div>

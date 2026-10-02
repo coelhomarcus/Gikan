@@ -52,7 +52,7 @@ export const UserProfilePanel = () => {
             <div className="relative">
                 <div ref={coverRef} data-profile-cover className="relative h-44 overflow-hidden rounded-lg border border-subtle bg-surface-2">
                     <CoverImage cover={previewCover} className="absolute inset-0" />
-                    <div className="absolute right-3 top-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={mutation.isPending} containerRef={coverRef} />} /></div>
+                    <div className="absolute top-3 right-3"><Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} disabled={mutation.isPending} containerRef={coverRef} />} /></div>
                 </div>
                 <div data-profile-avatar className="absolute -bottom-6 left-6 rounded-lg bg-surface-1 p-1">
                     <Avatar key={previewUrl} src={previewUrl || undefined} initials={initials} size="2xl" rounded={false} className="rounded-lg" />

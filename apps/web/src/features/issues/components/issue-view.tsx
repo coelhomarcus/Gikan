@@ -511,7 +511,7 @@ export const IssueView = ({ identifier, projectId, mode = "page", onClose }: Iss
                                     titleDirty.current = false;
                                 }
                             }}
-                            className="min-h-8 w-full resize-none overflow-hidden border-0 bg-transparent text-[22px] leading-[30px] font-semibold text-primary outline-none placeholder:text-tertiary focus-visible:ring-1 focus-visible:ring-accent-strong md:text-2xl md:leading-8"
+                            className="md:text-2xl min-h-8 w-full resize-none overflow-hidden border-0 bg-transparent text-[22px] leading-[30px] font-semibold text-primary outline-none placeholder:text-tertiary focus-visible:ring-1 focus-visible:ring-accent-strong md:leading-8"
                             aria-label={t("issue.title")}
                         />
                         {titleSaveError && <p role="alert" className="mt-1 text-xs text-danger-primary">{titleSaveError}</p>}
