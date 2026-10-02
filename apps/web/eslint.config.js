@@ -1,5 +1,7 @@
+import css from "@eslint/css";
 import eslintPluginBetterTailwindcss from "eslint-plugin-better-tailwindcss";
 import { defineConfig, globalIgnores } from "eslint/config";
+import { tailwind4 } from "tailwind-csstree";
 import { parser as eslintParserTypeScript, plugin as eslintPluginTypeScript } from "typescript-eslint";
 
 export default defineConfig([
@@ -31,6 +33,25 @@ export default defineConfig([
             "better-tailwindcss/enforce-consistent-line-wrapping": "off",
             // First-party classes defined in plain CSS files outside the Tailwind entry point.
             "better-tailwindcss/no-unknown-classes": ["error", { ignore: ["^document-", "^issue-peek-", "^peek-", "^plane-", "^tiptap-"] }],
+        },
+        settings: {
+            "better-tailwindcss": {
+                entryPoint: "src/styles/globals.css",
+            },
+        },
+    },
+
+    {
+        files: ["src/**/*.css"],
+        language: "css/css",
+        languageOptions: {
+            customSyntax: tailwind4,
+            tolerant: true,
+        },
+        plugins: { css },
+        extends: [eslintPluginBetterTailwindcss.configs.recommended],
+        rules: {
+            "better-tailwindcss/enforce-consistent-line-wrapping": "off",
         },
         settings: {
             "better-tailwindcss": {

@@ -60,6 +60,7 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "devDependencies": {
+        "@eslint/css": "^2.0.0",
         "@playwright/test": "^1.63.0",
         "@trivago/prettier-plugin-sort-imports": "^6.0.2",
         "@types/node": "^25.5.0",
@@ -71,6 +72,7 @@
         "globals": "^16.5.0",
         "prettier": "^3.8.1",
         "prettier-plugin-tailwindcss": "^0.7.2",
+        "tailwind-csstree": "^0.3.3",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.53.1",
         "vite": "^8.0.2"
