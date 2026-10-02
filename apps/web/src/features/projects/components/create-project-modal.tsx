@@ -102,7 +102,7 @@ export const CreateProjectModal = () => {
                     />
                     <ControlledTextarea control={control} name="description" label={t("projects.description")} rows={3} />
                     <ControlledInput control={control} name="repositoryUrl" label={t("projects.repository")} placeholder="https://github.com/..." />
-                    <Controller control={control} name="cover" render={({ field }) => <CoverPicker cover={field.value} onChange={field.onChange} />} />
+                    <Controller control={control} name="cover" render={({ field }) => <CoverPicker variant="neutral" cover={field.value} onChange={field.onChange} />} />
 
                     {formState.errors.root && <p className="text-sm text-danger-primary">{formState.errors.root.message}</p>}
 

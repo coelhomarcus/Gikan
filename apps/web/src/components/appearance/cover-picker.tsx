@@ -22,9 +22,11 @@ interface CoverPickerProps {
      * `object-position` will crop the image there — the stored x/y percentages only line up
      * with what the user sees while dragging when the two boxes share the same aspect ratio. */
     containerRef?: React.RefObject<HTMLElement | null>;
+    /** "overlay" sits on top of an image, so it carries its own translucent backdrop to stay legible on any cover. */
+    variant?: "overlay" | "neutral";
 }
 
-export function CoverPicker({ cover, onChange, disabled, containerRef }: CoverPickerProps) {
+export function CoverPicker({ cover, onChange, disabled, containerRef, variant = "overlay" }: CoverPickerProps) {
     const { t } = useTranslation();
     const [open, setOpen] = useState(false);
     const [url, setUrl] = useState(cover?.url ?? "");
@@ -56,7 +58,7 @@ export function CoverPicker({ cover, onChange, disabled, containerRef }: CoverPi
     };
     return (
         <Popover.Root open={open} onOpenChange={setOpen}>
-            <Popover.Trigger disabled={disabled} className="inline-flex h-8 items-center gap-2 rounded px-2 text-xs font-medium text-tertiary hover:bg-layer-1-hover hover:text-secondary disabled:opacity-50">
+            <Popover.Trigger disabled={disabled} className={`inline-flex h-8 items-center gap-2 rounded-md px-2.5 text-xs font-medium disabled:opacity-50 ${variant === "overlay" ? "bg-black/40 text-white backdrop-blur-sm hover:bg-black/55" : "border border-subtle bg-layer-1 text-secondary hover:bg-layer-1-hover"}`}>
                 <ImagePlus className="size-3.5" /> {cover ? t("appearance.changeCover") : t("appearance.addCover")}
             </Popover.Trigger>
             <Popover.Portal><Popover.Positioner sideOffset={8} collisionPadding={12} className="z-[60]"><Popover.Popup className="w-80 max-w-[calc(100vw-2rem)] rounded-lg border border-subtle bg-layer-2 p-3 shadow-overlay-200 outline-none">

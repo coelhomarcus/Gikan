@@ -236,7 +236,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
     }[state.status];
     return (
         <>
-            <div className="flex shrink-0 items-center justify-between gap-3 px-5 py-3 lg:px-8">
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-subtle px-5 py-3 lg:px-8">
                 <Link to={`/projects/${page.projectId}/documents`} className="inline-flex items-center gap-2 text-sm text-tertiary hover:text-primary">
                     <ArrowLeft className="size-4" />
                     {t("documents.allPages")}
@@ -299,12 +299,14 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                             </div>
                         )}
                         {actionError && !confirm && <ErrorMessage message={actionError} />}
-                        <div className="mb-3 flex justify-end">
-                            <CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} />
-                        </div>
-                        {state.cover && (
-                            <div ref={coverRef} className="document-cover-shell -mx-5 sm:-mx-8 lg:-mx-16">
+                        {state.cover ? (
+                            <div ref={coverRef} className="document-cover-shell relative -mx-5 sm:-mx-8 lg:-mx-16">
                                 <CoverImage cover={state.cover} className="h-40 sm:h-52" />
+                                <div className="absolute right-3 top-3"><CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} /></div>
+                            </div>
+                        ) : (
+                            <div className="mb-3 flex justify-end">
+                                <CoverPicker variant="neutral" cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} />
                             </div>
                         )}
                         <div className={`relative z-10 mb-5 flex flex-wrap items-end gap-2 ${state.cover ? "-mt-8" : ""}`}>
