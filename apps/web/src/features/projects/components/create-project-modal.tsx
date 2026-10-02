@@ -14,7 +14,7 @@ import { AppearancePicker } from "@/components/appearance/appearance-picker";
 import { CoverPicker } from "@/components/appearance/cover-picker";
 import { ApiError } from "@/lib/api-client";
 import { useCreateProject } from "../hooks/use-projects";
-import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
+import { DEFAULT_PROJECT_ICON, ProjectIcon, iconFillClass } from "./project-icon";
 import { useTranslation } from "react-i18next";
 
 export const CreateProjectModal = () => {
@@ -62,11 +62,11 @@ export const CreateProjectModal = () => {
                                                 type="button"
                                                 aria-label={t("projects.chooseIcon")}
                                                 title={t("projects.chooseIcon")}
-                                                className="flex size-15 shrink-0 cursor-pointer items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary outline-accent-strong transition-colors hover:bg-layer-2-hover hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong"
+                                                className="flex size-15 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-md border border-subtle bg-layer-2 text-secondary outline-accent-strong transition-colors hover:bg-layer-2-hover hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-strong"
                                             />
                                         }
                                     >
-                                        <ProjectIcon icon={field.value} className="size-7" />
+                                        <ProjectIcon icon={field.value} className={iconFillClass(field.value, "size-7")} />
                                     </Popover.Trigger>
                                     <Popover.Portal>
                                         <Popover.Positioner side="bottom" align="start" sideOffset={8} collisionPadding={12} className="z-[60]">

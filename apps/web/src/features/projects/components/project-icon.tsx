@@ -150,6 +150,11 @@ interface ProjectIconProps {
     className?: string;
 }
 
+/** Image appearances fill their whole tile; glyphs (icon/emoji) keep the inset `inner` size. */
+export function iconFillClass(icon: EntityIcon | string | null | undefined, inner: string) {
+    return icon && typeof icon === "object" && icon.type === "image" ? "size-full" : inner;
+}
+
 export const ProjectIcon = ({ icon, className }: ProjectIconProps) => {
     if (icon && typeof icon === "object") {
         if (icon.type === "emoji") {

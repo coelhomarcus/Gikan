@@ -17,7 +17,7 @@ import { useProject } from "../hooks/use-project";
 import { useUpdateProject } from "../hooks/use-projects";
 import { DeleteProjectDialog } from "./delete-project-dialog";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_PROJECT_ICON, ProjectIcon } from "./project-icon";
+import { DEFAULT_PROJECT_ICON, ProjectIcon, iconFillClass } from "./project-icon";
 
 export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: string; isProjectOwner: boolean }) => {
     const { t } = useTranslation();
@@ -64,9 +64,9 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                                     <Popover.Trigger
                                         disabled={disabled}
                                         aria-label={t("settings.changeProjectIcon")}
-                                        className="flex size-11 shrink-0 items-center justify-center rounded-md border border-subtle bg-layer-2 outline-accent-strong hover:bg-layer-2-hover"
+                                        className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-md border border-subtle bg-layer-2 outline-accent-strong hover:bg-layer-2-hover"
                                     >
-                                        <ProjectIcon icon={field.value} className="size-6" />
+                                        <ProjectIcon icon={field.value} className={iconFillClass(field.value, "size-6")} />
                                     </Popover.Trigger>
                                     <Popover.Portal>
                                         <Popover.Positioner sideOffset={8} className="z-50">
