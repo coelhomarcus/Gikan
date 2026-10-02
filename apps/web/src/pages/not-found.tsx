@@ -9,7 +9,7 @@ export function NotFound() {
 
     return (
         <section className="flex min-h-dvh items-center justify-center bg-surface-1 px-4 py-12 sm:px-6">
-            <div className="shadow-2xl w-full max-w-md rounded-xl border border-subtle bg-surface-2/40 p-6 sm:p-8">
+            <div className="w-full max-w-md rounded-xl border border-subtle bg-surface-2/40 p-6 shadow-overlay-200 sm:p-8">
                 <div className="flex flex-col gap-6">
                     <div className="flex flex-col gap-3">
                         <span className="font-mono text-xs tracking-[0.16em] text-accent-primary uppercase">{t("errors.notFoundTitle")}</span>

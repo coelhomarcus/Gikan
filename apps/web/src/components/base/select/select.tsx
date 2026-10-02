@@ -121,7 +121,7 @@ const Select = ({
                         id={triggerId}
                         aria-label={ariaLabel ?? label}
                         className={cx(
-                            "shadow-xs relative flex w-full cursor-pointer items-center rounded-md bg-surface-1 ring-1 ring-strong outline-hidden transition duration-100 ease-linear ring-inset",
+                            "relative flex w-full cursor-pointer items-center rounded-md bg-surface-1 shadow-raised-100 ring-1 ring-strong outline-hidden transition duration-100 ease-linear ring-inset",
                             "focus-visible:ring-2 focus-visible:ring-accent-strong",
                             "disabled:cursor-not-allowed disabled:opacity-50",
                             sizes[size].root,
@@ -137,7 +137,7 @@ const Select = ({
                         <BaseSelect.Positioner className="z-50 outline-none" sideOffset={4}>
                             <BaseSelect.Popup
                                 className={cx(
-                                    "shadow-lg min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-md bg-surface-1 p-1 ring-1 ring-secondary_alt outline-none",
+                                    "min-w-(--anchor-width) origin-(--transform-origin) overflow-hidden rounded-md bg-surface-1 p-1 shadow-overlay-100 ring-1 ring-secondary_alt outline-none",
                                     "data-[side=bottom]:animate-in data-[side=bottom]:fade-in data-[side=bottom]:slide-in-from-top-1",
                                     "data-[side=top]:animate-in data-[side=top]:fade-in data-[side=top]:slide-in-from-bottom-1",
                                     popoverClassName,

@@ -92,7 +92,7 @@ export const ProjectSearchModal = ({ onClose }: ProjectSearchModalProps) => {
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()} isDismissable>
             <Modal className="max-w-lg">
                 <Dialog>
-                    <div className="shadow-xl flex max-h-[70vh] w-full flex-col overflow-hidden rounded-xl bg-surface-1 ring-1 ring-subtle">
+                    <div className="flex max-h-[70vh] w-full flex-col overflow-hidden rounded-xl bg-surface-1 shadow-overlay-200 ring-1 ring-subtle">
                         <div className="border-b border-subtle p-3">
                             <Input
                                 autoFocus

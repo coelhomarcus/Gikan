@@ -107,7 +107,7 @@ function ImageBlock({ node, updateAttributes, selected, editor, getPos }: NodeVi
                     }}
                 >
                     <Popover.Trigger
-                        className="shadow-sm absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary"
+                        className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-md border border-subtle bg-layer-2 text-secondary shadow-raised-200"
                         aria-label={t("editor.editImage")}
                         data-node-view-control=""
                         onMouseDown={(event) => {

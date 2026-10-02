@@ -80,7 +80,7 @@ export const ProjectDetailsPanel = ({ projectId, isProjectOwner }: { projectId: 
                             )}
                         />
                         <div className="min-w-0">
-                            <h1 className="text-base truncate font-semibold">{project.name}</h1>
+                            <h1 className="truncate text-lg font-semibold">{project.name}</h1>
                             <p className="mt-1 text-sm text-tertiary">{project.issueKey}</p>
                         </div>
                     </div>

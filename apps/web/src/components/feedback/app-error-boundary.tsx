@@ -27,7 +27,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
 
         return (
             <main className="flex min-h-dvh items-center justify-center bg-surface-1 px-5 py-12 text-primary sm:px-8">
-                <section className="shadow-2xl w-full max-w-md rounded-2xl border border-subtle bg-surface-2/40 p-6 sm:p-8" role="alert">
+                <section className="w-full max-w-md rounded-2xl border border-subtle bg-surface-2/40 p-6 shadow-overlay-200 sm:p-8" role="alert">
                     <div className="flex size-10 items-center justify-center rounded-lg bg-danger-subtle/10 text-danger-primary">
                         <AlertTriangle className="size-5" aria-hidden="true" />
                     </div>

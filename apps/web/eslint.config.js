@@ -32,7 +32,7 @@ export default defineConfig([
             // Class strings stay on one line (the codebase's style); wrapping them is pure noise.
             "better-tailwindcss/enforce-consistent-line-wrapping": "off",
             // First-party classes defined in plain CSS files outside the Tailwind entry point.
-            "better-tailwindcss/no-unknown-classes": ["error", { ignore: ["^document-", "^issue-peek-", "^peek-", "^plane-", "^tiptap-"] }],
+            "better-tailwindcss/no-unknown-classes": ["error", { ignore: ["^document-", "^issue-peek-", "^issue-view-", "^peek-", "^plane-", "^tiptap-", "^board-", "^has-decoration$"] }],
         },
         settings: {
             "better-tailwindcss": {

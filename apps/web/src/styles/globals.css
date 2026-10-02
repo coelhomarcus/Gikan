@@ -9,6 +9,20 @@
 @plugin "tailwindcss-animate";
 
 
+@theme {
+    --animate-marquee: marquee 60s linear infinite;
+    --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+
+    @keyframes marquee {
+        from { transform: translateX(0); }
+        to { transform: translateX(calc(-100% - var(--gap, 0px))); }
+    }
+    @keyframes caret-blink {
+        0%, 70%, 100% { opacity: 1; }
+        20%, 50% { opacity: 0; }
+    }
+}
+
 @custom-variant label (& [data-label]);
 @custom-variant focus-input-within (&:has(input:focus));
 

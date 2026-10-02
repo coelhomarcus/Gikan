@@ -16,7 +16,7 @@ export const InputPrefix = ({ children, ...props }: InputPrefixProps) => (
     <span
         {...props}
         className={cx(
-            "shadow-xs flex text-tertiary ring-1 ring-border-primary ring-inset",
+            "flex text-tertiary shadow-raised-100 ring-1 ring-border-primary ring-inset",
             // Styles when the prefix is within an `InputGroup`
             "in-data-input-wrapper:in-data-leading:-mr-px in-data-input-wrapper:in-data-leading:rounded-l-md",
             "in-data-input-wrapper:in-data-trailing:-ml-px in-data-input-wrapper:in-data-trailing:rounded-r-md",
@@ -107,7 +107,7 @@ export const InputGroup = ({ size = "md", prefix, leadingAddon, trailingAddon, l
                         className={cx(
                             "group relative flex h-max w-full flex-row justify-center rounded-md bg-surface-1 transition-all duration-100 ease-linear",
 
-                            "shadow-xs ring-1 ring-border-primary ring-inset focus-within:ring-2 focus-within:ring-border-brand",
+                            "shadow-raised-100 ring-1 ring-border-primary ring-inset focus-within:ring-2 focus-within:ring-border-brand",
 
                             isDisabled && "cursor-not-allowed",
                             isInvalid && "ring-border-error_subtle focus-within:ring-border-error",

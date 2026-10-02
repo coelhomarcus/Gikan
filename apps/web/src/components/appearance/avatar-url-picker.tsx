@@ -43,7 +43,7 @@ export function AvatarUrlPicker({ value, initials, onChange, disabled }: AvatarU
             <Popover.Trigger
                 disabled={disabled}
                 aria-label={value ? t("profile.changePhoto") : t("profile.addPhoto")}
-                className="shadow-sm absolute -right-2 -bottom-2 z-10 flex size-7 items-center justify-center rounded-md border border-strong bg-layer-2 text-secondary transition hover:bg-layer-2-hover disabled:opacity-50"
+                className="absolute -right-2 -bottom-2 z-10 flex size-7 items-center justify-center rounded-md border border-strong bg-layer-2 text-secondary shadow-raised-200 transition hover:bg-layer-2-hover disabled:opacity-50"
             >
                 <Pencil className="size-3.5" />
             </Popover.Trigger>

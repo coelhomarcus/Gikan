@@ -60,7 +60,7 @@ export const UserProfilePanel = () => {
                 </div>
             </div>
             <div className="mt-10 mb-8 space-y-1">
-                <h1 className="text-base font-medium text-secondary">{user.name}</h1>
+                <h1 className="text-lg font-medium text-secondary">{user.name}</h1>
                 <p className="text-sm text-tertiary">{user.email}</p>
             </div>
             <form className="space-y-6" noValidate onSubmit={handleSubmit((data) => mutation.mutate(data))}>

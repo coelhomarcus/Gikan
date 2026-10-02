@@ -47,7 +47,7 @@ export const IssueQuickCreateModal = ({ projectId, columnId, onClose, onCreated 
         <ModalOverlay isOpen onOpenChange={(open) => !open && onClose()} isDismissable>
             <Modal className="max-w-md">
                 <Dialog>
-                    <div className="shadow-xl w-full rounded-xl bg-surface-1 p-6 ring-1 ring-subtle">
+                    <div className="w-full rounded-xl bg-surface-1 p-6 shadow-overlay-200 ring-1 ring-subtle">
                         <div className="mb-4 flex items-start justify-between gap-4">
                             <div>
                                 <div className="flex items-center gap-2 text-accent-primary">

@@ -27,7 +27,7 @@ export const ConfirmDialog = ({ trigger, title, description, confirmLabel, isPen
                 <Modal className="max-w-md">
                     <Dialog>
                         {({ close }) => (
-                            <div className="shadow-xl w-full rounded-xl bg-surface-1 p-6 ring-1 ring-subtle">
+                            <div className="w-full rounded-xl bg-surface-1 p-6 shadow-overlay-200 ring-1 ring-subtle">
                                 <div className="flex gap-4">
                                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-danger-primary text-fg-white">
                                         <AlertTriangle className="size-5" />

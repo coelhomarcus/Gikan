@@ -94,7 +94,7 @@ const Slot = ({ index, className, ...props }: ComponentPropsWithRef<"div"> & { i
             aria-invalid={invalid}
             aria-label={"Enter digit " + (index + 1) + " of " + slots.length}
             className={cx(
-                "shadow-xs relative flex items-center justify-center rounded-xl bg-surface-1 text-center text-placeholder/40 ring-1 ring-strong transition-[box-shadow,background-color] duration-100 ease-linear ring-inset",
+                "relative flex items-center justify-center rounded-xl bg-surface-1 text-center text-placeholder/40 shadow-raised-100 ring-1 ring-strong transition-[box-shadow,background-color] duration-100 ease-linear ring-inset",
                 styles[size].slot,
                 isFocused && slot?.isActive && "ring-2 ring-accent-strong outline-2 outline-offset-2 outline-accent-strong",
                 slot?.char && "text-brand-tertiary_alt ring-2 ring-accent-strong",
@@ -110,7 +110,7 @@ const Slot = ({ index, className, ...props }: ComponentPropsWithRef<"div"> & { i
 Slot.displayName = "Slot";
 
 const FakeCaret = ({ size = "md" }: { size?: PinInputSize }) => {
-    return <div className={cx("animate-caret-blink pointer-events-none h-[1em] w-0.5 bg-fg-brand-primary", styles[size].caret)} />;
+    return <div className={cx("pointer-events-none h-[1em] w-0.5 animate-caret-blink bg-fg-brand-primary", styles[size].caret)} />;
 };
 
 const Separator = (props: ComponentPropsWithRef<"div">) => {

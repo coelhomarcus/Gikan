@@ -15,7 +15,7 @@ export const MobileNavigationHeader = ({ children }: PropsWithChildren) => (
         <Dialog.Portal>
             <Dialog.Backdrop className="fixed inset-0 z-50 cursor-pointer bg-overlay/70 pr-16 backdrop-blur-md lg:hidden" />
             <Dialog.Viewport className="fixed inset-0 z-50 flex lg:hidden">
-                <Dialog.Popup className="shadow-xl relative w-full max-w-74 cursor-auto bg-surface-1">
+                <Dialog.Popup className="relative w-full max-w-74 cursor-auto bg-surface-1 shadow-overlay-200">
                     <Dialog.Close render={<button type="button" aria-label="Close navigation menu" className="fixed top-2 right-3 z-10 flex size-9 cursor-pointer items-center justify-center rounded-md text-fg-white/70 outline-accent-strong hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2" />}>
                         <AppIcons.Close className="size-4" />
                     </Dialog.Close>

@@ -51,7 +51,7 @@ interface FileTypeIconProps extends ComponentPropsWithRef<"div"> {
 
 const FileTypeIcon = ({ type = "folder", theme = "solid", ...props }: FileTypeIconProps) => {
     return (
-        <div {...props} className={cx("from-neutral-50 to-neutral-200 relative z-10 flex rounded-full bg-linear-to-b p-8", props.className)}>
+        <div {...props} className={cx("relative z-10 flex rounded-full bg-linear-to-b from-surface-2 to-layer-2 p-8", props.className)}>
             <FileIcon type={type} variant={theme} className="size-10 drop-shadow-sm" />
         </div>
     );
@@ -172,7 +172,7 @@ const AvatarRadius = ({ avatars = [], ...props }: AvatarRadiusProps) => {
                 return (
                     <div
                         key={i}
-                        className={cx("shadow-xs absolute top-1/2 left-1/2 rounded-full bg-surface-1 p-px ring-[0.5px] ring-black/10", slot.size)}
+                        className={cx("absolute top-1/2 left-1/2 rounded-full bg-surface-1 p-px shadow-raised-100 ring-[0.5px] ring-black/10", slot.size)}
                         style={{ transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))` }}
                     >
                         <img src={avatar.src} alt="" className="size-full rounded-full object-cover outline-[0.5px] outline-offset-[-0.5px] outline-black/16" />
@@ -261,7 +261,7 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
     const row2 = [...row2Base, ...row2Base, ...row2Base];
 
     const renderGridAvatar = (avatar: { src: string; alt?: string }, key: number) => (
-        <div key={key} className={cx("shadow-xs shrink-0 bg-surface-1 p-px ring-[0.75px] ring-black/10", config.avatar)}>
+        <div key={key} className={cx("shrink-0 bg-surface-1 p-px shadow-raised-100 ring-[0.75px] ring-black/10", config.avatar)}>
             <div
                 className={cx(
                     "relative size-full overflow-hidden outline-[0.5px] outline-offset-[-0.5px] outline-black/16 before:absolute before:inset-0 before:rounded-[inherit] before:border before:border-white/32 before:mask-[linear-gradient(to_bottom,black_0%,transparent_25%,transparent_75%,black_100%)]",
@@ -285,17 +285,17 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
             }}
         >
             <div className="flex">
-                <div className={cx("animate-marquee flex w-auto max-w-none shrink-0 [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
+                <div className={cx("flex w-auto max-w-none shrink-0 animate-marquee [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
                     {row1.map((avatar, i) => renderGridAvatar(avatar, i))}
                 </div>
-                <div className={cx("animate-marquee flex w-auto max-w-none shrink-0 [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
+                <div className={cx("flex w-auto max-w-none shrink-0 animate-marquee [animation-duration:240s] motion-reduce:animate-none", config.gap)}>
                     {row1.map((avatar, i) => renderGridAvatar(avatar, i))}
                 </div>
             </div>
             <div className="flex">
                 <div
                     className={cx(
-                        "animate-marquee flex w-auto max-w-none shrink-0 [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
+                        "flex w-auto max-w-none shrink-0 animate-marquee [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
                         config.gap,
                     )}
                 >
@@ -303,7 +303,7 @@ const AvatarGrid = ({ avatars = [], ...props }: AvatarGridProps) => {
                 </div>
                 <div
                     className={cx(
-                        "animate-marquee flex w-auto max-w-none shrink-0 [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
+                        "flex w-auto max-w-none shrink-0 animate-marquee [animation-delay:-120s] [animation-duration:240s] direction-reverse motion-reduce:-translate-x-1/2 motion-reduce:animate-none",
                         config.gap,
                     )}
                 >

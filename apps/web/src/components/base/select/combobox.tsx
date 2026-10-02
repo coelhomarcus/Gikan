@@ -86,7 +86,7 @@ export const ComboBox = ({
                     )}
                     <BaseCombobox.InputGroup
                         className={cx(
-                            "shadow-xs relative flex w-full items-center gap-2 rounded-md bg-surface-1 ring-1 ring-strong outline-hidden transition-shadow duration-100 ease-linear ring-inset",
+                            "relative flex w-full items-center gap-2 rounded-md bg-surface-1 shadow-raised-100 ring-1 ring-strong outline-hidden transition-shadow duration-100 ease-linear ring-inset",
                             "focus-within:ring-2 focus-within:ring-accent-strong",
                             "data-disabled:cursor-not-allowed data-disabled:opacity-50",
                             sizes[size].root,
@@ -113,7 +113,7 @@ export const ComboBox = ({
                         <BaseCombobox.Positioner className="z-50 outline-none" sideOffset={4}>
                             <BaseCombobox.Popup
                                 className={cx(
-                                    "shadow-lg min-w-(--anchor-width) overflow-hidden rounded-md bg-surface-1 p-1 ring-1 ring-secondary_alt outline-none",
+                                    "min-w-(--anchor-width) overflow-hidden rounded-md bg-surface-1 p-1 shadow-overlay-100 ring-1 ring-secondary_alt outline-none",
                                     popoverClassName,
                                 )}
                             >
