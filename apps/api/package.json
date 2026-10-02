@@ -13,7 +13,7 @@
     "db:migrate:prod": "node dist/migrate.js"
   },
   "dependencies": {
-    "@gikan/shared": "workspace:*",
+    "@gikan/shared": "*",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "drizzle-orm": "^0.36.4",

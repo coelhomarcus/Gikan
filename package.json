@@ -1,19 +1,20 @@
 {
   "name": "gikan",
   "private": true,
-  "packageManager": "pnpm@10.9.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "engines": {
-    "node": ">=22"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "node": ">=22",
+    "npm": ">=10"
   },
   "scripts": {
-    "dev:api": "pnpm --filter @gikan/api dev",
-    "dev:web": "pnpm --filter @gikan/web dev",
-    "build": "pnpm --filter @gikan/web build && pnpm --filter @gikan/api build",
-    "typecheck": "pnpm -r typecheck",
-    "db:generate": "pnpm --filter @gikan/api db:generate",
-    "db:migrate": "pnpm --filter @gikan/api db:migrate"
+    "dev:api": "npm run dev -w @gikan/api",
+    "dev:web": "npm run dev -w @gikan/web",
+    "build": "npm run build -w @gikan/web && npm run build -w @gikan/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:generate": "npm run db:generate -w @gikan/api",
+    "db:migrate": "npm run db:migrate -w @gikan/api"
   }
 }

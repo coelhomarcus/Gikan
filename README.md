@@ -12,7 +12,7 @@ Gikan is a dark workspace for organizing projects and tracking issues. Each proj
 ## Requirements
 
 - Node.js 22+
-- pnpm 10+
+- npm 10+
 - An accessible PostgreSQL instance
 
 ## Development
@@ -20,7 +20,7 @@ Gikan is a dark workspace for organizing projects and tracking issues. Each proj
 Install dependencies:
 
 ```bash
-pnpm install
+npm install
 ```
 
 Create `apps/api/.env` from `.env.example`. To start a local PostgreSQL instance:
@@ -35,14 +35,14 @@ docker run --name gikan-db \
 Apply migrations:
 
 ```bash
-pnpm db:migrate
+npm run db:migrate
 ```
 
 Start the API and frontend in separate terminals:
 
 ```bash
-pnpm dev:api   # http://localhost:3000
-pnpm dev:web   # http://localhost:5173
+npm run dev:api   # http://localhost:3000
+npm run dev:web   # http://localhost:5173
 ```
 
 ## Main routes
@@ -65,10 +65,10 @@ Project issue keys are generated automatically from the project name (for exampl
 ## Useful commands
 
 ```bash
-pnpm -r typecheck
-pnpm build
-pnpm db:generate
-pnpm db:migrate
+npm run typecheck
+npm run build
+npm run db:generate
+npm run db:migrate
 ```
 
 ## Environment variables

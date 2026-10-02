@@ -8,13 +8,13 @@ import { build } from "esbuild";
 // of bundling `pg` (dynamic require of an optional native binding).
 //
 // IMPORTANT: esbuild's `packages: "external"` externalizes ANY import resolved through
-// node_modules — including pnpm workspace packages (which are only symlinks there), which would
+// node_modules — including npm workspace packages (which are only symlinks there), which would
 // break @gikan/shared at runtime (it has no own dist). Therefore, the external list is built
-// manually from package.json while excluding "workspace:*" dependencies.
+// manually from package.json while excluding first-party "@gikan/*" workspace dependencies.
 const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url)));
 
 const external = Object.entries(pkg.dependencies ?? {})
-    .filter(([, version]) => !version.startsWith("workspace:"))
+    .filter(([name]) => !name.startsWith("@gikan/"))
     .flatMap(([name]) => [name, `${name}/*`]);
 
 const sharedOptions = {

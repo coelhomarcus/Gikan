@@ -8,5 +8,4 @@ dist/
 !.vscode/extensions.json
 TODO.md
 .claude
-.pnpm-sotre
 docs/
