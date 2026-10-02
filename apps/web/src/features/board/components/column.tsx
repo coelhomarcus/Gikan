@@ -72,7 +72,7 @@ export const Column = ({ column, issues, projectId, categoriesById, membersById,
     }
 
     return (
-        <div data-board-column={column.id} className={cx("group/column flex h-full max-h-full shrink-0 flex-col", collapsed ? "w-11" : "w-[350px]")}>
+        <div data-board-column={column.id} className={cx("group/column flex h-full max-h-full shrink-0 flex-col rounded-lg border border-subtle bg-surface-2 p-2", collapsed ? "w-16" : "w-[368px]")}>
             <div className="mb-3 flex h-[25px] shrink-0 items-center gap-2">
                 {isEditingName ? (
                     <Input
