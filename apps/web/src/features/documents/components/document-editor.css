@@ -6,8 +6,12 @@
 .document-writing-surface {
     display: flex;
     flex-direction: column;
-    min-height: 100%;
+    flex: 1 0 auto;
     padding: 24px 32px 64px 64px;
+}
+/* The cover sits flush above the surface, so the surface must not add its own gap. */
+.document-writing-surface[data-has-cover] {
+    padding-top: 0;
 }
 .document-title {
     display: block;
@@ -375,6 +379,9 @@
 @media (max-width: 767px) {
     .document-writing-surface {
         padding: 16px 20px 32px;
+    }
+    .document-writing-surface[data-has-cover] {
+        padding-top: 0;
     }
     .document-title {
         font-size: 30px;

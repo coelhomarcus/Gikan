@@ -266,7 +266,14 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                         <DocumentSkeleton />
                     </div>
                 ) : (
-                    <div className="document-writing-surface">
+                    <div className="flex min-h-full flex-col">
+                        {state.cover && (
+                            <div ref={coverRef} className="document-cover-shell relative shrink-0">
+                                <CoverImage cover={state.cover} className="h-40 sm:h-52" />
+                                <div className="absolute right-3 top-3"><CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} /></div>
+                            </div>
+                        )}
+                    <div className="document-writing-surface" data-has-cover={state.cover ? "" : undefined}>
                         {state.storageError && <ErrorMessage message={t(state.storageError as "documents.localDraftUnavailable")} />}
                         {state.status === "error" && (
                             <ErrorMessage message={`${t((state.error || "documents.couldNotSave") as "documents.couldNotSave")} ${t("documents.keepDraft")} ${t("documents.retrySave")}`} />
@@ -299,12 +306,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                             </div>
                         )}
                         {actionError && !confirm && <ErrorMessage message={actionError} />}
-                        {state.cover ? (
-                            <div ref={coverRef} className="document-cover-shell relative -mx-5 sm:-mx-8 lg:-mx-16">
-                                <CoverImage cover={state.cover} className="h-40 sm:h-52" />
-                                <div className="absolute right-3 top-3"><CoverPicker cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} /></div>
-                            </div>
-                        ) : (
+                        {!state.cover && (
                             <div className="mb-3 flex justify-end">
                                 <CoverPicker variant="neutral" cover={state.cover} disabled={busy || state.status === "deleted"} onChange={(cover) => session.edit({ cover })} containerRef={coverRef} />
                             </div>
@@ -341,6 +343,7 @@ function DocumentWorkspace({ page, userId }: { page: DocumentPage; userId: strin
                             members={members}
                             disabled={busy || state.status === "deleted"}
                         />
+                    </div>
                     </div>
                 )}
             </main>
