@@ -66,6 +66,7 @@ Project issue keys are generated automatically from the project name (for exampl
 
 ```bash
 npm run typecheck
+npm run lint -w @gikan/web
 npm run build
 npm run db:generate
 npm run db:migrate
